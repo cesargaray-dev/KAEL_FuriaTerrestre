@@ -1,0 +1,544 @@
+fileFormatVersion: 2
+guid: fe9fca9c2d9bf6c469afc3316b6711b7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -343466339301973282
+    second: Sprite de guerrero futurista corriendo_0
+  - first:
+      213: 5516315277575706738
+    second: Sprite de guerrero futurista corriendo_1
+  - first:
+      213: 7778045597268541340
+    second: Sprite de guerrero futurista corriendo_2
+  - first:
+      213: 5551877506350722752
+    second: Sprite de guerrero futurista corriendo_3
+  - first:
+      213: -2711506617783931048
+    second: Sprite de guerrero futurista corriendo_4
+  - first:
+      213: 1654020032080930175
+    second: Sprite de guerrero futurista corriendo_5
+  - first:
+      213: 3752433867451508424
+    second: Sprite de guerrero futurista corriendo_6
+  - first:
+      213: 3155993963238028624
+    second: Sprite de guerrero futurista corriendo_7
+  - first:
+      213: -4877564182331323943
+    second: Sprite de guerrero futurista corriendo_8
+  - first:
+      213: -3530066497976747406
+    second: Sprite de guerrero futurista corriendo_9
+  - first:
+      213: -911140047504321512
+    second: Sprite de guerrero futurista corriendo_10
+  - first:
+      213: -5249160228885902800
+    second: Sprite de guerrero futurista corriendo_11
+  - first:
+      213: -8360941747419549305
+    second: Sprite de guerrero futurista corriendo_12
+  - first:
+      213: 7513036902278905641
+    second: Sprite de guerrero futurista corriendo_13
+  - first:
+      213: -6841675487035449033
+    second: Sprite de guerrero futurista corriendo_14
+  - first:
+      213: -3728766250756233804
+    second: Sprite de guerrero futurista corriendo_15
+  - first:
+      213: -5453561615573586937
+    second: Sprite de guerrero futurista corriendo_16
+  - first:
+      213: -7243455955499701097
+    second: Sprite de guerrero futurista corriendo_17
+  - first:
+      213: 4085782953979247645
+    second: Sprite de guerrero futurista corriendo_18
+  - first:
+      213: 5577507495690485566
+    second: Sprite de guerrero futurista corriendo_19
+  - first:
+      213: -5266472981280528140
+    second: Sprite de guerrero futurista corriendo_20
+  - first:
+      213: 1772085882844764381
+    second: Sprite de guerrero futurista corriendo_21
+  - first:
+      213: -4957048735166145800
+    second: Sprite de guerrero futurista corriendo_22
+  - first:
+      213: 3114284186184762495
+    second: Sprite de guerrero futurista corriendo_23
+  - first:
+      213: -331804908122264355
+    second: Sprite de guerrero futurista corriendo_24
+  - first:
+      213: -4046857704930135837
+    second: Sprite de guerrero futurista corriendo_25
+  - first:
+      213: 736869044210519830
+    second: Sprite de guerrero futurista corriendo_26
+  - first:
+      213: 9198218184229743730
+    second: Sprite de guerrero futurista corriendo_27
+  - first:
+      213: -814790644262508662
+    second: Sprite de guerrero futurista corriendo_28
+  - first:
+      213: 2556321654564252682
+    second: Sprite de guerrero futurista corriendo_29
+  - first:
+      213: 2565761280707042232
+    second: Sprite de guerrero futurista corriendo_30
+  - first:
+      213: -7509425011483821008
+    second: Sprite de guerrero futurista corriendo_31
+  - first:
+      213: 8260940539120431794
+    second: Sprite de guerrero futurista corriendo_32
+  - first:
+      213: -3496019321823089072
+    second: Sprite de guerrero futurista corriendo_33
+  - first:
+      213: -8858571592333360611
+    second: Sprite de guerrero futurista corriendo_34
+  - first:
+      213: 3582141092633065336
+    second: Sprite de guerrero futurista corriendo_35
+  - first:
+      213: 1414873619333724787
+    second: Sprite de guerrero futurista corriendo_36
+  - first:
+      213: -1203688701670740589
+    second: Sprite de guerrero futurista corriendo_37
+  - first:
+      213: 7727470829759581694
+    second: Sprite de guerrero futurista corriendo_38
+  - first:
+      213: -1234817861346847441
+    second: Sprite de guerrero futurista corriendo_39
+  - first:
+      213: 5987475207046997190
+    second: Sprite de guerrero futurista corriendo_40
+  - first:
+      213: -512921779478303304
+    second: Sprite de guerrero futurista corriendo_41
+  - first:
+      213: -1871590720540957673
+    second: Sprite de guerrero futurista corriendo_42
+  - first:
+      213: 3458941456133303037
+    second: Sprite de guerrero futurista corriendo_43
+  - first:
+      213: -7593887550911832212
+    second: Sprite de guerrero futurista corriendo_44
+  - first:
+      213: 7445464113381136549
+    second: Sprite de guerrero futurista corriendo_45
+  - first:
+      213: -5093327251289585471
+    second: Sprite de guerrero futurista corriendo_46
+  - first:
+      213: 2788778028036712565
+    second: Sprite de guerrero futurista corriendo_47
+  - first:
+      213: -4915618591675441587
+    second: Sprite de guerrero futurista corriendo_48
+  - first:
+      213: 3572078634836756891
+    second: Sprite de guerrero futurista corriendo_49
+  - first:
+      213: -869069301534625602
+    second: Sprite de guerrero futurista corriendo_50
+  - first:
+      213: 6566943121657344441
+    second: Sprite de guerrero futurista corriendo_51
+  - first:
+      213: -5971837785723997350
+    second: Sprite de guerrero futurista corriendo_52
+  - first:
+      213: 3770125787048884874
+    second: Sprite de guerrero futurista corriendo_53
+  - first:
+      213: 1678709388846492139
+    second: Sprite de guerrero futurista corriendo_54
+  - first:
+      213: 179261322141581756
+    second: Sprite de guerrero futurista corriendo_55
+  - first:
+      213: 8655366088857411012
+    second: Sprite de guerrero futurista corriendo_56
+  - first:
+      213: 8155186039106078955
+    second: Sprite de guerrero futurista corriendo_57
+  - first:
+      213: 5923651009817044059
+    second: Sprite de guerrero futurista corriendo_58
+  - first:
+      213: 1089515289214784232
+    second: Sprite de guerrero futurista corriendo_59
+  - first:
+      213: 6559677884098546163
+    second: Sprite de guerrero futurista corriendo_60
+  - first:
+      213: -4606079026149875218
+    second: Sprite de guerrero futurista corriendo_61
+  - first:
+      213: 3158800724642868386
+    second: Sprite de guerrero futurista corriendo_62
+  - first:
+      213: -403765193520024869
+    second: Sprite de guerrero futurista corriendo_63
+  - first:
+      213: 6040677671510867620
+    second: Sprite de guerrero futurista corriendo_64
+  - first:
+      213: -5519932086212164509
+    second: Sprite de guerrero futurista corriendo_65
+  - first:
+      213: 8739658768316596389
+    second: Sprite de guerrero futurista corriendo_66
+  - first:
+      213: -3084483552989274568
+    second: Sprite de guerrero futurista corriendo_67
+  - first:
+      213: -1172461843501888717
+    second: Sprite de guerrero futurista corriendo_68
+  - first:
+      213: -8072515129604006243
+    second: Sprite de guerrero futurista corriendo_69
+  - first:
+      213: -3530074747952983356
+    second: Sprite de guerrero futurista corriendo_70
+  - first:
+      213: -1292626601525921628
+    second: Sprite de guerrero futurista corriendo_71
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 190
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Kael_Run_Strip_0
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 164
+        width: 303
+        height: 376
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5f9968b3f3d14b4e9c8c78bd6bac66d
+      internalID: -1310357746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Run_Strip_6
+      rect:
+        serializedVersion: 2
+        x: 774
+        y: 167
+        width: 257
+        height: 375
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4f9646d959a4c834591316f771790452
+      internalID: -1792569825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Run_Strip_7
+      rect:
+        serializedVersion: 2
+        x: 1099
+        y: 162
+        width: 316
+        height: 378
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36b31064430353f4a9b048e711abc9a7
+      internalID: 458852408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Run_Strip_9
+      rect:
+        serializedVersion: 2
+        x: 1857
+        y: 163
+        width: 255
+        height: 380
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2081ba0de335ee746a93dbdd3a3dfb3f
+      internalID: 1945955689
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Run_Strip_10
+      rect:
+        serializedVersion: 2
+        x: 427
+        y: 167
+        width: 261
+        height: 350
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f32766125cabd65489846039d294b30c
+      internalID: 904295427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Run_Strip_17
+      rect:
+        serializedVersion: 2
+        x: 1489
+        y: 162
+        width: 275
+        height: 360
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d14ab7561d3d1cf4684ccf3dcf9a579a
+      internalID: 1405710538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5a9d425f9593aef4eae5f669cdc5c492
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Kael_Run_Strip_0: -1310357746
+      Kael_Run_Strip_1: 1400082030
+      Kael_Run_Strip_10: 904295427
+      Kael_Run_Strip_11: 675017449
+      Kael_Run_Strip_12: -2128100113
+      Kael_Run_Strip_13: -780055300
+      Kael_Run_Strip_14: 1000855159
+      Kael_Run_Strip_15: 135177071
+      Kael_Run_Strip_16: -2004228138
+      Kael_Run_Strip_17: 1405710538
+      Kael_Run_Strip_18: -66482005
+      Kael_Run_Strip_19: 1847118172
+      Kael_Run_Strip_2: 1669782115
+      Kael_Run_Strip_20: 855018396
+      Kael_Run_Strip_21: -447099868
+      Kael_Run_Strip_22: -1342509486
+      Kael_Run_Strip_23: 518055329
+      Kael_Run_Strip_24: 839210027
+      Kael_Run_Strip_25: -99050950
+      Kael_Run_Strip_26: -835853854
+      Kael_Run_Strip_27: -972567756
+      Kael_Run_Strip_28: -1777795660
+      Kael_Run_Strip_29: 2044100897
+      Kael_Run_Strip_3: -2101675595
+      Kael_Run_Strip_30: 1366177241
+      Kael_Run_Strip_31: -1271795645
+      Kael_Run_Strip_32: -115242119
+      Kael_Run_Strip_33: 1849792229
+      Kael_Run_Strip_34: -1661601403
+      Kael_Run_Strip_35: -221398736
+      Kael_Run_Strip_36: 1989599320
+      Kael_Run_Strip_37: -107001537
+      Kael_Run_Strip_38: 604714584
+      Kael_Run_Strip_39: 2044111782
+      Kael_Run_Strip_4: -410909284
+      Kael_Run_Strip_40: 692431313
+      Kael_Run_Strip_41: 1783020597
+      Kael_Run_Strip_42: 1861604646
+      Kael_Run_Strip_43: -1719183849
+      Kael_Run_Strip_44: -1007645380
+      Kael_Run_Strip_45: 2092795566
+      Kael_Run_Strip_46: 158699357
+      Kael_Run_Strip_47: 1415839391
+      Kael_Run_Strip_48: -1235900019
+      Kael_Run_Strip_49: -1097709998
+      Kael_Run_Strip_5: -737013296
+      Kael_Run_Strip_50: -526050723
+      Kael_Run_Strip_51: 56425276
+      Kael_Run_Strip_52: -908655766
+      Kael_Run_Strip_53: -2043113485
+      Kael_Run_Strip_54: 1277414758
+      Kael_Run_Strip_55: 1124899495
+      Kael_Run_Strip_56: 1589869748
+      Kael_Run_Strip_57: -842116863
+      Kael_Run_Strip_58: 1618082704
+      Kael_Run_Strip_59: -807298760
+      Kael_Run_Strip_6: -1792569825
+      Kael_Run_Strip_60: 1118900462
+      Kael_Run_Strip_61: 222874863
+      Kael_Run_Strip_62: -1185257710
+      Kael_Run_Strip_63: -545066402
+      Kael_Run_Strip_64: 2131227943
+      Kael_Run_Strip_65: 1265181981
+      Kael_Run_Strip_66: 688476027
+      Kael_Run_Strip_67: 1506312197
+      Kael_Run_Strip_68: 181144665
+      Kael_Run_Strip_69: -1829970472
+      Kael_Run_Strip_7: 458852408
+      Kael_Run_Strip_70: -1103517870
+      Kael_Run_Strip_71: -424359592
+      Kael_Run_Strip_72: -1988525263
+      Kael_Run_Strip_73: -1477594505
+      Kael_Run_Strip_74: -1254294527
+      Kael_Run_Strip_8: 617450115
+      Kael_Run_Strip_9: 1945955689
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

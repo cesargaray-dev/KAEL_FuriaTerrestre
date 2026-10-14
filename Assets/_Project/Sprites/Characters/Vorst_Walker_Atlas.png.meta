@@ -1,0 +1,709 @@
+fileFormatVersion: 2
+guid: 298dd8440c624934d936598e3e84e64c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8595293730673520225
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_0"
+  - first:
+      213: -4963975226117149052
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_1"
+  - first:
+      213: -8758545128623247802
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_2"
+  - first:
+      213: -3743271441089943030
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_3"
+  - first:
+      213: -7151152343473664525
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_4"
+  - first:
+      213: 9216489427741730047
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_5"
+  - first:
+      213: 2179478541777883779
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_6"
+  - first:
+      213: -1406826696028756299
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_7"
+  - first:
+      213: -4103175316442497303
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_8"
+  - first:
+      213: -2210530449079521536
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_9"
+  - first:
+      213: 8115303329012583489
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_10"
+  - first:
+      213: -7219036749172289887
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_11"
+  - first:
+      213: -8501828344883052419
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_12"
+  - first:
+      213: 8404695801492978213
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_13"
+  - first:
+      213: 7780249552327925204
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_14"
+  - first:
+      213: -151211651126491224
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_15"
+  - first:
+      213: 7818505181133925074
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_16"
+  - first:
+      213: 4237188001880712203
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_17"
+  - first:
+      213: 7819185346938257983
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_18"
+  - first:
+      213: -4722193149418130569
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_19"
+  - first:
+      213: -2271496024936687176
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_20"
+  - first:
+      213: 1220107200521207617
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_21"
+  - first:
+      213: -4917578736347157012
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_22"
+  - first:
+      213: -384456398273772012
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_23"
+  - first:
+      213: 3014140331793842732
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_24"
+  - first:
+      213: -8179838830055325256
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_25"
+  - first:
+      213: 4853769413586973748
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_26"
+  - first:
+      213: 6637590539439874566
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_27"
+  - first:
+      213: 1225122527694895269
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_28"
+  - first:
+      213: 1539132376400219596
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_29"
+  - first:
+      213: 394841421075242517
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_30"
+  - first:
+      213: 2172718264111739894
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_31"
+  - first:
+      213: 5538227709079099623
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_32"
+  - first:
+      213: 5670915184750694345
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_33"
+  - first:
+      213: -1997529125049259215
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_34"
+  - first:
+      213: -755919270765796849
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_35"
+  - first:
+      213: -5714908971288030780
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_36"
+  - first:
+      213: 4806189897214352315
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_37"
+  - first:
+      213: -540243791751465695
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_38"
+  - first:
+      213: -7327011669619785324
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_39"
+  - first:
+      213: -4833452501614681070
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_40"
+  - first:
+      213: -4885814434577283139
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_41"
+  - first:
+      213: 6932966840793149449
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_42"
+  - first:
+      213: -4973975420242024203
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_43"
+  - first:
+      213: -3371710337755962665
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_44"
+  - first:
+      213: 2415078523565864519
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_45"
+  - first:
+      213: -509939335450162718
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_46"
+  - first:
+      213: -4100494013606485289
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_47"
+  - first:
+      213: 5566629455732369430
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_48"
+  - first:
+      213: -6036180572446572725
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_49"
+  - first:
+      213: 5624691583881079155
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_50"
+  - first:
+      213: -7679754849636418949
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_51"
+  - first:
+      213: -4969767597079108908
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_52"
+  - first:
+      213: -2787591613600791425
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_53"
+  - first:
+      213: -4759013166023865048
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_54"
+  - first:
+      213: 2247437778133373636
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_55"
+  - first:
+      213: -1500198076574690889
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_56"
+  - first:
+      213: 2063480918186842237
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_57"
+  - first:
+      213: 4685300284068965749
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_58"
+  - first:
+      213: -3541242845638990127
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_59"
+  - first:
+      213: 4504736680227182289
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_60"
+  - first:
+      213: 1053453616573219907
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_61"
+  - first:
+      213: -4847678322270566479
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_62"
+  - first:
+      213: -2971681008984118830
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_63"
+  - first:
+      213: 5278990857519651413
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_64"
+  - first:
+      213: 6230696046588739627
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_65"
+  - first:
+      213: -3712865970852858068
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_66"
+  - first:
+      213: -75847758568329443
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_67"
+  - first:
+      213: -5437312415609553798
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_68"
+  - first:
+      213: 24763699254692972
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_69"
+  - first:
+      213: 6991521233819474658
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_70"
+  - first:
+      213: 4369783415338396631
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_71"
+  - first:
+      213: 5259699880092297723
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_72"
+  - first:
+      213: 1416430409998306675
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_73"
+  - first:
+      213: 3767738286128579565
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_74"
+  - first:
+      213: -6063379288221229014
+    second: "Hoja de sprites_ alien p\xFArpura en acci\xF3n_75"
+  - first:
+      213: -5481451184034931747
+    second: VorstWalker_Walk_0
+  - first:
+      213: 129482735422080208
+    second: VorstWalker_Walk_1
+  - first:
+      213: -4743469148936384328
+    second: VorstWalker_Walk_2
+  - first:
+      213: -5632446613862307262
+    second: VorstWalker_Walk_3
+  - first:
+      213: 486233054575517593
+    second: VorstWalker_Attack_0
+  - first:
+      213: 7192966394884684341
+    second: VorstWalker_Attack_1
+  - first:
+      213: -5382434481033092275
+    second: VorstWalker_Attack_2
+  - first:
+      213: 5247497311625068244
+    second: VorstWalker_Die_0
+  - first:
+      213: -4166640321404233715
+    second: VorstWalker_Die_1
+  - first:
+      213: 2418249066606437373
+    second: VorstWalker_Die_2
+  - first:
+      213: -5212548118787353548
+    second: VorstWalker_Die_3
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 240
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: VorstWalker_Walk_0
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 685
+        width: 298
+        height: 221
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddb14f9a039fde3b0800000000000000
+      internalID: -5481451184034931747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Walk_1
+      rect:
+        serializedVersion: 2
+        x: 459
+        y: 687
+        width: 283
+        height: 217
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d40161acd30cc100800000000000000
+      internalID: 129482735422080208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Walk_2
+      rect:
+        serializedVersion: 2
+        x: 796
+        y: 687
+        width: 292
+        height: 216
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b05f96e0ffcb2eb0800000000000000
+      internalID: -4743469148936384328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Walk_3
+      rect:
+        serializedVersion: 2
+        x: 1136
+        y: 687
+        width: 297
+        height: 215
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24aa26c85a785d1b0800000000000000
+      internalID: -5632446613862307262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Attack_0
+      rect:
+        serializedVersion: 2
+        x: 179
+        y: 398
+        width: 301
+        height: 217
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99fd60013627fb600800000000000000
+      internalID: 486233054575517593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Attack_1
+      rect:
+        serializedVersion: 2
+        x: 551
+        y: 398
+        width: 411
+        height: 209
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53a7c6083dc82d360800000000000000
+      internalID: 7192966394884684341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Attack_2
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 396
+        width: 338
+        height: 202
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d43653b5b50cd45b0800000000000000
+      internalID: -5382434481033092275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Die_0
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 78
+        width: 276
+        height: 211
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4deba33a00bd2d840800000000000000
+      internalID: 5247497311625068244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Die_1
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 70
+        width: 284
+        height: 214
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0891e714be1d26c0800000000000000
+      internalID: -4166640321404233715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Die_2
+      rect:
+        serializedVersion: 2
+        x: 794
+        y: 67
+        width: 305
+        height: 238
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df32f71b6b85f8120800000000000000
+      internalID: 2418249066606437373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: VorstWalker_Die_3
+      rect:
+        serializedVersion: 2
+        x: 1161
+        y: 51
+        width: 267
+        height: 249
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4349c0d6a1f49a7b0800000000000000
+      internalID: -5212548118787353548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 959f43a9e8187f64d9b43a34b0da79b0
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_0": 8595293730673520225
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_1": -4963975226117149052
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_10": 8115303329012583489
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_11": -7219036749172289887
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_12": -8501828344883052419
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_13": 8404695801492978213
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_14": 7780249552327925204
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_15": -151211651126491224
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_16": 7818505181133925074
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_17": 4237188001880712203
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_18": 7819185346938257983
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_19": -4722193149418130569
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_2": -8758545128623247802
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_20": -2271496024936687176
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_21": 1220107200521207617
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_22": -4917578736347157012
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_23": -384456398273772012
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_24": 3014140331793842732
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_25": -8179838830055325256
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_26": 4853769413586973748
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_27": 6637590539439874566
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_28": 1225122527694895269
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_29": 1539132376400219596
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_3": -3743271441089943030
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_30": 394841421075242517
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_31": 2172718264111739894
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_32": 5538227709079099623
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_33": 5670915184750694345
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_34": -1997529125049259215
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_35": -755919270765796849
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_36": -5714908971288030780
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_37": 4806189897214352315
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_38": -540243791751465695
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_39": -7327011669619785324
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_4": -7151152343473664525
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_40": -4833452501614681070
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_41": -4885814434577283139
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_42": 6932966840793149449
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_43": -4973975420242024203
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_44": -3371710337755962665
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_45": 2415078523565864519
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_46": -509939335450162718
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_47": -4100494013606485289
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_48": 5566629455732369430
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_49": -6036180572446572725
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_5": 9216489427741730047
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_50": 5624691583881079155
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_51": -7679754849636418949
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_52": -4969767597079108908
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_53": -2787591613600791425
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_54": -4759013166023865048
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_55": 2247437778133373636
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_56": -1500198076574690889
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_57": 2063480918186842237
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_58": 4685300284068965749
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_59": -3541242845638990127
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_6": 2179478541777883779
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_60": 4504736680227182289
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_61": 1053453616573219907
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_62": -4847678322270566479
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_63": -2971681008984118830
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_64": 5278990857519651413
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_65": 6230696046588739627
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_66": -3712865970852858068
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_67": -75847758568329443
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_68": -5437312415609553798
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_69": 24763699254692972
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_7": -1406826696028756299
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_70": 6991521233819474658
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_71": 4369783415338396631
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_72": 5259699880092297723
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_73": 1416430409998306675
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_74": 3767738286128579565
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_75": -6063379288221229014
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_8": -4103175316442497303
+      "Hoja de sprites_ alien p\xFArpura en acci\xF3n_9": -2210530449079521536
+      VorstWalker_Attack_0: 486233054575517593
+      VorstWalker_Attack_1: 7192966394884684341
+      VorstWalker_Attack_2: -5382434481033092275
+      VorstWalker_Die_0: 5247497311625068244
+      VorstWalker_Die_1: -4166640321404233715
+      VorstWalker_Die_2: 2418249066606437373
+      VorstWalker_Die_3: -5212548118787353548
+      VorstWalker_Walk_0: -5481451184034931747
+      VorstWalker_Walk_1: 129482735422080208
+      VorstWalker_Walk_2: -4743469148936384328
+      VorstWalker_Walk_3: -5632446613862307262
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
