@@ -1,0 +1,903 @@
+fileFormatVersion: 2
+guid: b6be9c9e0b5190549888565bbe9fd74e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6260221485416013494
+    second: "Hoja de sprites cyberpunk en acci\xF3n_0"
+  - first:
+      213: -1631104922388305494
+    second: "Hoja de sprites cyberpunk en acci\xF3n_1"
+  - first:
+      213: -3962254227397421581
+    second: "Hoja de sprites cyberpunk en acci\xF3n_2"
+  - first:
+      213: -6014170024713099300
+    second: "Hoja de sprites cyberpunk en acci\xF3n_3"
+  - first:
+      213: -5819143227275758839
+    second: "Hoja de sprites cyberpunk en acci\xF3n_4"
+  - first:
+      213: 3447883534770188395
+    second: "Hoja de sprites cyberpunk en acci\xF3n_5"
+  - first:
+      213: -3064346605548031135
+    second: "Hoja de sprites cyberpunk en acci\xF3n_6"
+  - first:
+      213: -9219150444153966682
+    second: "Hoja de sprites cyberpunk en acci\xF3n_7"
+  - first:
+      213: 7490984289814262423
+    second: Kael_Fila6_HurtUlt_0
+  - first:
+      213: -9165604163694259856
+    second: Kael_Fila6_HurtUlt_1
+  - first:
+      213: -982942085844477185
+    second: Kael_Fila6_HurtUlt_2
+  - first:
+      213: -3461054447260731337
+    second: Kael_Fila6_HurtUlt_3
+  - first:
+      213: 8160635080801655901
+    second: Kael_Fila6_HurtUlt_4
+  - first:
+      213: 8262040435765314359
+    second: Kael_Fila5_Atk3_0
+  - first:
+      213: -8010787822359089101
+    second: Kael_Fila5_Atk3_1
+  - first:
+      213: 3347706231405765901
+    second: Kael_Fila5_Atk3_2
+  - first:
+      213: 2399009117214626646
+    second: Kael_Fila5_Atk3_3
+  - first:
+      213: -839437822319617755
+    second: Kael_Fila5_Atk3_4
+  - first:
+      213: -3057231255959836683
+    second: Kael_Fila4_Atk2_0
+  - first:
+      213: -1481507874527718646
+    second: Kael_Fila4_Atk2_1
+  - first:
+      213: -2912564255729506148
+    second: Kael_Fila4_Atk2_2
+  - first:
+      213: -2805058359309335482
+    second: Kael_Fila4_Atk2_3
+  - first:
+      213: -8722379873226323377
+    second: Kael_Fila3_Atk1_0
+  - first:
+      213: -6903463799470978241
+    second: Kael_Fila3_Atk1_1
+  - first:
+      213: 4780447993722192592
+    second: Kael_Fila3_Atk1_2
+  - first:
+      213: 3053006640723177084
+    second: Kael_Fila3_Atk1_3
+  - first:
+      213: 8369937667843008944
+    second: Kael_Fila2_Run_0
+  - first:
+      213: 5647899279303726065
+    second: Kael_Fila2_Run_1
+  - first:
+      213: -5510622959400722378
+    second: Kael_Fila2_Run_2
+  - first:
+      213: 2142397932065597261
+    second: Kael_Fila2_Run_3
+  - first:
+      213: -1410764112214182476
+    second: Kael_Fila2_Run_4
+  - first:
+      213: -8110972631067138272
+    second: Kael_Fila2_Run_5
+  - first:
+      213: -8759180356957426906
+    second: Kael_Fila1_Idle_0
+  - first:
+      213: 6308881471659458488
+    second: Kael_Fila1_Idle_1
+  - first:
+      213: 1311885385371187578
+    second: Kael_Fila1_Idle_2
+  - first:
+      213: 8794739757543689160
+    second: Kael_Fila1_Idle_3
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 120
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_0
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 1031
+        width: 129
+        height: 198
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c96e2e2de4b611346b8088647aad9812
+      internalID: 497437945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_1
+      rect:
+        serializedVersion: 2
+        x: 413
+        y: 1031
+        width: 123
+        height: 197
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5033e4c07606fb4c9a386df31e67d0a
+      internalID: -1147140211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_2
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 1031
+        width: 124
+        height: 199
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6a3c57216dd156945ae89047bb14b80f
+      internalID: 1957242374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_3
+      rect:
+        serializedVersion: 2
+        x: 900
+        y: 1031
+        width: 123
+        height: 199
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 31bf09faa2ebfb640adf55aa17d54bb1
+      internalID: 157004659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_4
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 817
+        width: 130
+        height: 192
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25dd1be6c5a67a74e8ef7f230dd2b7b5
+      internalID: 1317183658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_5
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 817
+        width: 144
+        height: 190
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb2460cb6df620444851c8a2ecdf22b3
+      internalID: 577284438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_6
+      rect:
+        serializedVersion: 2
+        x: 412
+        y: 818
+        width: 150
+        height: 192
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12dcefe6546e2644d986258a2f696b39
+      internalID: 483010432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_7
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 819
+        width: 144
+        height: 187
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 862d448d7aa483c4c8582461f5910c20
+      internalID: 1440322387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_8
+      rect:
+        serializedVersion: 2
+        x: 790
+        y: 820
+        width: 145
+        height: 186
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bc0d273841bea3c4c94c250c3b9bf2ef
+      internalID: 1243463956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_9
+      rect:
+        serializedVersion: 2
+        x: 1028
+        y: 819
+        width: 150
+        height: 183
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50449558fad0beb449ffc563caa73623
+      internalID: 616142006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_10
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 604
+        width: 155
+        height: 195
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f37b8df75a707374b8a906e08290fda8
+      internalID: -149602503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_11
+      rect:
+        serializedVersion: 2
+        x: 406
+        y: 604
+        width: 205
+        height: 192
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfec84ac71265874c996643191c20c11
+      internalID: -2047911746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_12
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 604
+        width: 219
+        height: 196
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 317a8371ddae6894f8f8211eaede63b6
+      internalID: -534157789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_13
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 606
+        width: 144
+        height: 194
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c70f4640eee366640a38a8daf6276c22
+      internalID: 1298287293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_14
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 381
+        width: 143
+        height: 160
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: de2faeb8dd2181743836ffa1618b27fc
+      internalID: -2025822579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_15
+      rect:
+        serializedVersion: 2
+        x: 427
+        y: 384
+        width: 157
+        height: 189
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 07b09e31dcff70540a74541fc1ba131d
+      internalID: 2146629049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_16
+      rect:
+        serializedVersion: 2
+        x: 685
+        y: 384
+        width: 169
+        height: 212
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32d977831d138234ba1d61a4f4a70c7a
+      internalID: 983793534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_17
+      rect:
+        serializedVersion: 2
+        x: 969
+        y: 385
+        width: 161
+        height: 216
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc2087949f6b9444089a19790fa19649
+      internalID: -464051488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_18
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 182
+        width: 162
+        height: 170
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fc04a65f84d89e444b4f743fdee766ab
+      internalID: 193357778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_19
+      rect:
+        serializedVersion: 2
+        x: 253
+        y: 180
+        width: 212
+        height: 146
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49eae6733ee101a4291b40cd9da68e71
+      internalID: 1577342540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_21
+      rect:
+        serializedVersion: 2
+        x: 501
+        y: 180
+        width: 232
+        height: 170
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91d34a0008b399e468de07d08f7a8e5a
+      internalID: -1610826589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_22
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 180
+        width: 230
+        height: 157
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39b231a490ac70f4796f3eb0c10ea8f5
+      internalID: -1791665631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_23
+      rect:
+        serializedVersion: 2
+        x: 1018
+        y: 180
+        width: 168
+        height: 166
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 383797dd0ccf27e468a9e7e315b1eca1
+      internalID: 1641805896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_26
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 14
+        width: 107
+        height: 152
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68e41d54c322c1245b6e93fe898041b8
+      internalID: 1049085931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_27
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 14
+        width: 127
+        height: 147
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6fa941cfa7cfc604292cbb76823b6627
+      internalID: 1911875398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_28
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 14
+        width: 157
+        height: 154
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0723942b681c4ae40948032e43e4f614
+      internalID: 331568738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_29
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 14
+        width: 199
+        height: 151
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99d9352657357d74fae22c258880a3a5
+      internalID: -821353893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_30
+      rect:
+        serializedVersion: 2
+        x: 862
+        y: 14
+        width: 203
+        height: 143
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 40d781d01e7b95040a5acc9bc6938a8f
+      internalID: 967113169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kael_Atlas_Pro_31
+      rect:
+        serializedVersion: 2
+        x: 1066
+        y: 14
+        width: 157
+        height: 149
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 567bc6137705b08489f49af2cfba32b4
+      internalID: -137930126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 0b43a69335698d747a9a1649d841810a
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Kael_Atlas_Pro_0: 497437945
+      Kael_Atlas_Pro_1: -1147140211
+      Kael_Atlas_Pro_10: -149602503
+      Kael_Atlas_Pro_11: -2047911746
+      Kael_Atlas_Pro_12: -534157789
+      Kael_Atlas_Pro_13: 1298287293
+      Kael_Atlas_Pro_14: -2025822579
+      Kael_Atlas_Pro_15: 2146629049
+      Kael_Atlas_Pro_16: 983793534
+      Kael_Atlas_Pro_17: -464051488
+      Kael_Atlas_Pro_18: 193357778
+      Kael_Atlas_Pro_19: 1577342540
+      Kael_Atlas_Pro_2: 1957242374
+      Kael_Atlas_Pro_20: -2144752045
+      Kael_Atlas_Pro_21: -1610826589
+      Kael_Atlas_Pro_22: -1791665631
+      Kael_Atlas_Pro_23: 1641805896
+      Kael_Atlas_Pro_24: 1942308235
+      Kael_Atlas_Pro_25: -1789112749
+      Kael_Atlas_Pro_26: 1049085931
+      Kael_Atlas_Pro_27: 1911875398
+      Kael_Atlas_Pro_28: 331568738
+      Kael_Atlas_Pro_29: -821353893
+      Kael_Atlas_Pro_3: 157004659
+      Kael_Atlas_Pro_30: 967113169
+      Kael_Atlas_Pro_31: -137930126
+      Kael_Atlas_Pro_32: 1957578315
+      Kael_Atlas_Pro_33: 299226632
+      Kael_Atlas_Pro_34: 829585258
+      Kael_Atlas_Pro_35: 1962603132
+      Kael_Atlas_Pro_4: 1317183658
+      Kael_Atlas_Pro_5: 577284438
+      Kael_Atlas_Pro_6: 483010432
+      Kael_Atlas_Pro_7: 1440322387
+      Kael_Atlas_Pro_8: 1243463956
+      Kael_Atlas_Pro_9: 616142006
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
