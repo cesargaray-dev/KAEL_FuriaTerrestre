@@ -241,6 +241,7 @@ GameObject:
   - component: {fileID: 1357182389}
   - component: {fileID: 1357182388}
   - component: {fileID: 1357182387}
+  - component: {fileID: 1357182390}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -268,6 +269,7 @@ MonoBehaviour:
   enemySpacing: 1.6
   groundY: -3.4
   currentWave: 0
+  totalKillsInLevel: 0
 --- !u!114 &1357182388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,20 +282,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42cbba47e10cd3443a629a96f440ad1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  isPaused: 0
+  isGameOver: 0
+  isChoosingDilemma: 0
+  isLevelCompleted: 0
   gold: 0
   playerLevel: 1
   currentExp: 0
   expToNextLevel: 25
-  skillPoints: 0
+  compassionPoints: 0
+  rigorPoints: 0
   currentUltCharge: 0
   maxUltCharge: 100
   levelAtk: 1
   levelHp: 1
   levelSpd: 1
+  levelCrit: 1
+  levelGold: 1
   maxHP: 100
   currentHP: 100
   attackDamage: 12
   attackRate: 1.2
+  critChance: 0.05
+  goldMultiplier: 1
 --- !u!4 &1357182389
 Transform:
   m_ObjectHideFlags: 0
@@ -309,6 +320,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1357182390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357182386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e89833ddd0ee5c48874f28a7815ff69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatVFXManager
 --- !u!1 &1943925381
 GameObject:
   m_ObjectHideFlags: 0
