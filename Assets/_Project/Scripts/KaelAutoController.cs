@@ -1,19 +1,24 @@
 using UnityEngine;
+using System.Collections;
 
 public class KaelAutoController : MonoBehaviour
 {
     [Header("Movimiento y Detección")]
     public float moveSpeed = 3.5f;
     public float attackRange = 1.8f;
+    public float ultimateRange = 9.0f;
     public LayerMask enemyLayer;
 
-    [Header("Estadísticas de Combate")]
-    public float baseDamage = 12f;
-    public float attackRate = 1.2f; // Ataques por segundo
+    [Header("Ajuste de Tamaño por Animación (En Vivo)")]
+    [Range(0.5f, 1.5f)] public float scaleIdle = 0.88f;
+    [Range(0.5f, 1.5f)] public float scaleRun = 0.78f;    // Reducido para que no se vea grande al correr
+    [Range(0.5f, 1.5f)] public float scaleAttack = 1.00f; // Tamaño base al golpear
+    [Range(0.5f, 1.5f)] public float scaleUlt = 1.18f;    // Aumentado para compensar la fila 6
 
     private Animator anim;
     private float nextAttackTime;
     private int currentCombo = 0;
+    private bool isCastingUlt = false;
     private EnemyDummy targetEnemy;
 
     void Awake()
@@ -23,58 +28,115 @@ public class KaelAutoController : MonoBehaviour
 
     void Update()
     {
+        if (isCastingUlt) return;
+
         FindClosestEnemy();
 
         if (targetEnemy == null)
         {
-            // No hay enemigo en rango: Kael avanza hacia la derecha
             anim.SetInteger("ComboStep", 0);
             anim.SetBool("IsRunning", true);
             transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);
         }
         else
         {
-            // Enemigo enfrente: se detiene y ejecuta el combo 1-2-3
             anim.SetBool("IsRunning", false);
 
+            float rate = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackRate : 1.2f;
             if (Time.time >= nextAttackTime)
             {
                 ExecuteComboStep();
-                nextAttackTime = Time.time + (1f / attackRate);
+                nextAttackTime = Time.time + (1f / rate);
             }
         }
+    }
+
+    void LateUpdate()
+    {
+        if (anim == null) return;
+
+        // Detecta qué animación se está reproduciendo (o a cuál está cambiando) en este instante exacto
+        AnimatorStateInfo state = anim.IsInTransition(0) 
+            ? anim.GetNextAnimatorStateInfo(0) 
+            : anim.GetCurrentAnimatorStateInfo(0);
+
+        float s = scaleAttack;
+
+        if (state.IsName("Kael_Run"))
+        {
+            s = scaleRun;
+        }
+        else if (state.IsName("Kael_Ultimate"))
+        {
+            s = scaleUlt;
+        }
+        else if (state.IsName("Kael_Idle"))
+        {
+            s = scaleIdle;
+        }
+
+        transform.localScale = new Vector3(s, s, 1f);
     }
 
     void FindClosestEnemy()
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position + Vector3.up * 0.5f, Vector2.right, attackRange, enemyLayer);
-        if (hit.collider != null)
-        {
-            targetEnemy = hit.collider.GetComponent<EnemyDummy>();
-        }
-        else
-        {
-            targetEnemy = null;
-        }
+        targetEnemy = (hit.collider != null) ? hit.collider.GetComponent<EnemyDummy>() : null;
     }
 
     void ExecuteComboStep()
     {
-        currentCombo = (currentCombo % 3) + 1; // Cicla 1 -> 2 -> 3 -> 1
+        currentCombo = (currentCombo % 3) + 1;
         anim.SetInteger("ComboStep", currentCombo);
+
+        float dmg = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackDamage : 12f;
+        float multiplier = (currentCombo == 3) ? 1.5f : 1.0f;
 
         if (targetEnemy != null)
         {
-            // El 3er golpe (golpe al suelo) hace 50% más de daño
-            float multiplier = (currentCombo == 3) ? 1.5f : 1.0f;
-            targetEnemy.TakeDamage(baseDamage * multiplier);
+            targetEnemy.TakeDamage(dmg * multiplier);
+
+            if (PlayerStats.Instance != null)
+            {
+                PlayerStats.Instance.AddUltCharge(12f);
+            }
         }
     }
 
-    void OnDrawGizmosSelected()
+    public void TriggerUltimate()
     {
-        Gizmos.color = Color.cyan;
-        Vector3 start = transform.position + Vector3.up * 0.5f;
-        Gizmos.DrawLine(start, start + Vector3.right * attackRange);
+        if (isCastingUlt || PlayerStats.Instance == null) return;
+        if (!PlayerStats.Instance.ConsumeUltCharge()) return;
+
+        StartCoroutine(CastUltimateRoutine());
+    }
+
+    IEnumerator CastUltimateRoutine()
+    {
+        isCastingUlt = true;
+
+        anim.ResetTrigger("Ultimate");
+        anim.SetBool("IsRunning", true);
+        anim.SetInteger("ComboStep", 0);
+        anim.SetTrigger("Ultimate");
+
+        yield return new WaitForSeconds(0.22f);
+
+        float ultDamage = PlayerStats.Instance.attackDamage * 3.5f;
+        RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position + Vector3.up * 0.5f, Vector2.right, ultimateRange, enemyLayer);
+
+        foreach (RaycastHit2D hit in hits)
+        {
+            EnemyDummy enemy = hit.collider.GetComponent<EnemyDummy>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(ultDamage);
+            }
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        anim.ResetTrigger("Ultimate");
+        isCastingUlt = false;
     }
 }

@@ -1,15 +1,22 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class EnemyDummy : MonoBehaviour
 {
-    [Header("Estadísticas Vorst (GDD Tabla 2.3)")]
-    public float maxHP = 30f;      // Vida base del Caminante Vorst
-    public float moveSpeed = 2.2f; // Velocidad rápida hacia la izquierda
-    public float damage = 3f;      // Daño por mordida
+    [Header("Estadísticas Vorst")]
+    public float maxHP = 30f;
+    public float moveSpeed = 2.2f;
+    public float damage = 3f;
     public float attackRange = 1.4f;
     public float attackRate = 1.0f;
-    public int goldReward = 5;     // Oro que suelta al morir
+
+    [Header("Recompensas al Morir")]
+    public int goldReward = 5;
+    public int expReward = 10;
+
+    // Evento para avisarle al WaveSpawner que este enemigo murió
+    public event Action OnEnemyDied;
 
     private float currentHP;
     private float nextAttackTime;
@@ -19,7 +26,7 @@ public class EnemyDummy : MonoBehaviour
     private Animator anim;
     private Color originalColor;
 
-    void Awake()
+    void Start()
     {
         currentHP = maxHP;
         sr = GetComponent<SpriteRenderer>();
@@ -38,19 +45,22 @@ public class EnemyDummy : MonoBehaviour
 
         if (distToKael > attackRange)
         {
-            // Camina hacia la izquierda buscando a Kael
+            // Avanza hacia la izquierda buscando a Kael
             if (anim != null) anim.SetBool("IsAttacking", false);
             transform.Translate(Vector2.left * moveSpeed * Time.deltaTime);
         }
         else
         {
-            // Está en rango de mordida: se detiene y ataca a Kael
+            // Se detiene y ataca a Kael cuando está en rango
             if (anim != null) anim.SetBool("IsAttacking", true);
 
             if (Time.time >= nextAttackTime)
             {
                 nextAttackTime = Time.time + (1f / attackRate);
-                // Aquí conectaremos el daño a la barra de vida de Kael en el siguiente paso
+                if (PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(damage);
+                }
             }
         }
     }
@@ -71,13 +81,25 @@ public class EnemyDummy : MonoBehaviour
     void Die()
     {
         isDead = true;
-        Collider2D col = GetComponent<Collider2D>();
-        if (col != null) col.enabled = false; // Para que Kael pueda seguir avanzando de inmediato
 
+        // Entregar Oro y EXP al jugador (+15% de carga de Ultimate incluida en AddRewards)
+        if (PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.AddRewards(goldReward, expReward);
+        }
+
+        // Avisar al generador de oleadas que murió un enemigo
+        OnEnemyDied?.Invoke();
+
+        // Desactivar el collider de inmediato para que Kael pueda seguir caminando
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null) col.enabled = false;
+
+        // Reproducir animación de explosión/muerte antes de destruir el objeto
         if (anim != null)
         {
             anim.SetTrigger("Die");
-            Destroy(gameObject, 0.5f); // Espera medio segundo para mostrar la animación de muerte
+            Destroy(gameObject, 0.5f);
         }
         else
         {

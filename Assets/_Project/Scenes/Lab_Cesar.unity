@@ -134,6 +134,7 @@ GameObject:
   m_Component:
   - component: {fileID: 626666129}
   - component: {fileID: 626666128}
+  - component: {fileID: 626666130}
   m_Layer: 0
   m_Name: BG_Sector7_Main
   m_TagString: Untagged
@@ -211,6 +212,98 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &626666130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 626666127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2dd5791e9345c44bb4fe7983b4e749a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfiniteBackground
+  targetCamera: {fileID: 0}
+--- !u!1 &1357182386
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1357182389}
+  - component: {fileID: 1357182388}
+  - component: {fileID: 1357182387}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1357182387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357182386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efd7e745edb0f564e9e2dfe018c72deb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaveSpawner
+  kaelTransform: {fileID: 23033375}
+  vorstWalkerPrefab: {fileID: 6611324198472124434, guid: b134e9ace6a28d04b9fcfc5df8478c17, type: 3}
+  totalWaves: 10
+  baseEnemiesPerWave: 3
+  spawnDistanceAhead: 11
+  enemySpacing: 1.6
+  groundY: -3.4
+  currentWave: 0
+--- !u!114 &1357182388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357182386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42cbba47e10cd3443a629a96f440ad1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  gold: 0
+  playerLevel: 1
+  currentExp: 0
+  expToNextLevel: 25
+  skillPoints: 0
+  currentUltCharge: 0
+  maxUltCharge: 100
+  levelAtk: 1
+  levelHp: 1
+  levelSpd: 1
+  maxHP: 100
+  currentHP: 100
+  attackDamage: 12
+  attackRate: 1.2
+--- !u!4 &1357182389
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357182386}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.23358, y: -2.42941, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -433,3 +526,4 @@ SceneRoots:
   - {fileID: 1943925384}
   - {fileID: 1480191698300120269}
   - {fileID: 626666129}
+  - {fileID: 1357182389}

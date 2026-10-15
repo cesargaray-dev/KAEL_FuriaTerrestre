@@ -130,8 +130,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KaelAutoController
   moveSpeed: 3.5
   attackRange: 1.8
+  ultimateRange: 9
   enemyLayer:
     serializedVersion: 2
     m_Bits: 64
-  baseDamage: 12
-  attackRate: 1.2
+  scaleIdle: 0.88
+  scaleRun: 0.98
+  scaleAttack: 1
+  scaleUlt: 1.18
