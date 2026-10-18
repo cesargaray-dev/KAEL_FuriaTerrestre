@@ -1,0 +1,519 @@
+fileFormatVersion: 2
+guid: 85a4fcca7c2024e43b718edb9ac0b6a3
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7596997925952348936
+    second: Retratos pixel art de Kael y hologramas unerquicklich_0
+  - first:
+      213: -8222148635577690761
+    second: Retratos pixel art de Kael y hologramas unerquicklich_1
+  - first:
+      213: 1165562797981295627
+    second: Retratos pixel art de Kael y hologramas unerquicklich_2
+  - first:
+      213: -4379071161510011964
+    second: Retratos pixel art de Kael y hologramas unerquicklich_3
+  - first:
+      213: 7053644111597933140
+    second: Retratos pixel art de Kael y hologramas unerquicklich_4
+  - first:
+      213: -791753883239783911
+    second: Retratos pixel art de Kael y hologramas unerquicklich_5
+  - first:
+      213: -7415290586324492584
+    second: Retratos pixel art de Kael y hologramas unerquicklich_6
+  - first:
+      213: -7062809344915509035
+    second: Retratos pixel art de Kael y hologramas unerquicklich_7
+  - first:
+      213: -3951060941432825187
+    second: Retratos pixel art de Kael y hologramas unerquicklich_8
+  - first:
+      213: 3209210312581653473
+    second: Retratos pixel art de Kael y hologramas unerquicklich_9
+  - first:
+      213: 3655308581657237604
+    second: Retratos pixel art de Kael y hologramas unerquicklich_10
+  - first:
+      213: 5604641422789030347
+    second: Retratos pixel art de Kael y hologramas unerquicklich_11
+  - first:
+      213: -6160760553292622763
+    second: Retratos pixel art de Kael y hologramas unerquicklich_12
+  - first:
+      213: 6198905101708762239
+    second: Retratos pixel art de Kael y hologramas unerquicklich_13
+  - first:
+      213: 5553287302735142887
+    second: Retratos pixel art de Kael y hologramas unerquicklich_14
+  - first:
+      213: 3675969153732580138
+    second: Retratos pixel art de Kael y hologramas unerquicklich_15
+  - first:
+      213: 7200851426311933861
+    second: Retratos pixel art de Kael y hologramas unerquicklich_16
+  - first:
+      213: 4922346376571384004
+    second: Retratos pixel art de Kael y hologramas unerquicklich_17
+  - first:
+      213: -3501170975101797222
+    second: Retratos pixel art de Kael y hologramas unerquicklich_18
+  - first:
+      213: 3953615167235985849
+    second: Retratos pixel art de Kael y hologramas unerquicklich_19
+  - first:
+      213: 6849124400680684499
+    second: Retratos pixel art de Kael y hologramas unerquicklich_20
+  - first:
+      213: 5948539163002951675
+    second: Retratos pixel art de Kael y hologramas unerquicklich_21
+  - first:
+      213: -7103962840040928563
+    second: Retratos pixel art de Kael y hologramas unerquicklich_22
+  - first:
+      213: -8540885429527638084
+    second: Retratos pixel art de Kael y hologramas unerquicklich_23
+  - first:
+      213: -5186345333832905580
+    second: Retratos pixel art de Kael y hologramas unerquicklich_24
+  - first:
+      213: -844595764839269507
+    second: Retratos pixel art de Kael y hologramas unerquicklich_25
+  - first:
+      213: -7105372422458102424
+    second: Retratos pixel art de Kael y hologramas unerquicklich_26
+  - first:
+      213: -3820827058990153499
+    second: Retratos pixel art de Kael y hologramas unerquicklich_27
+  - first:
+      213: 80205022669092579
+    second: Retratos pixel art de Kael y hologramas unerquicklich_28
+  - first:
+      213: 3714477751253152172
+    second: Retratos pixel art de Kael y hologramas unerquicklich_29
+  - first:
+      213: 1720502722353984658
+    second: Retratos pixel art de Kael y hologramas unerquicklich_30
+  - first:
+      213: -1412104623370755858
+    second: Retratos pixel art de Kael y hologramas unerquicklich_31
+  - first:
+      213: 5985098894242861807
+    second: Retratos pixel art de Kael y hologramas unerquicklich_32
+  - first:
+      213: -2578597227409659625
+    second: Retratos pixel art de Kael y hologramas unerquicklich_33
+  - first:
+      213: 3607128340411951774
+    second: Retratos pixel art de Kael y hologramas unerquicklich_34
+  - first:
+      213: -2496528142003919888
+    second: Retratos pixel art de Kael y hologramas unerquicklich_35
+  - first:
+      213: 3461793227491688674
+    second: Retratos pixel art de Kael y hologramas unerquicklich_36
+  - first:
+      213: 2529022351860352922
+    second: Retratos pixel art de Kael y hologramas unerquicklich_37
+  - first:
+      213: 1019150953006299975
+    second: Retratos pixel art de Kael y hologramas unerquicklich_38
+  - first:
+      213: 2651866275816973392
+    second: Retratos pixel art de Kael y hologramas unerquicklich_39
+  - first:
+      213: -8235309499769926707
+    second: Retratos pixel art de Kael y hologramas unerquicklich_40
+  - first:
+      213: 3707908733242170411
+    second: Retratos pixel art de Kael y hologramas unerquicklich_41
+  - first:
+      213: -1697324591305369825
+    second: Retratos pixel art de Kael y hologramas unerquicklich_42
+  - first:
+      213: 3239278082004561690
+    second: Retratos pixel art de Kael y hologramas unerquicklich_43
+  - first:
+      213: 6086703887076886546
+    second: Retratos pixel art de Kael y hologramas unerquicklich_44
+  - first:
+      213: -5640749660885257054
+    second: Retratos pixel art de Kael y hologramas unerquicklich_45
+  - first:
+      213: 1131009195151900327
+    second: Retratos pixel art de Kael y hologramas unerquicklich_46
+  - first:
+      213: 5209418226434668454
+    second: Retratos pixel art de Kael y hologramas unerquicklich_47
+  - first:
+      213: 2623244866651986897
+    second: Retratos pixel art de Kael y hologramas unerquicklich_48
+  - first:
+      213: 5678088942794507329
+    second: Retratos pixel art de Kael y hologramas unerquicklich_49
+  - first:
+      213: -2589232981771243003
+    second: Retratos pixel art de Kael y hologramas unerquicklich_50
+  - first:
+      213: -8696937076022662029
+    second: Retratos pixel art de Kael y hologramas unerquicklich_51
+  - first:
+      213: 4079408093760107221
+    second: Retratos pixel art de Kael y hologramas unerquicklich_52
+  - first:
+      213: 6409062675863769697
+    second: Retratos pixel art de Kael y hologramas unerquicklich_53
+  - first:
+      213: 531582888477409617
+    second: Retratos pixel art de Kael y hologramas unerquicklich_54
+  - first:
+      213: 2542613888520388640
+    second: Retratos pixel art de Kael y hologramas unerquicklich_55
+  - first:
+      213: 5653598603890895129
+    second: Retratos pixel art de Kael y hologramas unerquicklich_56
+  - first:
+      213: -8819825112775699132
+    second: Retratos pixel art de Kael y hologramas unerquicklich_57
+  - first:
+      213: -2709185696938327436
+    second: Retratos pixel art de Kael y hologramas unerquicklich_58
+  - first:
+      213: -7419166789742005636
+    second: Retratos pixel art de Kael y hologramas unerquicklich_59
+  - first:
+      213: -4614451527238087822
+    second: Retratos pixel art de Kael y hologramas unerquicklich_60
+  - first:
+      213: -2817425314961731070
+    second: Retratos pixel art de Kael y hologramas unerquicklich_61
+  - first:
+      213: 7781007016033137228
+    second: Retratos pixel art de Kael y hologramas unerquicklich_62
+  - first:
+      213: -37699722941829237
+    second: Retratos pixel art de Kael y hologramas unerquicklich_63
+  - first:
+      213: 4144996524696978418
+    second: Retratos pixel art de Kael y hologramas unerquicklich_64
+  - first:
+      213: 375206304959970805
+    second: Retratos pixel art de Kael y hologramas unerquicklich_65
+  - first:
+      213: -1043119653930471995
+    second: Retratos pixel art de Kael y hologramas unerquicklich_66
+  - first:
+      213: -182143402774228844
+    second: Retratos pixel art de Kael y hologramas unerquicklich_67
+  - first:
+      213: 3369114209432677282
+    second: Retratos pixel art de Kael y hologramas unerquicklich_68
+  - first:
+      213: 6858335030226307159
+    second: Retratos pixel art de Kael y hologramas unerquicklich_69
+  - first:
+      213: -6467121627969862624
+    second: Retratos pixel art de Kael y hologramas unerquicklich_70
+  - first:
+      213: -4950141011330219070
+    second: Retratos pixel art de Kael y hologramas unerquicklich_71
+  - first:
+      213: -1108225800173802962
+    second: Retratos pixel art de Kael y hologramas unerquicklich_72
+  - first:
+      213: -5075104333694530113
+    second: Retratos pixel art de Kael y hologramas unerquicklich_73
+  - first:
+      213: 8841893650470997712
+    second: Retratos pixel art de Kael y hologramas unerquicklich_74
+  - first:
+      213: 6307541725634941272
+    second: Retratos pixel art de Kael y hologramas unerquicklich_75
+  - first:
+      213: -6490903708630087265
+    second: Retratos pixel art de Kael y hologramas unerquicklich_76
+  - first:
+      213: -5899104273386005182
+    second: Retratos pixel art de Kael y hologramas unerquicklich_77
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Retratos pixel art de Kael y hologramas unerquicklich_23
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 146
+        width: 435
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbf02b114fda87980800000000000000
+      internalID: -8540885429527638084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Retratos pixel art de Kael y hologramas unerquicklich_24
+      rect:
+        serializedVersion: 2
+        x: 465
+        y: 193
+        width: 402
+        height: 477
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49c8266b5666608b0800000000000000
+      internalID: -5186345333832905580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Retratos pixel art de Kael y hologramas unerquicklich_30
+      rect:
+        serializedVersion: 2
+        x: 1349
+        y: 178
+        width: 410
+        height: 474
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29470014c1470e710800000000000000
+      internalID: 1720502722353984658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Retratos pixel art de Kael y hologramas unerquicklich_33
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 182
+        width: 368
+        height: 465
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 719a071db7bf63cd0800000000000000
+      internalID: -2578597227409659625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 47ff024b0f827d1449bf99661cbf4456
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Retratos pixel art de Kael y hologramas unerquicklich_0: -7596997925952348936
+      Retratos pixel art de Kael y hologramas unerquicklich_1: -8222148635577690761
+      Retratos pixel art de Kael y hologramas unerquicklich_10: 3655308581657237604
+      Retratos pixel art de Kael y hologramas unerquicklich_11: 5604641422789030347
+      Retratos pixel art de Kael y hologramas unerquicklich_12: -6160760553292622763
+      Retratos pixel art de Kael y hologramas unerquicklich_13: 6198905101708762239
+      Retratos pixel art de Kael y hologramas unerquicklich_14: 5553287302735142887
+      Retratos pixel art de Kael y hologramas unerquicklich_15: 3675969153732580138
+      Retratos pixel art de Kael y hologramas unerquicklich_16: 7200851426311933861
+      Retratos pixel art de Kael y hologramas unerquicklich_17: 4922346376571384004
+      Retratos pixel art de Kael y hologramas unerquicklich_18: -3501170975101797222
+      Retratos pixel art de Kael y hologramas unerquicklich_19: 3953615167235985849
+      Retratos pixel art de Kael y hologramas unerquicklich_2: 1165562797981295627
+      Retratos pixel art de Kael y hologramas unerquicklich_20: 6849124400680684499
+      Retratos pixel art de Kael y hologramas unerquicklich_21: 5948539163002951675
+      Retratos pixel art de Kael y hologramas unerquicklich_22: -7103962840040928563
+      Retratos pixel art de Kael y hologramas unerquicklich_23: -8540885429527638084
+      Retratos pixel art de Kael y hologramas unerquicklich_24: -5186345333832905580
+      Retratos pixel art de Kael y hologramas unerquicklich_25: -844595764839269507
+      Retratos pixel art de Kael y hologramas unerquicklich_26: -7105372422458102424
+      Retratos pixel art de Kael y hologramas unerquicklich_27: -3820827058990153499
+      Retratos pixel art de Kael y hologramas unerquicklich_28: 80205022669092579
+      Retratos pixel art de Kael y hologramas unerquicklich_29: 3714477751253152172
+      Retratos pixel art de Kael y hologramas unerquicklich_3: -4379071161510011964
+      Retratos pixel art de Kael y hologramas unerquicklich_30: 1720502722353984658
+      Retratos pixel art de Kael y hologramas unerquicklich_31: -1412104623370755858
+      Retratos pixel art de Kael y hologramas unerquicklich_32: 5985098894242861807
+      Retratos pixel art de Kael y hologramas unerquicklich_33: -2578597227409659625
+      Retratos pixel art de Kael y hologramas unerquicklich_34: 3607128340411951774
+      Retratos pixel art de Kael y hologramas unerquicklich_35: -2496528142003919888
+      Retratos pixel art de Kael y hologramas unerquicklich_36: 3461793227491688674
+      Retratos pixel art de Kael y hologramas unerquicklich_37: 2529022351860352922
+      Retratos pixel art de Kael y hologramas unerquicklich_38: 1019150953006299975
+      Retratos pixel art de Kael y hologramas unerquicklich_39: 2651866275816973392
+      Retratos pixel art de Kael y hologramas unerquicklich_4: 7053644111597933140
+      Retratos pixel art de Kael y hologramas unerquicklich_40: -8235309499769926707
+      Retratos pixel art de Kael y hologramas unerquicklich_41: 3707908733242170411
+      Retratos pixel art de Kael y hologramas unerquicklich_42: -1697324591305369825
+      Retratos pixel art de Kael y hologramas unerquicklich_43: 3239278082004561690
+      Retratos pixel art de Kael y hologramas unerquicklich_44: 6086703887076886546
+      Retratos pixel art de Kael y hologramas unerquicklich_45: -5640749660885257054
+      Retratos pixel art de Kael y hologramas unerquicklich_46: 1131009195151900327
+      Retratos pixel art de Kael y hologramas unerquicklich_47: 5209418226434668454
+      Retratos pixel art de Kael y hologramas unerquicklich_48: 2623244866651986897
+      Retratos pixel art de Kael y hologramas unerquicklich_49: 5678088942794507329
+      Retratos pixel art de Kael y hologramas unerquicklich_5: -791753883239783911
+      Retratos pixel art de Kael y hologramas unerquicklich_50: -2589232981771243003
+      Retratos pixel art de Kael y hologramas unerquicklich_51: -8696937076022662029
+      Retratos pixel art de Kael y hologramas unerquicklich_52: 4079408093760107221
+      Retratos pixel art de Kael y hologramas unerquicklich_53: 6409062675863769697
+      Retratos pixel art de Kael y hologramas unerquicklich_54: 531582888477409617
+      Retratos pixel art de Kael y hologramas unerquicklich_55: 2542613888520388640
+      Retratos pixel art de Kael y hologramas unerquicklich_56: 5653598603890895129
+      Retratos pixel art de Kael y hologramas unerquicklich_57: -8819825112775699132
+      Retratos pixel art de Kael y hologramas unerquicklich_58: -2709185696938327436
+      Retratos pixel art de Kael y hologramas unerquicklich_59: -7419166789742005636
+      Retratos pixel art de Kael y hologramas unerquicklich_6: -7415290586324492584
+      Retratos pixel art de Kael y hologramas unerquicklich_60: -4614451527238087822
+      Retratos pixel art de Kael y hologramas unerquicklich_61: -2817425314961731070
+      Retratos pixel art de Kael y hologramas unerquicklich_62: 7781007016033137228
+      Retratos pixel art de Kael y hologramas unerquicklich_63: -37699722941829237
+      Retratos pixel art de Kael y hologramas unerquicklich_64: 4144996524696978418
+      Retratos pixel art de Kael y hologramas unerquicklich_65: 375206304959970805
+      Retratos pixel art de Kael y hologramas unerquicklich_66: -1043119653930471995
+      Retratos pixel art de Kael y hologramas unerquicklich_67: -182143402774228844
+      Retratos pixel art de Kael y hologramas unerquicklich_68: 3369114209432677282
+      Retratos pixel art de Kael y hologramas unerquicklich_69: 6858335030226307159
+      Retratos pixel art de Kael y hologramas unerquicklich_7: -7062809344915509035
+      Retratos pixel art de Kael y hologramas unerquicklich_70: -6467121627969862624
+      Retratos pixel art de Kael y hologramas unerquicklich_71: -4950141011330219070
+      Retratos pixel art de Kael y hologramas unerquicklich_72: -1108225800173802962
+      Retratos pixel art de Kael y hologramas unerquicklich_73: -5075104333694530113
+      Retratos pixel art de Kael y hologramas unerquicklich_74: 8841893650470997712
+      Retratos pixel art de Kael y hologramas unerquicklich_75: 6307541725634941272
+      Retratos pixel art de Kael y hologramas unerquicklich_76: -6490903708630087265
+      Retratos pixel art de Kael y hologramas unerquicklich_77: -5899104273386005182
+      Retratos pixel art de Kael y hologramas unerquicklich_8: -3951060941432825187
+      Retratos pixel art de Kael y hologramas unerquicklich_9: 3209210312581653473
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

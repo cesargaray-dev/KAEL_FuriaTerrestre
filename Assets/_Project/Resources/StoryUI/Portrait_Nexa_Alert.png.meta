@@ -1,0 +1,613 @@
+fileFormatVersion: 2
+guid: 10fa58c7640ef324296fe7ef3ce771f1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8432311078416272828
+    second: Portrait_Nexa_Alert_0
+  - first:
+      213: 4140354475770768637
+    second: Portrait_Nexa_Alert_1
+  - first:
+      213: 242107598421775392
+    second: Portrait_Nexa_Alert_2
+  - first:
+      213: 578248231502905838
+    second: Portrait_Nexa_Alert_3
+  - first:
+      213: 4026608204914675949
+    second: Portrait_Nexa_Alert_4
+  - first:
+      213: -8465861860541533345
+    second: Portrait_Nexa_Alert_5
+  - first:
+      213: -435274554133975962
+    second: Portrait_Nexa_Alert_6
+  - first:
+      213: 6550432454667215243
+    second: Portrait_Nexa_Alert_7
+  - first:
+      213: -8924077740755904162
+    second: Portrait_Nexa_Alert_8
+  - first:
+      213: 2376014413695679695
+    second: Portrait_Nexa_Alert_9
+  - first:
+      213: -7325230454664207881
+    second: Portrait_Nexa_Alert_10
+  - first:
+      213: -6693302248254676300
+    second: Portrait_Nexa_Alert_11
+  - first:
+      213: -1196446538649610143
+    second: Portrait_Nexa_Alert_12
+  - first:
+      213: -5627984283551014219
+    second: Portrait_Nexa_Alert_13
+  - first:
+      213: 4130347742173059454
+    second: Portrait_Nexa_Alert_14
+  - first:
+      213: -4256312786770281284
+    second: Portrait_Nexa_Alert_15
+  - first:
+      213: -7062676393765086074
+    second: Portrait_Nexa_Alert_16
+  - first:
+      213: 7518418601027638397
+    second: Portrait_Nexa_Alert_17
+  - first:
+      213: -7501797823796523279
+    second: Portrait_Nexa_Alert_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 699
+        width: 105
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbdc790ef36950570800000000000000
+      internalID: 8432311078416272828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_1
+      rect:
+        serializedVersion: 2
+        x: 185
+        y: 747
+        width: 100
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfce38c857e757930800000000000000
+      internalID: 4140354475770768637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_2
+      rect:
+        serializedVersion: 2
+        x: 259
+        y: 823
+        width: 22
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0245a59f3932c5300800000000000000
+      internalID: 242107598421775392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_3
+      rect:
+        serializedVersion: 2
+        x: 316
+        y: 767
+        width: 116
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee18abee3b9560800800000000000000
+      internalID: 578248231502905838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_4
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 711
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de0dc9714d261e730800000000000000
+      internalID: 4026608204914675949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_5
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 694
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f53f4eced77338a80800000000000000
+      internalID: -8465861860541533345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_6
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 691
+        width: 13
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66ce315691895f9f0800000000000000
+      internalID: -435274554133975962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_7
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 666
+        width: 30
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8121a1ac9fc7ea50800000000000000
+      internalID: 6550432454667215243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 430
+        height: 669
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e59164a939e472480800000000000000
+      internalID: -8924077740755904162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_9
+      rect:
+        serializedVersion: 2
+        x: 372
+        y: 660
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fccf985458c49f020800000000000000
+      internalID: 2376014413695679695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_10
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 95
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f1edd356bd875a90800000000000000
+      internalID: -7325230454664207881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_11
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 55
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b2e47e511d9c13a0800000000000000
+      internalID: -6693302248254676300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_12
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 53
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1685b0f463e556fe0800000000000000
+      internalID: -1196446538649610143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 35
+        width: 5
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b2e579cc1265e1b0800000000000000
+      internalID: -5627984283551014219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_14
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 33
+        width: 14
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e79df035361f15930800000000000000
+      internalID: 4130347742173059454
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_15
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 31
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbcba93421a8ee4c0800000000000000
+      internalID: -4256312786770281284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_16
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 31
+        width: 31
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68c58125d355cfd90800000000000000
+      internalID: -7062676393765086074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_17
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 31
+        width: 27
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7411f222e9c65860800000000000000
+      internalID: 7518418601027638397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Nexa_Alert_18
+      rect:
+        serializedVersion: 2
+        x: 310
+        y: 30
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fe4fcf10a244e790800000000000000
+      internalID: -7501797823796523279
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Portrait_Nexa_Alert_0: 8432311078416272828
+      Portrait_Nexa_Alert_1: 4140354475770768637
+      Portrait_Nexa_Alert_10: -7325230454664207881
+      Portrait_Nexa_Alert_11: -6693302248254676300
+      Portrait_Nexa_Alert_12: -1196446538649610143
+      Portrait_Nexa_Alert_13: -5627984283551014219
+      Portrait_Nexa_Alert_14: 4130347742173059454
+      Portrait_Nexa_Alert_15: -4256312786770281284
+      Portrait_Nexa_Alert_16: -7062676393765086074
+      Portrait_Nexa_Alert_17: 7518418601027638397
+      Portrait_Nexa_Alert_18: -7501797823796523279
+      Portrait_Nexa_Alert_2: 242107598421775392
+      Portrait_Nexa_Alert_3: 578248231502905838
+      Portrait_Nexa_Alert_4: 4026608204914675949
+      Portrait_Nexa_Alert_5: -8465861860541533345
+      Portrait_Nexa_Alert_6: -435274554133975962
+      Portrait_Nexa_Alert_7: 6550432454667215243
+      Portrait_Nexa_Alert_8: -8924077740755904162
+      Portrait_Nexa_Alert_9: 2376014413695679695
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

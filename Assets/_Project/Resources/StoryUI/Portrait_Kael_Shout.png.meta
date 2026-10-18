@@ -1,0 +1,691 @@
+fileFormatVersion: 2
+guid: 844c056a9b2ea7b499e4135f2cdb9e52
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 860030263353771261
+    second: Portrait_Kael_Shout_0
+  - first:
+      213: -3912736522663217887
+    second: Portrait_Kael_Shout_1
+  - first:
+      213: -2728416397281394043
+    second: Portrait_Kael_Shout_2
+  - first:
+      213: -3064509240038616562
+    second: Portrait_Kael_Shout_3
+  - first:
+      213: 4971008931844585094
+    second: Portrait_Kael_Shout_4
+  - first:
+      213: -1134219028236195904
+    second: Portrait_Kael_Shout_5
+  - first:
+      213: -7938036032395427780
+    second: Portrait_Kael_Shout_6
+  - first:
+      213: -1008213203994659908
+    second: Portrait_Kael_Shout_7
+  - first:
+      213: -712846746115882880
+    second: Portrait_Kael_Shout_8
+  - first:
+      213: 6160349855070097026
+    second: Portrait_Kael_Shout_9
+  - first:
+      213: 8358648381154736155
+    second: Portrait_Kael_Shout_10
+  - first:
+      213: 5922208228828022593
+    second: Portrait_Kael_Shout_11
+  - first:
+      213: 8965350280887440666
+    second: Portrait_Kael_Shout_12
+  - first:
+      213: 3100099569068376069
+    second: Portrait_Kael_Shout_13
+  - first:
+      213: -4397560215000676999
+    second: Portrait_Kael_Shout_14
+  - first:
+      213: -6155197495752570846
+    second: Portrait_Kael_Shout_15
+  - first:
+      213: 2702345227301142727
+    second: Portrait_Kael_Shout_16
+  - first:
+      213: -873600383674242376
+    second: Portrait_Kael_Shout_17
+  - first:
+      213: 1761816746630547548
+    second: Portrait_Kael_Shout_18
+  - first:
+      213: -6127879621865420811
+    second: Portrait_Kael_Shout_19
+  - first:
+      213: -474589090050077151
+    second: Portrait_Kael_Shout_20
+  - first:
+      213: 5264928413896183182
+    second: Portrait_Kael_Shout_21
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_0
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 688
+        width: 86
+        height: 181
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df48947c7f07feb00800000000000000
+      internalID: 860030263353771261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_1
+      rect:
+        serializedVersion: 2
+        x: 127
+        y: 700
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12536fafcda23b9c0800000000000000
+      internalID: -3912736522663217887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_2
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 700
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58201b01eb7b22ad0800000000000000
+      internalID: -2728416397281394043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_3
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 700
+        width: 106
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e029898251da875d0800000000000000
+      internalID: -3064509240038616562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_4
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 723
+        width: 9
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 686f3e539429cf440800000000000000
+      internalID: 4971008931844585094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_5
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 709
+        width: 138
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c72e7c9dc17240f0800000000000000
+      internalID: -1134219028236195904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_6
+      rect:
+        serializedVersion: 2
+        x: 365
+        y: 719
+        width: 18
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c30c1da394e66d190800000000000000
+      internalID: -7938036032395427780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_7
+      rect:
+        serializedVersion: 2
+        x: 396
+        y: 725
+        width: 29
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb33a06ce6b1202f0800000000000000
+      internalID: -1008213203994659908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 443
+        height: 703
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 080487649a57b16f0800000000000000
+      internalID: -712846746115882880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 108
+        width: 12
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 28e0593ed85fd7550800000000000000
+      internalID: 6160349855070097026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_10
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 86
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b183f19aa62eff370800000000000000
+      internalID: 8358648381154736155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_11
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 120
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1478035c109ef2250800000000000000
+      internalID: 5922208228828022593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_12
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 110
+        width: 30
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a159e3b74925b6c70800000000000000
+      internalID: 8965350280887440666
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_13
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 102
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50089ae0224c50b20800000000000000
+      internalID: 3100099569068376069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_14
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 53
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9758e72a84ab8f2c0800000000000000
+      internalID: -4397560215000676999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_15
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 15
+        width: 20
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2284b4f3d78549aa0800000000000000
+      internalID: -6155197495752570846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_16
+      rect:
+        serializedVersion: 2
+        x: 121
+        y: 39
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c0c1c5aaa8a08520800000000000000
+      internalID: 2702345227301142727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_17
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 90
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8baa37f541950e3f0800000000000000
+      internalID: -873600383674242376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_18
+      rect:
+        serializedVersion: 2
+        x: 250
+        y: 97
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c588f3e1ffa337810800000000000000
+      internalID: 1761816746630547548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_19
+      rect:
+        serializedVersion: 2
+        x: 279
+        y: 96
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f74b5863f565faa0800000000000000
+      internalID: -6127879621865420811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_20
+      rect:
+        serializedVersion: 2
+        x: 355
+        y: 128
+        width: 11
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12e0a41bcbbe969f0800000000000000
+      internalID: -474589090050077151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portrait_Kael_Shout_21
+      rect:
+        serializedVersion: 2
+        x: 367
+        y: 51
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8d84266f78c01940800000000000000
+      internalID: 5264928413896183182
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Portrait_Kael_Shout_0: 860030263353771261
+      Portrait_Kael_Shout_1: -3912736522663217887
+      Portrait_Kael_Shout_10: 8358648381154736155
+      Portrait_Kael_Shout_11: 5922208228828022593
+      Portrait_Kael_Shout_12: 8965350280887440666
+      Portrait_Kael_Shout_13: 3100099569068376069
+      Portrait_Kael_Shout_14: -4397560215000676999
+      Portrait_Kael_Shout_15: -6155197495752570846
+      Portrait_Kael_Shout_16: 2702345227301142727
+      Portrait_Kael_Shout_17: -873600383674242376
+      Portrait_Kael_Shout_18: 1761816746630547548
+      Portrait_Kael_Shout_19: -6127879621865420811
+      Portrait_Kael_Shout_2: -2728416397281394043
+      Portrait_Kael_Shout_20: -474589090050077151
+      Portrait_Kael_Shout_21: 5264928413896183182
+      Portrait_Kael_Shout_3: -3064509240038616562
+      Portrait_Kael_Shout_4: 4971008931844585094
+      Portrait_Kael_Shout_5: -1134219028236195904
+      Portrait_Kael_Shout_6: -7938036032395427780
+      Portrait_Kael_Shout_7: -1008213203994659908
+      Portrait_Kael_Shout_8: -712846746115882880
+      Portrait_Kael_Shout_9: 6160349855070097026
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

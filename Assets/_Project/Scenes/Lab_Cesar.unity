@@ -242,6 +242,7 @@ GameObject:
   - component: {fileID: 1357182388}
   - component: {fileID: 1357182387}
   - component: {fileID: 1357182390}
+  - component: {fileID: 1357182391}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -282,16 +283,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42cbba47e10cd3443a629a96f440ad1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  healthBarOffsetY: 1.95
   isPaused: 0
   isGameOver: 0
   isChoosingDilemma: 0
+  isChoosingSkill: 0
   isLevelCompleted: 0
   gold: 0
   playerLevel: 1
   currentExp: 0
   expToNextLevel: 25
+  skillPoints: 0
   compassionPoints: 0
   rigorPoints: 0
+  branchFuria: 0
+  branchGuardian: 0
+  branchNexo: 0
   currentUltCharge: 0
   maxUltCharge: 100
   levelAtk: 1
@@ -301,6 +308,7 @@ MonoBehaviour:
   levelGold: 1
   maxHP: 100
   currentHP: 100
+  hpRegenPerSec: 1
   attackDamage: 12
   attackRate: 1.2
   critChance: 0.05
@@ -332,6 +340,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e89833ddd0ee5c48874f28a7815ff69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatVFXManager
+--- !u!114 &1357182391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357182386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ddc2959092bf764c9adb9f3b9297acc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CompanionDialogueManager
 --- !u!1 &1943925381
 GameObject:
   m_ObjectHideFlags: 0
