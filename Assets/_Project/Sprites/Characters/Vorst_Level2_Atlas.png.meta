@@ -1,0 +1,2511 @@
+fileFormatVersion: 2
+guid: bdecf0ae122fe03499991f183a7f413b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6176750700801145929
+    second: Vorst_Level2_Atlas_0
+  - first:
+      213: 6849014613348115246
+    second: Vorst_Level2_Atlas_1
+  - first:
+      213: 2573209554256455136
+    second: Vorst_Level2_Atlas_2
+  - first:
+      213: -5277426160914920044
+    second: Vorst_Level2_Atlas_3
+  - first:
+      213: 5510230360190930211
+    second: Vorst_Level2_Atlas_4
+  - first:
+      213: 6495905360250993404
+    second: Vorst_Level2_Atlas_5
+  - first:
+      213: 1555544359875197703
+    second: Vorst_Level2_Atlas_6
+  - first:
+      213: 1034961157230547399
+    second: Vorst_Level2_Atlas_7
+  - first:
+      213: 2235607182537129990
+    second: Vorst_Level2_Atlas_8
+  - first:
+      213: 5058777505763403548
+    second: Vorst_Level2_Atlas_9
+  - first:
+      213: -5836415272766474137
+    second: Vorst_Level2_Atlas_10
+  - first:
+      213: -8499206448577867656
+    second: Vorst_Level2_Atlas_11
+  - first:
+      213: -6906257495539009276
+    second: Vorst_Level2_Atlas_12
+  - first:
+      213: -829640148257461217
+    second: Vorst_Level2_Atlas_13
+  - first:
+      213: 4706381623338158289
+    second: Vorst_Level2_Atlas_14
+  - first:
+      213: -399601212007279515
+    second: Vorst_Level2_Atlas_15
+  - first:
+      213: 6346582108736275151
+    second: Vorst_Level2_Atlas_16
+  - first:
+      213: 1592360417311136174
+    second: Vorst_Level2_Atlas_17
+  - first:
+      213: 4657298961856356958
+    second: Vorst_Level2_Atlas_18
+  - first:
+      213: -5932529339604856508
+    second: Vorst_Level2_Atlas_19
+  - first:
+      213: -4523494078679501556
+    second: Vorst_Level2_Atlas_20
+  - first:
+      213: 3264601846164183670
+    second: Vorst_Level2_Atlas_21
+  - first:
+      213: -4236640755516145393
+    second: Vorst_Level2_Atlas_22
+  - first:
+      213: 7413720263335288498
+    second: Vorst_Level2_Atlas_23
+  - first:
+      213: 3583370591171358181
+    second: Vorst_Level2_Atlas_24
+  - first:
+      213: 8714304613610888359
+    second: Vorst_Level2_Atlas_25
+  - first:
+      213: -3935495706616545179
+    second: Vorst_Level2_Atlas_26
+  - first:
+      213: -447619958252270164
+    second: Vorst_Level2_Atlas_27
+  - first:
+      213: 7540094443960168554
+    second: Vorst_Level2_Atlas_28
+  - first:
+      213: -4416711542880346359
+    second: Vorst_Level2_Atlas_29
+  - first:
+      213: 4204742086891338659
+    second: Vorst_Level2_Atlas_30
+  - first:
+      213: 3986698940909051531
+    second: Vorst_Level2_Atlas_31
+  - first:
+      213: -8702804268729044279
+    second: Vorst_Level2_Atlas_32
+  - first:
+      213: -3409891157500630483
+    second: Vorst_Level2_Atlas_33
+  - first:
+      213: 1180197740656884827
+    second: Vorst_Level2_Atlas_34
+  - first:
+      213: -2634819143984071991
+    second: Vorst_Level2_Atlas_35
+  - first:
+      213: -446130025527536030
+    second: Vorst_Level2_Atlas_36
+  - first:
+      213: 7397570357584515198
+    second: Vorst_Level2_Atlas_37
+  - first:
+      213: 7035346798450829494
+    second: Vorst_Level2_Atlas_38
+  - first:
+      213: -5272143180259085711
+    second: Vorst_Level2_Atlas_39
+  - first:
+      213: -4758632233605287042
+    second: Vorst_Level2_Atlas_40
+  - first:
+      213: 5713405149154328423
+    second: Vorst_Level2_Atlas_41
+  - first:
+      213: 7435594701572929829
+    second: Vorst_Level2_Atlas_42
+  - first:
+      213: 539769798496428015
+    second: Vorst_Level2_Atlas_43
+  - first:
+      213: 5423355662676915632
+    second: Vorst_Level2_Atlas_44
+  - first:
+      213: -1955209347680135581
+    second: Vorst_Level2_Atlas_45
+  - first:
+      213: -471459528595385328
+    second: Vorst_Level2_Atlas_46
+  - first:
+      213: -6858145328153212820
+    second: Vorst_Level2_Atlas_47
+  - first:
+      213: 3277843450755306978
+    second: Vorst_Level2_Atlas_48
+  - first:
+      213: -1435353922288063854
+    second: Vorst_Level2_Atlas_49
+  - first:
+      213: -9218686525446695258
+    second: Vorst_Level2_Atlas_50
+  - first:
+      213: -5126816921707601943
+    second: Vorst_Level2_Atlas_51
+  - first:
+      213: 7689397848849182383
+    second: Vorst_Level2_Atlas_52
+  - first:
+      213: 4390943862203303170
+    second: Vorst_Level2_Atlas_53
+  - first:
+      213: -8112628866865676027
+    second: Vorst_Level2_Atlas_54
+  - first:
+      213: -332347170049135307
+    second: Vorst_Level2_Atlas_55
+  - first:
+      213: -2748146567764475646
+    second: Vorst_Level2_Atlas_56
+  - first:
+      213: -6129777220539651618
+    second: Vorst_Level2_Atlas_57
+  - first:
+      213: -1288681767605414997
+    second: Vorst_Level2_Atlas_58
+  - first:
+      213: 2087018306646238871
+    second: Vorst_Level2_Atlas_59
+  - first:
+      213: 163849291404017954
+    second: Vorst_Level2_Atlas_60
+  - first:
+      213: -9179138601338755135
+    second: Vorst_Level2_Atlas_61
+  - first:
+      213: 262731244636747229
+    second: Vorst_Level2_Atlas_62
+  - first:
+      213: 64472220718672762
+    second: Vorst_Level2_Atlas_63
+  - first:
+      213: -4228265168611230655
+    second: Vorst_Level2_Atlas_64
+  - first:
+      213: 8740249935652021684
+    second: Vorst_Level2_Atlas_65
+  - first:
+      213: -651313574948876328
+    second: Vorst_Level2_Atlas_66
+  - first:
+      213: -1015112863225028503
+    second: Vorst_Level2_Atlas_67
+  - first:
+      213: 7153509691181940623
+    second: Vorst_Level2_Atlas_68
+  - first:
+      213: 2994752877889348398
+    second: Vorst_Level2_Atlas_69
+  - first:
+      213: -863674437862908144
+    second: Vorst_Level2_Atlas_70
+  - first:
+      213: -4245953886800536282
+    second: Vorst_Level2_Atlas_71
+  - first:
+      213: -7440481927631495502
+    second: Vorst_Level2_Atlas_72
+  - first:
+      213: 2932986672985988977
+    second: Vorst_Level2_Atlas_73
+  - first:
+      213: -1811822748432993581
+    second: Vorst_Level2_Atlas_74
+  - first:
+      213: 3498028838834866280
+    second: Vorst_Level2_Atlas_75
+  - first:
+      213: -4706449331655628862
+    second: Vorst_Level2_Atlas_76
+  - first:
+      213: -6353160907920614620
+    second: Vorst_Level2_Atlas_77
+  - first:
+      213: 661113192699051564
+    second: Vorst_Level2_Atlas_78
+  - first:
+      213: -5128599359188036342
+    second: Vorst_Level2_Atlas_79
+  - first:
+      213: 4552787339349046804
+    second: Vorst_Level2_Atlas_80
+  - first:
+      213: -1454118915004810815
+    second: Vorst_Level2_Atlas_81
+  - first:
+      213: -7266520422056851218
+    second: Vorst_Level2_Atlas_82
+  - first:
+      213: -7533792046555287600
+    second: Vorst_Level2_Atlas_83
+  - first:
+      213: -1740965677154164779
+    second: Vorst_Level2_Atlas_84
+  - first:
+      213: 4742560112235906716
+    second: Vorst_Level2_Atlas_85
+  - first:
+      213: -643084505808679051
+    second: Vorst_Level2_Atlas_86
+  - first:
+      213: -4192661243396518459
+    second: Vorst_Level2_Atlas_87
+  - first:
+      213: -700606496886341346
+    second: Vorst_Level2_Atlas_88
+  - first:
+      213: 6586075930748669698
+    second: Vorst_Level2_Atlas_89
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: VisionOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: tvOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_0
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 566
+        width: 107
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94cb56b590a38b550800000000000000
+      internalID: 6176750700801145929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_1
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 566
+        width: 109
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e23e212d0869c0f50800000000000000
+      internalID: 6849014613348115246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_2
+      rect:
+        serializedVersion: 2
+        x: 273
+        y: 566
+        width: 111
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e5e816c470e5b320800000000000000
+      internalID: 2573209554256455136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_3
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 566
+        width: 112
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49d005e1ed0d2c6b0800000000000000
+      internalID: -5277426160914920044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_4
+      rect:
+        serializedVersion: 2
+        x: 523
+        y: 566
+        width: 113
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32dc0c17155487c40800000000000000
+      internalID: 5510230360190930211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_5
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 566
+        width: 112
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfaf0542287162a50800000000000000
+      internalID: 6495905360250993404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_6
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 566
+        width: 113
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70b39ba8a57669510800000000000000
+      internalID: 1555544359875197703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_7
+      rect:
+        serializedVersion: 2
+        x: 892
+        y: 566
+        width: 113
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c1dd0560bbec5e00800000000000000
+      internalID: 1034961157230547399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_8
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 465
+        width: 111
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 600007443e8760f10800000000000000
+      internalID: 2235607182537129990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_9
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 465
+        width: 107
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c17a3c4c653643640800000000000000
+      internalID: 5058777505763403548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_10
+      rect:
+        serializedVersion: 2
+        x: 253
+        y: 465
+        width: 115
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 768f6196b33e00fa0800000000000000
+      internalID: -5836415272766474137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_11
+      rect:
+        serializedVersion: 2
+        x: 375
+        y: 465
+        width: 134
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8709ec704c0cc0a80800000000000000
+      internalID: -8499206448577867656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_12
+      rect:
+        serializedVersion: 2
+        x: 509
+        y: 465
+        width: 124
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 409b403166b0820a0800000000000000
+      internalID: -6906257495539009276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_13
+      rect:
+        serializedVersion: 2
+        x: 636
+        y: 465
+        width: 124
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1c26b74ea68c74f0800000000000000
+      internalID: -829640148257461217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_14
+      rect:
+        serializedVersion: 2
+        x: 757
+        y: 465
+        width: 139
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d84f74a62d605140800000000000000
+      internalID: 4706381623338158289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_15
+      rect:
+        serializedVersion: 2
+        x: 892
+        y: 464
+        width: 123
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5649d7a90d4547af0800000000000000
+      internalID: -399601212007279515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_16
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 370
+        width: 102
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc243116dc6931850800000000000000
+      internalID: 6346582108736275151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_17
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 370
+        width: 101
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea91934ec53391610800000000000000
+      internalID: 1592360417311136174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_18
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 370
+        width: 106
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e526e3afabc02a040800000000000000
+      internalID: 4657298961856356958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_19
+      rect:
+        serializedVersion: 2
+        x: 387
+        y: 370
+        width: 120
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 441154d5ffb6bada0800000000000000
+      internalID: -5932529339604856508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_20
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 371
+        width: 115
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c05b9b81a125931c0800000000000000
+      internalID: -4523494078679501556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_21
+      rect:
+        serializedVersion: 2
+        x: 658
+        y: 418
+        width: 12
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67a53bd15123e4d20800000000000000
+      internalID: 3264601846164183670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_22
+      rect:
+        serializedVersion: 2
+        x: 682
+        y: 438
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f018486fdad6435c0800000000000000
+      internalID: -4236640755516145393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_23
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 432
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2be1738cc43d2e660800000000000000
+      internalID: 7413720263335288498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_24
+      rect:
+        serializedVersion: 2
+        x: 823
+        y: 436
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5eda9513190bab130800000000000000
+      internalID: 3583370591171358181
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_25
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 374
+        width: 104
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ac13de20ed6fe870800000000000000
+      internalID: 8714304613610888359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_26
+      rect:
+        serializedVersion: 2
+        x: 677
+        y: 426
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 560cb08818f4269c0800000000000000
+      internalID: -3935495706616545179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_27
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 429
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cad8ff1050cb9c9f0800000000000000
+      internalID: -447619958252270164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_28
+      rect:
+        serializedVersion: 2
+        x: 760
+        y: 374
+        width: 130
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a60742992fbc3a860800000000000000
+      internalID: 7540094443960168554
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_29
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 429
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90fdf33a040b4b2c0800000000000000
+      internalID: -4416711542880346359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_30
+      rect:
+        serializedVersion: 2
+        x: 794
+        y: 425
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3abfa4d76ae3a5a30800000000000000
+      internalID: 4204742086891338659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_31
+      rect:
+        serializedVersion: 2
+        x: 849
+        y: 422
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8e5f477099935730800000000000000
+      internalID: 3986698940909051531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_32
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 406
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c2f6a480ad693780800000000000000
+      internalID: -8702804268729044279
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_33
+      rect:
+        serializedVersion: 2
+        x: 935
+        y: 416
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2aed620f02ada0d0800000000000000
+      internalID: -3409891157500630483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_34
+      rect:
+        serializedVersion: 2
+        x: 949
+        y: 412
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5c72989797e06010800000000000000
+      internalID: 1180197740656884827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_35
+      rect:
+        serializedVersion: 2
+        x: 969
+        y: 412
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ca3e6bc2fd3f6bd0800000000000000
+      internalID: -2634819143984071991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_36
+      rect:
+        serializedVersion: 2
+        x: 905
+        y: 375
+        width: 104
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2669bc00b170fc9f0800000000000000
+      internalID: -446130025527536030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_37
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 275
+        width: 80
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e70d8c4db0379a660800000000000000
+      internalID: 7397570357584515198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_38
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 113
+        width: 93
+        height: 254
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b8e75963a292a160800000000000000
+      internalID: 7035346798450829494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_39
+      rect:
+        serializedVersion: 2
+        x: 241
+        y: 192
+        width: 106
+        height: 175
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 172b8a7e5b595d6b0800000000000000
+      internalID: -5272143180259085711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_40
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 275
+        width: 79
+        height: 91
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e73bb332231f5fdb0800000000000000
+      internalID: -4758632233605287042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_41
+      rect:
+        serializedVersion: 2
+        x: 482
+        y: 191
+        width: 106
+        height: 177
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76f3b3556b71a4f40800000000000000
+      internalID: 5713405149154328423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_42
+      rect:
+        serializedVersion: 2
+        x: 572
+        y: 310
+        width: 19
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 529f7015cf9803760800000000000000
+      internalID: 7435594701572929829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_43
+      rect:
+        serializedVersion: 2
+        x: 601
+        y: 191
+        width: 116
+        height: 177
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fef1ddb95c5ad7700800000000000000
+      internalID: 539769798496428015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_44
+      rect:
+        serializedVersion: 2
+        x: 700
+        y: 333
+        width: 21
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b5f574bd31a34b40800000000000000
+      internalID: 5423355662676915632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_45
+      rect:
+        serializedVersion: 2
+        x: 707
+        y: 310
+        width: 19
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 366900a1573bdd4e0800000000000000
+      internalID: -1955209347680135581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_46
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 276
+        width: 77
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01459108e0a0579f0800000000000000
+      internalID: -471459528595385328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_47
+      rect:
+        serializedVersion: 2
+        x: 895
+        y: 275
+        width: 63
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c684c69f829f2d0a0800000000000000
+      internalID: -6858145328153212820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_48
+      rect:
+        serializedVersion: 2
+        x: 950
+        y: 311
+        width: 24
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e55c9f604d3d7d20800000000000000
+      internalID: 3277843450755306978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_49
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 112
+        width: 84
+        height: 164
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29a6e076639941ce0800000000000000
+      internalID: -1435353922288063854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_50
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 114
+        width: 79
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a6d113a275a01080800000000000000
+      internalID: -9218686525446695258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_51
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 191
+        width: 102
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ef18293c23e9d8b0800000000000000
+      internalID: -5126816921707601943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_52
+      rect:
+        serializedVersion: 2
+        x: 739
+        y: 190
+        width: 118
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: faeee457a9a36ba60800000000000000
+      internalID: 7689397848849182383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_53
+      rect:
+        serializedVersion: 2
+        x: 877
+        y: 190
+        width: 97
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2054f4fad24cfec30800000000000000
+      internalID: 4390943862203303170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_54
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 117
+        width: 79
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50144e337072a6f80800000000000000
+      internalID: -8112628866865676027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_55
+      rect:
+        serializedVersion: 2
+        x: 520
+        y: 115
+        width: 71
+        height: 71
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53d6d1b7204436bf0800000000000000
+      internalID: -332347170049135307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_56
+      rect:
+        serializedVersion: 2
+        x: 521
+        y: 170
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20180b5c14f9cd9d0800000000000000
+      internalID: -2748146567764475646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_57
+      rect:
+        serializedVersion: 2
+        x: 532
+        y: 179
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed9e3794818aeeaa0800000000000000
+      internalID: -6129777220539651618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_58
+      rect:
+        serializedVersion: 2
+        x: 564
+        y: 178
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba35b5592cead1ee0800000000000000
+      internalID: -1288681767605414997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_59
+      rect:
+        serializedVersion: 2
+        x: 583
+        y: 174
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 796e267a71496fc10800000000000000
+      internalID: 2087018306646238871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_60
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 171
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22106daff0c164200800000000000000
+      internalID: 163849291404017954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_61
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 144
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c7a02343162d9080800000000000000
+      internalID: -9179138601338755135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_62
+      rect:
+        serializedVersion: 2
+        x: 513
+        y: 154
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd538fbcca865a300800000000000000
+      internalID: 262731244636747229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_63
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 115
+        width: 101
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7b21d5a42d05e000800000000000000
+      internalID: 64472220718672762
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_64
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 157
+        width: 11
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14c35c04b3f2255c0800000000000000
+      internalID: -4228265168611230655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_65
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 155
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b56ba6320b9b4970800000000000000
+      internalID: 8740249935652021684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_66
+      rect:
+        serializedVersion: 2
+        x: 814
+        y: 149
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8df48cf11c116f6f0800000000000000
+      internalID: -651313574948876328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_67
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 160
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 960ea8caa3899e1f0800000000000000
+      internalID: -1015112863225028503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_68
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 156
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8fb638c92f564360800000000000000
+      internalID: 7153509691181940623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_69
+      rect:
+        serializedVersion: 2
+        x: 464
+        y: 137
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e236ca420ef7f8920800000000000000
+      internalID: 2994752877889348398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_70
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 145
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01f9899bcac9304f0800000000000000
+      internalID: -863674437862908144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_71
+      rect:
+        serializedVersion: 2
+        x: 575
+        y: 137
+        width: 20
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62d909c9f675315c0800000000000000
+      internalID: -4245953886800536282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_72
+      rect:
+        serializedVersion: 2
+        x: 787
+        y: 114
+        width: 112
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2be9fc1bb191eb890800000000000000
+      internalID: -7440481927631495502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_73
+      rect:
+        serializedVersion: 2
+        x: 794
+        y: 146
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17fd846e6df04b820800000000000000
+      internalID: 2932986672985988977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_74
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 143
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d2fdab4fcc1bd6e0800000000000000
+      internalID: -1811822748432993581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_75
+      rect:
+        serializedVersion: 2
+        x: 859
+        y: 144
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86803d012be7b8030800000000000000
+      internalID: 3498028838834866280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_76
+      rect:
+        serializedVersion: 2
+        x: 873
+        y: 143
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c7aa49c4455faeb0800000000000000
+      internalID: -4706449331655628862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_77
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 129
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42b5e7290d905d7a0800000000000000
+      internalID: -6353160907920614620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_78
+      rect:
+        serializedVersion: 2
+        x: 583
+        y: 121
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2eb62f22febc2900800000000000000
+      internalID: 661113192699051564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_79
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 117
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a051d482e0e83d8b0800000000000000
+      internalID: -5128599359188036342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_80
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 119
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 416bbc3a6ffbe2f30800000000000000
+      internalID: 4552787339349046804
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_81
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 32
+        width: 94
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c936f11d8ee1dbe0800000000000000
+      internalID: -1454118915004810815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_82
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 32
+        width: 95
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee80e220d22282b90800000000000000
+      internalID: -7266520422056851218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_83
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 32
+        width: 93
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dfa865ac08927790800000000000000
+      internalID: -7533792046555287600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_84
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 32
+        width: 94
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5df141fc0f8d6d7e0800000000000000
+      internalID: -1740965677154164779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_85
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 32
+        width: 93
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9602cf7b45f0d140800000000000000
+      internalID: 4742560112235906716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_86
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 32
+        width: 94
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57f47b69c0e4317f0800000000000000
+      internalID: -643084505808679051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_87
+      rect:
+        serializedVersion: 2
+        x: 719
+        y: 32
+        width: 92
+        height: 78
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cd8dc310dca0d5c0800000000000000
+      internalID: -4192661243396518459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_88
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 32
+        width: 90
+        height: 78
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1142c16a12f646f0800000000000000
+      internalID: -700606496886341346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vorst_Level2_Atlas_89
+      rect:
+        serializedVersion: 2
+        x: 911
+        y: 32
+        width: 92
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20f460c1a21766b50800000000000000
+      internalID: 6586075930748669698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Vorst_Level2_Atlas_0: 6176750700801145929
+      Vorst_Level2_Atlas_1: 6849014613348115246
+      Vorst_Level2_Atlas_10: -5836415272766474137
+      Vorst_Level2_Atlas_11: -8499206448577867656
+      Vorst_Level2_Atlas_12: -6906257495539009276
+      Vorst_Level2_Atlas_13: -829640148257461217
+      Vorst_Level2_Atlas_14: 4706381623338158289
+      Vorst_Level2_Atlas_15: -399601212007279515
+      Vorst_Level2_Atlas_16: 6346582108736275151
+      Vorst_Level2_Atlas_17: 1592360417311136174
+      Vorst_Level2_Atlas_18: 4657298961856356958
+      Vorst_Level2_Atlas_19: -5932529339604856508
+      Vorst_Level2_Atlas_2: 2573209554256455136
+      Vorst_Level2_Atlas_20: -4523494078679501556
+      Vorst_Level2_Atlas_21: 3264601846164183670
+      Vorst_Level2_Atlas_22: -4236640755516145393
+      Vorst_Level2_Atlas_23: 7413720263335288498
+      Vorst_Level2_Atlas_24: 3583370591171358181
+      Vorst_Level2_Atlas_25: 8714304613610888359
+      Vorst_Level2_Atlas_26: -3935495706616545179
+      Vorst_Level2_Atlas_27: -447619958252270164
+      Vorst_Level2_Atlas_28: 7540094443960168554
+      Vorst_Level2_Atlas_29: -4416711542880346359
+      Vorst_Level2_Atlas_3: -5277426160914920044
+      Vorst_Level2_Atlas_30: 4204742086891338659
+      Vorst_Level2_Atlas_31: 3986698940909051531
+      Vorst_Level2_Atlas_32: -8702804268729044279
+      Vorst_Level2_Atlas_33: -3409891157500630483
+      Vorst_Level2_Atlas_34: 1180197740656884827
+      Vorst_Level2_Atlas_35: -2634819143984071991
+      Vorst_Level2_Atlas_36: -446130025527536030
+      Vorst_Level2_Atlas_37: 7397570357584515198
+      Vorst_Level2_Atlas_38: 7035346798450829494
+      Vorst_Level2_Atlas_39: -5272143180259085711
+      Vorst_Level2_Atlas_4: 5510230360190930211
+      Vorst_Level2_Atlas_40: -4758632233605287042
+      Vorst_Level2_Atlas_41: 5713405149154328423
+      Vorst_Level2_Atlas_42: 7435594701572929829
+      Vorst_Level2_Atlas_43: 539769798496428015
+      Vorst_Level2_Atlas_44: 5423355662676915632
+      Vorst_Level2_Atlas_45: -1955209347680135581
+      Vorst_Level2_Atlas_46: -471459528595385328
+      Vorst_Level2_Atlas_47: -6858145328153212820
+      Vorst_Level2_Atlas_48: 3277843450755306978
+      Vorst_Level2_Atlas_49: -1435353922288063854
+      Vorst_Level2_Atlas_5: 6495905360250993404
+      Vorst_Level2_Atlas_50: -9218686525446695258
+      Vorst_Level2_Atlas_51: -5126816921707601943
+      Vorst_Level2_Atlas_52: 7689397848849182383
+      Vorst_Level2_Atlas_53: 4390943862203303170
+      Vorst_Level2_Atlas_54: -8112628866865676027
+      Vorst_Level2_Atlas_55: -332347170049135307
+      Vorst_Level2_Atlas_56: -2748146567764475646
+      Vorst_Level2_Atlas_57: -6129777220539651618
+      Vorst_Level2_Atlas_58: -1288681767605414997
+      Vorst_Level2_Atlas_59: 2087018306646238871
+      Vorst_Level2_Atlas_6: 1555544359875197703
+      Vorst_Level2_Atlas_60: 163849291404017954
+      Vorst_Level2_Atlas_61: -9179138601338755135
+      Vorst_Level2_Atlas_62: 262731244636747229
+      Vorst_Level2_Atlas_63: 64472220718672762
+      Vorst_Level2_Atlas_64: -4228265168611230655
+      Vorst_Level2_Atlas_65: 8740249935652021684
+      Vorst_Level2_Atlas_66: -651313574948876328
+      Vorst_Level2_Atlas_67: -1015112863225028503
+      Vorst_Level2_Atlas_68: 7153509691181940623
+      Vorst_Level2_Atlas_69: 2994752877889348398
+      Vorst_Level2_Atlas_7: 1034961157230547399
+      Vorst_Level2_Atlas_70: -863674437862908144
+      Vorst_Level2_Atlas_71: -4245953886800536282
+      Vorst_Level2_Atlas_72: -7440481927631495502
+      Vorst_Level2_Atlas_73: 2932986672985988977
+      Vorst_Level2_Atlas_74: -1811822748432993581
+      Vorst_Level2_Atlas_75: 3498028838834866280
+      Vorst_Level2_Atlas_76: -4706449331655628862
+      Vorst_Level2_Atlas_77: -6353160907920614620
+      Vorst_Level2_Atlas_78: 661113192699051564
+      Vorst_Level2_Atlas_79: -5128599359188036342
+      Vorst_Level2_Atlas_8: 2235607182537129990
+      Vorst_Level2_Atlas_80: 4552787339349046804
+      Vorst_Level2_Atlas_81: -1454118915004810815
+      Vorst_Level2_Atlas_82: -7266520422056851218
+      Vorst_Level2_Atlas_83: -7533792046555287600
+      Vorst_Level2_Atlas_84: -1740965677154164779
+      Vorst_Level2_Atlas_85: 4742560112235906716
+      Vorst_Level2_Atlas_86: -643084505808679051
+      Vorst_Level2_Atlas_87: -4192661243396518459
+      Vorst_Level2_Atlas_88: -700606496886341346
+      Vorst_Level2_Atlas_89: 6586075930748669698
+      Vorst_Level2_Atlas_9: 5058777505763403548
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

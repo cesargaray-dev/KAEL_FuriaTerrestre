@@ -43,15 +43,13 @@ public class KaelAtlasGenerator
         cleanTex.Apply();
         File.WriteAllBytes(path, cleanTex.EncodeToPNG());
 
-        // 2. Dividir exactamente en 3 filas y sus respectivas columnas (4, 3, 4)
-        // En coordenadas de Unity Y=0 es abajo (Fila 3: Muerte), Y=arriba es Fila 1: Caminar
         string[] rowNames = { "Die", "Attack", "Walk" };
         int[] colsPerRow = { 4, 3, 4 };
 
         List<SpriteMetaData> metas = new List<SpriteMetaData>();
         float rowHeight = h / 3f;
 
-        for (int r = 2; r >= 0; r--) // De arriba (Walk) hacia abajo (Die)
+        for (int r = 2; r >= 0; r--)
         {
             int cols = colsPerRow[r];
             float colWidth = (float)w / cols;
@@ -63,7 +61,6 @@ public class KaelAtlasGenerator
                 int xStart = Mathf.RoundToInt(c * colWidth);
                 int xEnd = Mathf.RoundToInt((c + 1) * colWidth) - 1;
 
-                // Ajustar la caja a los píxeles reales dentro de esta celda (incluyendo chispas de explosión)
                 int minX = xEnd, maxX = xStart, minY = yEnd, maxY = yStart;
                 bool hasPixels = false;
 
@@ -97,7 +94,7 @@ public class KaelAtlasGenerator
         importer.isReadable = false;
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Multiple;
-        importer.spritePixelsPerUnit = 240; // Escala para que llegue a la cintura/pecho de Kael
+        importer.spritePixelsPerUnit = 240;
         importer.filterMode = FilterMode.Point;
         importer.alphaIsTransparency = true;
         importer.textureCompression = TextureImporterCompression.Uncompressed;
@@ -109,6 +106,29 @@ public class KaelAtlasGenerator
 
         EditorUtility.DisplayDialog("¡Caminante Vorst Listo!",
             $"Se limpiaron y recortaron exactamente los {metas.Count} cuadros (4 Walk, 3 Attack, 4 Die) sin separar las partículas de muerte.",
+            "¡Excelente!");
+    }
+
+    [MenuItem("KAEL Tools/Preparar Recursos Nivel 2 (Base Vorst, Bruto y Arconte)")]
+    public static void ProcessLevel2Assets()
+    {
+        string bgPath = "Assets/_Project/Sprites/Backgrounds/BG_BaseVorst_Level2.png";
+        TextureImporter bgImp = AssetImporter.GetAtPath(bgPath) as TextureImporter;
+        if (bgImp != null)
+        {
+            bgImp.textureType = TextureImporterType.Sprite;
+            bgImp.spriteImportMode = SpriteImportMode.Single;
+            bgImp.spritePixelsPerUnit = 100f;
+            TextureImporterSettings settings = new TextureImporterSettings();
+            bgImp.ReadTextureSettings(settings);
+            settings.spriteMeshType = SpriteMeshType.FullRect;
+            bgImp.SetTextureSettings(settings);
+            bgImp.SaveAndReimport();
+        }
+
+        AssetDatabase.Refresh();
+        EditorUtility.DisplayDialog("¡Nivel 2 (Lab_Zahir) Listo!",
+            "Todos los recursos del Nivel 2 (Fondo Base Vorst, Bruto Vorst y Arconte Vorst) están procesados y listos en Lab_Zahir.",
             "¡Excelente!");
     }
 }

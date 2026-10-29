@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 public class CompanionDialogueManager : MonoBehaviour
@@ -90,6 +91,37 @@ public class CompanionDialogueManager : MonoBehaviour
         if (triggeredWaves.Contains(wave)) return;
         triggeredWaves.Add(wave);
 
+        bool isLevel2 = (SceneManager.GetActiveScene().name == "Lab_Zahir") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2);
+
+        if (isLevel2)
+        {
+            if (wave == 1)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Hemos penetrado el perímetro de la Base Vorst. La esfera de convergencia púrpura al fondo alimenta los escudos de la Nave Núcleo donde está Lía.", "nexa_normal");
+                EnqueueLine("KAEL", "Los Vorst de esta fortaleza son más agresivos. ¡No importa cuántos envíen, derribaremos esa torre!", "kael_shout");
+            }
+            else if (wave == 3)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Las lecturas de blindaje enemigo se han duplicado en este sector. Mantén tus mejoras de Fuerza y Vigor al día con el oro recolectado.", "nexa_normal");
+            }
+            else if (wave == 5)
+            {
+                EnqueueLine("N.E.X.A. [ALERTA]", "¡Impacto sísmico al frente! Un Demoledor Bruto Vorst con reactor pectoral carmesí se aproxima. ¡Sus puñetazos propulsados son letales!", "nexa_alert");
+                EnqueueLine("KAEL", "¡Apuntaré directo al núcleo rojo de su pecho!", "kael_shout");
+            }
+            else if (wave == 8)
+            {
+                EnqueueLine("N.E.X.A. [ALERTA]", "Estamos cerca de la cámara del reactor. Detecto una entidad psiónica de clase Soberano levitando sobre la plataforma principal.", "nexa_alert");
+            }
+            else if (wave == 10)
+            {
+                EnqueueLine("N.E.X.A. [EMERGENCIA]", "¡ALERTA DE JEFE DE ZONA! El Arconte Vorst ha descendido con 4 orbes de energía psiónica. ¡Ataca a distancia con rayos de plasma magenta!", "nexa_alert");
+                EnqueueLine("KAEL", "¡Tus orbes no te salvarán, Arconte! ¡Sobrecarga Nexo al límite!", "kael_shout");
+            }
+            return;
+        }
+
         if (wave == 1)
         {
             EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Sistemas del Guantelete Nexo al 100%. Kael, he triangulado la cápsula donde retienen a tu hermana Lía: está en la Nave Núcleo sobre el Sector 7.", "nexa_normal");
@@ -112,7 +144,7 @@ public class CompanionDialogueManager : MonoBehaviour
         }
         else if (wave == 10)
         {
-            EnqueueLine("N.E.X.A. [EMERGENCIA]", "¡ALERTA MÁXIMA! El Comandante Vorst del Sector 7 ha descenso para bloquear el puente. ¡Guarda tu Sobrecarga Nexo para romper su guardia!", "nexa_alert");
+            EnqueueLine("N.E.X.A. [EMERGENCIA]", "¡ALERTA MÁXIMA! El Comandante Vorst del Sector 7 ha descendido para bloquear el puente. ¡Guarda tu Sobrecarga Nexo para romper su guardia!", "nexa_alert");
             EnqueueLine("KAEL", "¡Es hora de acabar con el líder de este sector! ¡A máxima potencia, N.E.X.A.!", "kael_shout");
         }
     }
@@ -165,7 +197,7 @@ public class CompanionDialogueManager : MonoBehaviour
         GUI.DrawTexture(new Rect(box.x + 3, box.y + 3, box.width - 6, box.height - 6), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        // Panel del Retrato (Ahora más grande: 136x136 píxeles, llenando el espacio izquierdo)
+        // Panel del Retrato (136x136 píxeles, llenando el espacio izquierdo)
         Rect portRect = new Rect(box.x + 12, box.y + 12, 136, 136);
         GUI.color = new Color(0.06f, 0.10f, 0.18f, 1f);
         GUI.DrawTexture(portRect, Texture2D.whiteTexture);
@@ -174,7 +206,6 @@ public class CompanionDialogueManager : MonoBehaviour
         Texture2D activePort = GetPortraitTexture(currentLine.portraitKey);
         if (activePort != null)
         {
-            // ScaleAndCrop para que el rostro llene todo el marco sin barras negras
             GUI.DrawTexture(portRect, activePort, ScaleMode.ScaleAndCrop);
         }
 
