@@ -10,6 +10,11 @@ public class PlayerStats : MonoBehaviour
     [Tooltip("Altura de la barra de vida sobre los pies de Kael (1.95 queda arriba del cabello)")]
     [Range(1.2f, 3.0f)] public float healthBarOffsetY = 1.95f;
 
+    [Header("Configuración del Nivel Actual")]
+    public int levelNumber = 1;
+    public string zoneName = "SECTOR 7 — CIUDAD EN RUINAS";
+    public string nextLevelSceneName = "Lab_Zahir";
+
     [Header("Estados Oficiales del Nivel")]
     public bool isPaused = false;
     public bool isGameOver = false;
@@ -75,8 +80,93 @@ public class PlayerStats : MonoBehaviour
         }
         Instance = this;
         Time.timeScale = 1f;
+
+        if (SceneManager.GetActiveScene().name == "Lab_Zahir")
+        {
+            levelNumber = 2;
+            zoneName = "BASE VORST — NÚCLEO CENTRAL";
+            nextLevelSceneName = "";
+            ResetSkillsToBase();
+        }
+
         RecalculateStats();
         currentHP = maxHP;
+    }
+
+    public void ResetSkillsToBase()
+    {
+        gold = 0;
+        playerLevel = 1;
+        currentExp = 0;
+        expToNextLevel = 25;
+        skillPoints = 0;
+        compassionPoints = 0;
+        rigorPoints = 0;
+        branchFuria = 0;
+        branchGuardian = 0;
+        branchNexo = 0;
+        levelAtk = 1;
+        levelHp = 1;
+        levelSpd = 1;
+        levelCrit = 1;
+        levelGold = 1;
+        currentUltCharge = 0f;
+    }
+
+    public void SaveProgressForNextLevel()
+    {
+        PlayerPrefs.SetInt("KAEL_Saved", 1);
+        PlayerPrefs.SetInt("KAEL_UnlockedLevel", Mathf.Max(PlayerPrefs.GetInt("KAEL_UnlockedLevel", 1), levelNumber + 1));
+        PlayerPrefs.SetInt("KAEL_Gold", gold);
+        PlayerPrefs.SetInt("KAEL_Lv", playerLevel);
+        PlayerPrefs.SetInt("KAEL_Exp", currentExp);
+        PlayerPrefs.SetInt("KAEL_ExpNext", expToNextLevel);
+        PlayerPrefs.SetInt("KAEL_SkillPts", skillPoints);
+        PlayerPrefs.SetInt("KAEL_Compassion", compassionPoints);
+        PlayerPrefs.SetInt("KAEL_Rigor", rigorPoints);
+        PlayerPrefs.SetInt("KAEL_Furia", branchFuria);
+        PlayerPrefs.SetInt("KAEL_Guardian", branchGuardian);
+        PlayerPrefs.SetInt("KAEL_Nexo", branchNexo);
+        PlayerPrefs.SetInt("KAEL_LvAtk", levelAtk);
+        PlayerPrefs.SetInt("KAEL_LvHp", levelHp);
+        PlayerPrefs.SetInt("KAEL_LvSpd", levelSpd);
+        PlayerPrefs.SetInt("KAEL_LvCrit", levelCrit);
+        PlayerPrefs.SetInt("KAEL_LvGold", levelGold);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadProgressIfContinuing()
+    {
+        if (levelNumber > 1)
+        {
+            if (PlayerPrefs.GetInt("KAEL_Saved", 0) == 1)
+            {
+                gold = PlayerPrefs.GetInt("KAEL_Gold", gold);
+                playerLevel = PlayerPrefs.GetInt("KAEL_Lv", playerLevel);
+                currentExp = PlayerPrefs.GetInt("KAEL_Exp", currentExp);
+                expToNextLevel = PlayerPrefs.GetInt("KAEL_ExpNext", expToNextLevel);
+                skillPoints = PlayerPrefs.GetInt("KAEL_SkillPts", skillPoints);
+                compassionPoints = PlayerPrefs.GetInt("KAEL_Compassion", compassionPoints);
+                rigorPoints = PlayerPrefs.GetInt("KAEL_Rigor", rigorPoints);
+                branchFuria = PlayerPrefs.GetInt("KAEL_Furia", branchFuria);
+                branchGuardian = PlayerPrefs.GetInt("KAEL_Guardian", branchGuardian);
+                branchNexo = PlayerPrefs.GetInt("KAEL_Nexo", branchNexo);
+                levelAtk = PlayerPrefs.GetInt("KAEL_LvAtk", levelAtk);
+                levelHp = PlayerPrefs.GetInt("KAEL_LvHp", levelHp);
+                levelSpd = PlayerPrefs.GetInt("KAEL_LvSpd", levelSpd);
+                levelCrit = PlayerPrefs.GetInt("KAEL_LvCrit", levelCrit);
+                levelGold = PlayerPrefs.GetInt("KAEL_LvGold", levelGold);
+            }
+            else if (playerLevel == 1 && levelAtk == 1)
+            {
+                // Base de prueba equilibrada si se abre Lab_Zahir directamente en el Editor
+                playerLevel = 3;
+                levelAtk = 3;
+                levelHp = 3;
+                gold = 120;
+                skillPoints = 1;
+            }
+        }
     }
 
     void Start()
@@ -259,7 +349,8 @@ public class PlayerStats : MonoBehaviour
         if (spawner != null && spawner.currentWave < spawner.totalWaves && spawner.currentWave != 5)
         {
             DrawCyberBox(new Rect(750, 14, 420, 62), colBgDark, colBorder, 2f);
-            DrawStyledText(new Rect(750, 18, 420, 26), $"SECTOR 7 — OLEADA {spawner.currentWave} / {spawner.totalWaves}", 18, TextAnchor.MiddleCenter, colCyanNexo);
+            string waveHeader = (levelNumber == 2) ? $"BASE VORST — OLEADA {spawner.currentWave} / {spawner.totalWaves}" : $"SECTOR 7 — OLEADA {spawner.currentWave} / {spawner.totalWaves}";
+            DrawStyledText(new Rect(750, 18, 420, 26), waveHeader, 18, TextAnchor.MiddleCenter, colCyanNexo);
             float waveRatio = Mathf.Clamp01((float)spawner.currentWave / spawner.totalWaves);
             DrawProgressBar(new Rect(775, 48, 370, 14), waveRatio, new Color(0.1f, 0.15f, 0.25f), colCyanNexo, "", 11);
         }
@@ -309,7 +400,6 @@ public class PlayerStats : MonoBehaviour
         }
         if (kaelTransform == null || Camera.main == null) return;
 
-        // Usa healthBarOffsetY (1.95f por defecto) para quedar siempre ARRIBA del cabello de Kael sin taparle la cara
         Vector3 headWorldPos = kaelTransform.position + new Vector3(0f, healthBarOffsetY, 0f);
         Vector3 screenPos = Camera.main.WorldToScreenPoint(headWorldPos);
         if (screenPos.z <= 0) return;
@@ -409,8 +499,12 @@ public class PlayerStats : MonoBehaviour
 
         DrawCyberBox(r, bgCol, borderCol, canAfford ? 2.5f : 1.5f);
 
-        DrawStyledText(new Rect(r.x + 10, r.y + 6, r.width - 20, 24), $"{title} <color=#38e1ff>Nv.{level}</color>", 17, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(new Rect(r.x + 10, r.y + 6, r.width - 20, 24), statInfo, 14, TextAnchor.MiddleRight, new Color(0.8f, 0.9f, 1f));
+        // Cajas separadas a la izquierda y derecha para evitar que el Nv. y la estadística se encimen
+        float leftW = r.width * 0.58f;
+        float rightW = r.width - leftW - 16f;
+
+        DrawStyledText(new Rect(r.x + 8, r.y + 6, leftW, 24), $"{title} <color=#38e1ff>Nv.{level}</color>", 16, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(new Rect(r.x + leftW + 4, r.y + 6, rightW, 24), statInfo, 13, TextAnchor.MiddleRight, new Color(0.82f, 0.92f, 1f));
 
         Rect buyBtn = new Rect(r.x + 8, r.y + 38, r.width - 16, 40);
         GUI.color = canAfford ? new Color(0.95f, 0.74f, 0.14f, 1f) : new Color(0.16f, 0.18f, 0.22f, 0.9f);
@@ -479,24 +573,33 @@ public class PlayerStats : MonoBehaviour
         GUI.DrawTexture(new Rect(0, 0, 1920, 1080), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        Rect box = new Rect(660, 320, 600, 340);
+        Rect box = new Rect(660, 300, 600, 410);
         DrawCyberBox(box, colBgDark, colCyanNexo, 3f);
 
-        DrawStyledText(new Rect(box.x, box.y + 35, box.width, 50), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
-        DrawStyledText(new Rect(box.x, box.y + 90, box.width, 35), "Sector 7 — Ciudad en Ruinas", 18, TextAnchor.MiddleCenter, Color.gray);
+        DrawStyledText(new Rect(box.x, box.y + 30, box.width, 50), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(new Rect(box.x, box.y + 82, box.width, 35), zoneName, 18, TextAnchor.MiddleCenter, Color.gray);
 
-        Rect btnResume = new Rect(box.x + 120, box.y + 155, 360, 62);
+        Rect btnResume = new Rect(box.x + 120, box.y + 140, 360, 60);
         DrawCyberBox(btnResume, new Color(0.1f, 0.35f, 0.25f), colHpGreen, 2.5f);
         DrawStyledText(btnResume, "▶ CONTINUAR COMBATE", 20, TextAnchor.MiddleCenter, Color.white);
         if (GUI.Button(btnResume, GUIContent.none, GUIStyle.none)) TogglePause();
 
-        Rect btnRestart = new Rect(box.x + 120, box.y + 235, 360, 55);
+        Rect btnRestart = new Rect(box.x + 120, box.y + 218, 360, 55);
         DrawCyberBox(btnRestart, new Color(0.25f, 0.1f, 0.15f), new Color(1f, 0.35f, 0.4f), 2f);
-        DrawStyledText(btnRestart, "↻ REINICIAR DESDE CERO", 17, TextAnchor.MiddleCenter, Color.white);
+        DrawStyledText(btnRestart, "↻ REINICIAR NIVEL", 17, TextAnchor.MiddleCenter, Color.white);
         if (GUI.Button(btnRestart, GUIContent.none, GUIStyle.none))
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        Rect btnMenu = new Rect(box.x + 120, box.y + 290, 360, 55);
+        DrawCyberBox(btnMenu, new Color(0.08f, 0.18f, 0.30f), colCyanNexo, 2f);
+        DrawStyledText(btnMenu, "⌂ SALIR AL MENÚ PRINCIPAL", 17, TextAnchor.MiddleCenter, Color.white);
+        if (GUI.Button(btnMenu, GUIContent.none, GUIStyle.none))
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(0);
         }
     }
 
@@ -538,45 +641,54 @@ public class PlayerStats : MonoBehaviour
         Rect box = new Rect(460, 200, 1000, 560);
         DrawCyberBox(box, colBgDark, colCyanNexo, 3.5f);
 
-        DrawStyledText(new Rect(box.x, box.y + 30, box.width, 45), "DECISIÓN DEL SECTOR 7: EL NÚCLEO DEL COMANDANTE", 28, TextAnchor.MiddleCenter, colCyanNexo);
-        DrawStyledText(new Rect(box.x + 60, box.y + 85, box.width - 120, 80),
-            "Entre los restos del Comandante Vorst encuentras un reactor bio-energético aún activo,\n" +
-            "mientras un grupo de sobrevivientes atrapados en el puente pide auxilio médico.",
-            19, TextAnchor.MiddleCenter, Color.white);
+        bool isLv2 = (levelNumber == 2);
+        string title = isLv2 ? "DECISIÓN DE LA BASE VORST: LA TORRE DE CONVERGENCIA" : "DECISIÓN DEL SECTOR 7: EL NÚCLEO DEL COMANDANTE";
+        string desc = isLv2
+            ? "Tras caer el Arconte Vorst, la esfera púrpura de la Base Vorst queda expuesta.\nPuedes liberar a los prisioneros humanos en estasis o sobrecargar tu Guantelete con sus orbes."
+            : "Entre los restos del Comandante Vorst encuentras un reactor bio-energético aún activo,\nmientras un grupo de sobrevivientes atrapados en el puente pide auxilio médico.";
+
+        string compDesc = isLv2
+            ? "Desactivar las cámaras de recolección para liberar a los prisioneros humanos cautivos en la Base Vorst."
+            : "Usar la energía del reactor para estabilizar el refugio de los sobrevivientes del Sector 7.";
+
+        string rigorDesc = isLv2
+            ? "Drenar los 4 orbes psiónicos del Arconte directamente hacia tu brazo para abrir brecha a la Nave Núcleo."
+            : "Devorar el núcleo Vorst con el Guantelete para acelerar tu marcha hacia Lía sin mirar atrás.";
+
+        DrawStyledText(new Rect(box.x, box.y + 30, box.width, 45), title, 27, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(new Rect(box.x + 60, box.y + 85, box.width - 120, 80), desc, 19, TextAnchor.MiddleCenter, Color.white);
 
         Rect btnCompassion = new Rect(box.x + 60, box.y + 195, 420, 280);
         DrawCyberBox(btnCompassion, new Color(0.06f, 0.22f, 0.32f), colCyanNexo, 2.5f);
         DrawStyledText(new Rect(btnCompassion.x + 20, btnCompassion.y + 20, btnCompassion.width - 40, 40), "♦ COMPASIÓN (HUMANIDAD)", 22, TextAnchor.MiddleCenter, colCyanNexo);
-        DrawStyledText(new Rect(btnCompassion.x + 25, btnCompassion.y + 75, btnCompassion.width - 50, 110),
-            "Usar la energía del reactor para estabilizar el refugio de los sobrevivientes del Sector 7.",
-            17, TextAnchor.MiddleCenter, Color.white);
+        DrawStyledText(new Rect(btnCompassion.x + 25, btnCompassion.y + 75, btnCompassion.width - 50, 110), compDesc, 17, TextAnchor.MiddleCenter, Color.white);
         DrawStyledText(new Rect(btnCompassion.x + 20, btnCompassion.y + 200, btnCompassion.width - 40, 50), "+1 COMPASIÓN\n+20% VIDA MÁXIMA PERMANENTE", 17, TextAnchor.MiddleCenter, colHpGreen);
 
         if (GUI.Button(btnCompassion, GUIContent.none, GUIStyle.none))
         {
             compassionPoints++;
-            choiceSummary = "Salvaste a los sobrevivientes (+1 Compasión, +20% HP)";
+            choiceSummary = isLv2 ? "Liberaste a los prisioneros de la Base Vorst (+1 Compasión)" : "Salvaste a los sobrevivientes (+1 Compasión, +20% HP)";
             RecalculateStats();
             currentHP = maxHP;
             isChoosingDilemma = false;
             isLevelCompleted = true;
+            SaveProgressForNextLevel();
         }
 
         Rect btnRigor = new Rect(box.x + 520, box.y + 195, 420, 280);
         DrawCyberBox(btnRigor, new Color(0.25f, 0.08f, 0.18f), new Color(1f, 0.35f, 0.55f), 2.5f);
         DrawStyledText(new Rect(btnRigor.x + 20, btnRigor.y + 20, btnRigor.width - 40, 40), "❖ RIGOR (DISONANCIA NEXO)", 22, TextAnchor.MiddleCenter, new Color(1f, 0.4f, 0.6f));
-        DrawStyledText(new Rect(btnRigor.x + 25, btnRigor.y + 75, btnRigor.width - 50, 110),
-            "Devorar el núcleo Vorst con el Guantelete para acelerar tu marcha hacia Lía sin mirar atrás.",
-            17, TextAnchor.MiddleCenter, Color.white);
+        DrawStyledText(new Rect(btnRigor.x + 25, btnRigor.y + 75, btnRigor.width - 50, 110), rigorDesc, 17, TextAnchor.MiddleCenter, Color.white);
         DrawStyledText(new Rect(btnRigor.x + 20, btnRigor.y + 200, btnRigor.width - 40, 50), "+1 RIGOR\n+25% DAÑO DE ATAQUE PERMANENTE", 17, TextAnchor.MiddleCenter, colGoldYel);
 
         if (GUI.Button(btnRigor, GUIContent.none, GUIStyle.none))
         {
             rigorPoints++;
-            choiceSummary = "Absorbiste el núcleo Vorst (+1 Rigor, +25% ATK)";
+            choiceSummary = isLv2 ? "Drenaste los orbes psiónicos del Arconte (+1 Rigor)" : "Absorbiste el núcleo Vorst (+1 Rigor, +25% ATK)";
             RecalculateStats();
             isChoosingDilemma = false;
             isLevelCompleted = true;
+            SaveProgressForNextLevel();
         }
     }
 
@@ -594,7 +706,8 @@ public class PlayerStats : MonoBehaviour
         int timeBonus = Mathf.Max(100, 1000 - (timeSec * 4));
         int totalScore = (gold * 10) + (kills * 25) + timeBonus;
 
-        DrawStyledText(new Rect(box.x, box.y + 30, box.width, 50), "★ ¡SECTOR 7 LIBERADO! ★", 36, TextAnchor.MiddleCenter, colGoldYel);
+        string vicTitle = (levelNumber == 2) ? "★ ¡BASE VORST CONQUISTADA! ★" : "★ ¡SECTOR 7 LIBERADO! ★";
+        DrawStyledText(new Rect(box.x, box.y + 30, box.width, 50), vicTitle, 36, TextAnchor.MiddleCenter, colGoldYel);
         DrawStyledText(new Rect(box.x + 50, box.y + 85, box.width - 100, 35), $"Decisión tomada: <color=#38e1ff>{choiceSummary}</color>", 19, TextAnchor.MiddleCenter, Color.white);
 
         DrawCyberBox(new Rect(box.x + 110, box.y + 140, box.width - 220, 240), new Color(0.04f, 0.05f, 0.09f), colBorder, 1.5f);
@@ -603,13 +716,49 @@ public class PlayerStats : MonoBehaviour
         DrawStyledText(new Rect(box.x + 140, box.y + 245, box.width - 280, 38), $"NIVEL DE KAEL Y ORO:   <color=#ffd35c>Nv.{playerLevel}  ({gold} Oro)</color>", 21, TextAnchor.MiddleLeft, Color.white);
         DrawStyledText(new Rect(box.x + 140, box.y + 300, box.width - 280, 45), $"PUNTAJE TOTAL DEL NIVEL:   <color=#2ee678>{totalScore} PTS</color>", 24, TextAnchor.MiddleLeft, Color.white);
 
-        Rect btnReplay = new Rect(box.x + 230, box.y + 420, 440, 75);
-        DrawCyberBox(btnReplay, new Color(0.08f, 0.32f, 0.45f), colCyanNexo, 3f);
-        DrawStyledText(btnReplay, "↻ VOLVER A JUGAR NIVEL 1", 22, TextAnchor.MiddleCenter, Color.white);
-        if (GUI.Button(btnReplay, GUIContent.none, GUIStyle.none))
+        bool hasNextLevel = !string.IsNullOrEmpty(nextLevelSceneName) && Application.CanStreamedLevelBeLoaded(nextLevelSceneName);
+
+        if (hasNextLevel)
         {
-            Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            Rect btnNext = new Rect(box.x + 60, box.y + 420, 450, 75);
+            DrawCyberBox(btnNext, new Color(0.08f, 0.38f, 0.25f), colHpGreen, 3f);
+            DrawStyledText(btnNext, $"▶ AVANZAR AL NIVEL {levelNumber + 1} (BASE VORST)", 20, TextAnchor.MiddleCenter, Color.white);
+            if (GUI.Button(btnNext, GUIContent.none, GUIStyle.none))
+            {
+                SaveProgressForNextLevel();
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(nextLevelSceneName);
+            }
+
+            Rect btnMenu = new Rect(box.x + 530, box.y + 420, 310, 75);
+            DrawCyberBox(btnMenu, new Color(0.08f, 0.25f, 0.38f), colCyanNexo, 2.5f);
+            DrawStyledText(btnMenu, "⌂ MENÚ PRINCIPAL", 19, TextAnchor.MiddleCenter, Color.white);
+            if (GUI.Button(btnMenu, GUIContent.none, GUIStyle.none))
+            {
+                SaveProgressForNextLevel();
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(0);
+            }
+        }
+        else
+        {
+            Rect btnReplay = new Rect(box.x + 90, box.y + 420, 350, 75);
+            DrawCyberBox(btnReplay, new Color(0.08f, 0.32f, 0.45f), colCyanNexo, 3f);
+            DrawStyledText(btnReplay, $"↻ REPETIR NIVEL {levelNumber}", 20, TextAnchor.MiddleCenter, Color.white);
+            if (GUI.Button(btnReplay, GUIContent.none, GUIStyle.none))
+            {
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+
+            Rect btnMenu = new Rect(box.x + 460, box.y + 420, 350, 75);
+            DrawCyberBox(btnMenu, new Color(0.08f, 0.25f, 0.38f), colGoldYel, 2.5f);
+            DrawStyledText(btnMenu, "⌂ MENÚ PRINCIPAL", 20, TextAnchor.MiddleCenter, Color.white);
+            if (GUI.Button(btnMenu, GUIContent.none, GUIStyle.none))
+            {
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(0);
+            }
         }
     }
 
@@ -643,8 +792,10 @@ public class PlayerStats : MonoBehaviour
         st.fontStyle = FontStyle.Bold;
         st.alignment = align;
 
+        // Limpiar etiquetas <color=...> del texto de sombra para que sea 100% negra y no duplique el color cian/amarillo desplazado
+        string shadowTxt = System.Text.RegularExpressions.Regex.Replace(txt, "<color=[^>]+>|</color>", "");
         st.normal.textColor = new Color(0f, 0f, 0f, 0.85f);
-        GUI.Label(new Rect(r.x + 2, r.y + 2, r.width, r.height), txt, st);
+        GUI.Label(new Rect(r.x + 1f, r.y + 1f, r.width, r.height), shadowTxt, st);
 
         st.normal.textColor = col;
         GUI.Label(r, txt, st);
