@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class WaveSpawner : MonoBehaviour
@@ -7,12 +8,16 @@ public class WaveSpawner : MonoBehaviour
     public Transform kaelTransform;
     public GameObject vorstWalkerPrefab;
 
-    [Header("Configuración de Hordas (Sector 7)")]
+    [Header("Configuración de Hordas")]
     public int totalWaves = 10;
     public int baseEnemiesPerWave = 4; // Sube hasta 9 enemigos en las últimas oleadas
     public float spawnDistanceAhead = 10.5f;
-    public float enemySpacing = 1.25f; // Hordas compactas para lucir el golpe en área y la Ultimate
+    public float enemySpacing = 1.35f;
     public float groundY = -2.85f;     // Alineado con Kael por encima de la barra de botones
+
+    [Header("Configuración Nivel 2 (Base Vorst - Lab_Zahir)")]
+    public bool isLevel2BaseVorst = false;
+    public float difficultyMultiplier = 1.0f;
 
     [Header("Estado Actual")]
     public int currentWave = 0;
@@ -22,6 +27,19 @@ public class WaveSpawner : MonoBehaviour
 
     void Start()
     {
+        if (SceneManager.GetActiveScene().name == "Lab_Zahir")
+        {
+            isLevel2BaseVorst = true;
+            // Pre-cargar todos los cuadros de animación del Nivel 2 en memoria para eliminar cualquier tirón
+            EnemyDummy.PreloadLevel2Frames();
+        }
+
+        // Asegurar que exista el gestor de Audio en la escena
+        if (FindFirstObjectByType<LevelAudioManager>() == null)
+        {
+            gameObject.AddComponent<LevelAudioManager>();
+        }
+
         if (kaelTransform == null)
         {
             KaelAutoController kael = FindFirstObjectByType<KaelAutoController>();
@@ -79,12 +97,18 @@ public class WaveSpawner : MonoBehaviour
 
         if (isMiniBossWave && CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.TriggerBossWarning("⚠ ¡ALERTA DE TANQUE PESADO! ⚠", "BRUTO VORST DETECTADO EN LA OLEADA 5", 2.4f);
+            if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+            string warnTitle = isLevel2BaseVorst ? "⚠ ¡COLOSO DE NÚCLEO ROJO! ⚠" : "⚠ ¡ALERTA DE TANQUE PESADO! ⚠";
+            string warnSub = isLevel2BaseVorst ? "PRIMER JEFE: BRUTO VORST EN LA OLEADA 5" : "BRUTO VORST DETECTADO EN LA OLEADA 5";
+            CombatVFXManager.Instance.TriggerBossWarning(warnTitle, warnSub, 2.4f);
             yield return new WaitForSeconds(2.0f);
         }
         else if (isBossWave && CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.TriggerBossWarning("⚠ ¡ADVERTENCIA: LÍDER DE ZONA! ⚠", "COMANDANTE VORST BLOQUEA LA SALIDA DEL SECTOR 7", 2.8f);
+            if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+            string warnTitle = isLevel2BaseVorst ? "⚠ ¡SOBERANO DE LA BASE VORST! ⚠" : "⚠ ¡ADVERTENCIA: LÍDER DE ZONA! ⚠";
+            string warnSub = isLevel2BaseVorst ? "JEFE FINAL: ARCONTE PSIÓNICO VORST" : "COMANDANTE VORST BLOQUEA LA SALIDA DEL SECTOR 7";
+            CombatVFXManager.Instance.TriggerBossWarning(warnTitle, warnSub, 2.8f);
             yield return new WaitForSeconds(2.2f);
         }
         else
@@ -92,8 +116,7 @@ public class WaveSpawner : MonoBehaviour
             yield return new WaitForSeconds(1.0f);
         }
 
-        // Cantidad de enemigos en la horda: empieza en 4 y llega hasta 9 en las oleadas finales
-        int hordeCount = baseEnemiesPerWave + Mathf.FloorToInt(currentWave * 0.55f);
+        int hordeCount = baseEnemiesPerWave + Mathf.FloorToInt(currentWave * 0.50f);
         if (isMiniBossWave || isBossWave) hordeCount += 1;
 
         enemiesAlive = hordeCount;
@@ -102,8 +125,7 @@ public class WaveSpawner : MonoBehaviour
         {
             if (kaelTransform == null || vorstWalkerPrefab == null) yield break;
 
-            // Ligera variación en X para que se sienta como una horda orgánica
-            float jitterX = Random.Range(-0.15f, 0.15f);
+            float jitterX = Random.Range(-0.12f, 0.12f);
             float spawnX = kaelTransform.position.x + spawnDistanceAhead + (i * enemySpacing) + jitterX;
             Vector3 spawnPos = new Vector3(spawnX, groundY, 0f);
 
@@ -112,46 +134,94 @@ public class WaveSpawner : MonoBehaviour
 
             if (enemy != null)
             {
+                SpriteRenderer sr = enemyObj.GetComponent<SpriteRenderer>();
+
                 if (isBossWave && i == hordeCount - 1)
                 {
-                    // JEFE DE ZONA (OLEADA 10): Comandante Vorst
+                    // JEFE FINAL (OLEADA 10): 3er Personaje (Arconte Vorst en Nivel 2)
                     enemy.isBoss = true;
-                    enemy.enemyTitle = "Comandante Vorst — Líder Sector 7";
-                    enemyObj.transform.localScale *= 1.75f;
+                    enemy.enemyTitle = isLevel2BaseVorst ? "Arconte Vorst — Soberano Psiónico" : "Comandante Vorst — Líder Sector 7";
 
-                    SpriteRenderer sr = enemyObj.GetComponent<SpriteRenderer>();
-                    if (sr != null) sr.color = new Color(1f, 0.35f, 0.65f);
-
-                    enemy.maxHP = 450f;
-                    enemy.damage = 18f;
-                    enemy.attackRange = 1.9f;
-                    enemy.goldReward = 150;
-                    enemy.expReward = 140;
+                    if (isLevel2BaseVorst)
+                    {
+                        enemy.SetupCustomVisuals("Archon");
+                        enemyObj.transform.localScale = Vector3.one * 1.35f;
+                        if (sr != null) sr.color = Color.white;
+                        enemy.attackRange = 2.4f;
+                        enemy.attackRate = 1.0f;
+                        // Vida elevada a 2200 HP para que el combate dure de 20 a 35 segundos y se vean todas sus fases, ataques psiónicos y muerte
+                        enemy.maxHP = 2200f;
+                        enemy.damage = 22f;
+                        enemy.goldReward = 250;
+                        enemy.expReward = 220;
+                    }
+                    else
+                    {
+                        enemyObj.transform.localScale *= 1.75f;
+                        if (sr != null) sr.color = new Color(1f, 0.35f, 0.65f);
+                        enemy.attackRange = 1.9f;
+                        enemy.maxHP = 450f;
+                        enemy.damage = 18f;
+                        enemy.goldReward = 150;
+                        enemy.expReward = 140;
+                    }
                 }
                 else if (isMiniBossWave && i == hordeCount - 1)
                 {
-                    // MINI-JEFE (OLEADA 5): Bruto Vorst
+                    // PRIMER JEFE / MINI-JEFE (OLEADA 5): 2do Personaje (Bruto Vorst en Nivel 2)
                     enemy.isMiniBoss = true;
-                    enemy.enemyTitle = "Bruto Vorst — Coloso Blindado";
-                    enemyObj.transform.localScale *= 1.45f;
+                    enemy.enemyTitle = isLevel2BaseVorst ? "Bruto Vorst — Coloso de Núcleo Rojo" : "Bruto Vorst — Coloso Blindado";
 
-                    SpriteRenderer sr = enemyObj.GetComponent<SpriteRenderer>();
-                    if (sr != null) sr.color = new Color(1f, 0.65f, 0.25f);
-
-                    enemy.maxHP = 240f;
-                    enemy.damage = 14f;
-                    enemy.moveSpeed = 1.6f;
-                    enemy.attackRange = 1.7f;
-                    enemy.goldReward = 65;
-                    enemy.expReward = 75;
+                    if (isLevel2BaseVorst)
+                    {
+                        enemy.SetupCustomVisuals("Brute");
+                        enemyObj.transform.localScale = Vector3.one * 1.30f;
+                        if (sr != null) sr.color = Color.white;
+                        // Bruto con 950 HP para resistir varios combos y mostrar su embestida pesada telegrafiada
+                        enemy.maxHP = 950f;
+                        enemy.damage = 15f;
+                        enemy.moveSpeed = 1.55f;
+                        enemy.attackRange = 1.65f;
+                        enemy.goldReward = 120;
+                        enemy.expReward = 110;
+                    }
+                    else
+                    {
+                        enemyObj.transform.localScale *= 1.45f;
+                        if (sr != null) sr.color = new Color(1f, 0.65f, 0.25f);
+                        enemy.maxHP = 240f;
+                        enemy.damage = 14f;
+                        enemy.moveSpeed = 1.6f;
+                        enemy.attackRange = 1.7f;
+                        enemy.goldReward = 65;
+                        enemy.expReward = 75;
+                    }
                 }
                 else
                 {
-                    // CAMINANTE VORST EN HORDA: Escala su vida (+24% por oleada) y su daño (+18% por oleada)
-                    enemy.maxHP = Mathf.RoundToInt(30f * Mathf.Pow(1.24f, currentWave - 1));
-                    enemy.damage = Mathf.RoundToInt(4f * Mathf.Pow(1.18f, currentWave - 1));
-                    enemy.goldReward = Mathf.RoundToInt(6f + (currentWave * 2f));
-                    enemy.expReward = 10 + (currentWave * 2);
+                    // HORDA SENCILLA (OLEADAS 1 A 10): 1er Personaje (Acechador Vorst bípedo con antenas y garras en Nivel 2)
+                    if (isLevel2BaseVorst)
+                    {
+                        enemy.enemyTitle = "Acechador Vorst";
+                        enemy.SetupCustomVisuals("Stalker");
+                        enemyObj.transform.localScale = Vector3.one * 1.0f;
+                        if (sr != null) sr.color = Color.white;
+                        enemy.attackRange = 1.45f;
+                        enemy.moveSpeed = 2.0f;
+
+                        // Vida nivelada (empieza en 58 HP) para que aguante 4-5 golpes de Kael y se aprecien bien sus animaciones de caminar, atacar y morir
+                        enemy.maxHP = Mathf.RoundToInt(58f * Mathf.Pow(1.18f, currentWave - 1));
+                        enemy.damage = Mathf.RoundToInt(5f * Mathf.Pow(1.14f, currentWave - 1));
+                        enemy.goldReward = Mathf.RoundToInt(8f + (currentWave * 2.5f));
+                        enemy.expReward = 12 + (currentWave * 3);
+                    }
+                    else
+                    {
+                        enemy.maxHP = Mathf.RoundToInt(30f * Mathf.Pow(1.24f, currentWave - 1));
+                        enemy.damage = Mathf.RoundToInt(4f * Mathf.Pow(1.18f, currentWave - 1));
+                        enemy.goldReward = Mathf.RoundToInt(6f + (currentWave * 2f));
+                        enemy.expReward = 10 + (currentWave * 2);
+                    }
                 }
 
                 enemy.OnEnemyDied += HandleEnemyDied;
@@ -177,7 +247,6 @@ public class WaveSpawner : MonoBehaviour
             }
             else if (PlayerStats.Instance != null && kaelTransform != null)
             {
-                // Curar un 15% de la vida máxima al limpiar una oleada y mostrar cartel
                 float heal = Mathf.RoundToInt(PlayerStats.Instance.maxHP * 0.15f);
                 PlayerStats.Instance.currentHP = Mathf.Min(PlayerStats.Instance.maxHP, PlayerStats.Instance.currentHP + heal);
 
