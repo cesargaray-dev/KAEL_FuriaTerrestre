@@ -148,24 +148,29 @@ public class MainMenuAndIntroController : MonoBehaviour
         // 3. Botones Interactivos del Menú
         float btnX = 1240f;
         float btnW = 520f;
-        float btnH = 78f;
+        float btnH = 72f;
 
-        if (DrawMenuButton(new Rect(btnX, 390, btnW, btnH), "▶  INICIAR CAMPAÑA (CON CINEMÁTICA)", new Color(0.08f, 0.32f, 0.48f), new Color(0.22f, 0.92f, 1f), true))
+        if (DrawMenuButton(new Rect(btnX, 370, btnW, btnH), "▶  INICIAR CAMPAÑA (CON CINEMÁTICA)", new Color(0.08f, 0.32f, 0.48f), new Color(0.22f, 0.92f, 1f), true))
         {
             StartCinematic();
         }
 
-        if (DrawMenuButton(new Rect(btnX, 495, btnW, btnH), "⚔  IR DIRECTO AL COMBATE (SECTOR 7)", new Color(0.12f, 0.16f, 0.28f), new Color(1f, 0.82f, 0.22f), false))
+        if (DrawMenuButton(new Rect(btnX, 462, btnW, btnH), "⚔  NIVEL 1: SECTOR 7 (LAB_CESAR)", new Color(0.12f, 0.16f, 0.28f), new Color(1f, 0.82f, 0.22f), false))
         {
             LoadLevel1();
         }
 
-        if (DrawMenuButton(new Rect(btnX, 600, btnW, btnH), "❖  CRÉDITOS Y EQUIPO DE DESARROLLO", new Color(0.08f, 0.10f, 0.18f), new Color(0.65f, 0.45f, 1f), false))
+        if (DrawMenuButton(new Rect(btnX, 554, btnW, btnH), "⚡  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.16f, 0.08f, 0.28f), new Color(0.85f, 0.35f, 1f), false))
+        {
+            SceneManager.LoadScene("Lab_Zahir");
+        }
+
+        if (DrawMenuButton(new Rect(btnX, 646, btnW, btnH), "❖  CRÉDITOS Y EQUIPO DE DESARROLLO", new Color(0.08f, 0.10f, 0.18f), new Color(0.65f, 0.45f, 1f), false))
         {
             showCredits = !showCredits;
         }
 
-        if (DrawMenuButton(new Rect(btnX, 705, btnW, btnH), "✖  SALIR DEL JUEGO", new Color(0.22f, 0.06f, 0.12f), new Color(1f, 0.3f, 0.4f), false))
+        if (DrawMenuButton(new Rect(btnX, 738, btnW, btnH), "✖  SALIR DEL JUEGO", new Color(0.22f, 0.06f, 0.12f), new Color(1f, 0.3f, 0.4f), false))
         {
             Application.Quit();
         }

@@ -34,6 +34,10 @@
 **/*.unitypackage
 **/*.app
 
-# Basura del sistema operativo
+# Basura del sistema operativo y VCS local
 .DS_Store
 Thumbs.db
+.plastic/
+ignore.conf
+*.slnx
+

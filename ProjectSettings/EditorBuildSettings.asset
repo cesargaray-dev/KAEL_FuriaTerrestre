@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Lab_Cesar.unity
     guid: e615dc0ca41e15d478960afc09d4e2c0
+  - enabled: 1
+    path: Assets/_Project/Scenes/Lab_Zahir.unity
+    guid: 24e0b1113c21e284fa43d000f74ed742
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
