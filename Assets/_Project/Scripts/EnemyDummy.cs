@@ -441,36 +441,42 @@ public class EnemyDummy : MonoBehaviour
     void OnGUI()
     {
         if (isDead || Camera.main == null) return;
+        GUI.matrix = Matrix4x4.identity;
 
         if (isBoss || isMiniBoss)
         {
-            float bossW = 440f;
-            float bossH = 22f;
-            float bx = (Screen.width / 2f) - (bossW / 2f);
-            float by = 28f;
+            Rect bgBox = PlayerStats.ScaleRect(736f, 12f, 448f, 68f);
+            Rect titleRect = PlayerStats.ScaleRect(740f, 15f, 440f, 26f);
+            Rect barRect = PlayerStats.ScaleRect(748f, 44f, 424f, 24f);
 
-            GUI.color = new Color(0.05f, 0.02f, 0.08f, 0.95f);
-            GUI.DrawTexture(new Rect(bx - 4, by - 26, bossW + 8, bossH + 34), Texture2D.whiteTexture);
+            GUI.color = new Color(0.05f, 0.02f, 0.08f, 0.96f);
+            GUI.DrawTexture(bgBox, Texture2D.whiteTexture);
 
             GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
             titleStyle.alignment = TextAnchor.MiddleCenter;
             titleStyle.fontStyle = FontStyle.Bold;
-            titleStyle.fontSize = 15;
+            titleStyle.fontSize = PlayerStats.ScaleFont(16);
+
+            string bossTxt = $"☠ {enemyTitle.ToUpper()} ☠";
+            titleStyle.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
+            GUI.Label(new Rect(titleRect.x + 1f, titleRect.y + 1f, titleRect.width, titleRect.height), bossTxt, titleStyle);
             titleStyle.normal.textColor = isBoss ? new Color(1f, 0.35f, 0.55f) : new Color(1f, 0.65f, 0.2f);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(bx, by - 24, bossW, 22), $"☠ {enemyTitle.ToUpper()} ☠", titleStyle);
+            GUI.Label(titleRect, bossTxt, titleStyle);
 
             GUI.color = new Color(0.25f, 0.05f, 0.12f);
-            GUI.DrawTexture(new Rect(bx, by, bossW, bossH), Texture2D.whiteTexture);
+            GUI.DrawTexture(barRect, Texture2D.whiteTexture);
 
-            float bossFill = Mathf.Clamp01(currentHP / maxHP);
+            float bossFill = Mathf.Clamp01(currentHP / Mathf.Max(1f, maxHP));
             GUI.color = isBoss ? new Color(0.95f, 0.15f, 0.35f) : new Color(0.95f, 0.5f, 0.1f);
-            GUI.DrawTexture(new Rect(bx, by, bossW * bossFill, bossH), Texture2D.whiteTexture);
-
-            titleStyle.fontSize = 13;
-            titleStyle.normal.textColor = Color.white;
+            GUI.DrawTexture(new Rect(barRect.x, barRect.y, Mathf.Round(barRect.width * bossFill), barRect.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            GUI.Label(new Rect(bx, by, bossW, bossH), $"{Mathf.CeilToInt(currentHP)} / {Mathf.CeilToInt(maxHP)} HP", titleStyle);
+
+            titleStyle.fontSize = PlayerStats.ScaleFont(13);
+            string hpTxt = $"{Mathf.CeilToInt(currentHP)} / {Mathf.CeilToInt(maxHP)} HP";
+            titleStyle.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
+            GUI.Label(new Rect(barRect.x + 1f, barRect.y + 1f, barRect.width, barRect.height), hpTxt, titleStyle);
+            titleStyle.normal.textColor = Color.white;
+            GUI.Label(barRect, hpTxt, titleStyle);
             return;
         }
 

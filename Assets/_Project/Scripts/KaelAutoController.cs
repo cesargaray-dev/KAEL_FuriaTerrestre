@@ -120,7 +120,11 @@ public class KaelAutoController : MonoBehaviour
             CombatVFXManager.Instance.RegisterComboHit();
         }
 
-        if (LevelAudioManager.Instance != null)
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayHitImpact(currentCombo == 3);
+        }
+        else if (LevelAudioManager.Instance != null)
         {
             LevelAudioManager.Instance.PlayPunch(currentCombo == 3);
         }
@@ -202,7 +206,11 @@ public class KaelAutoController : MonoBehaviour
         // --- FASE 2: DISPARO DEL MEGA RAYO DE PLASMA (0.85s CON 5 MULTI-IMPACTOS) ---
         anim.speed = 0.35f; // Avanza lentamente por los cuadros del disparo láser
 
-        if (LevelAudioManager.Instance != null)
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayUltimateBeam();
+        }
+        else if (LevelAudioManager.Instance != null)
         {
             LevelAudioManager.Instance.PlayUltimateLaser();
         }

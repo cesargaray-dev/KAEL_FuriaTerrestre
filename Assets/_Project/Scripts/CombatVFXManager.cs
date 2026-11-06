@@ -112,21 +112,16 @@ public class CombatVFXManager : MonoBehaviour
 
     IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration)
     {
-        // Crear contenedor del Mega Rayo
         GameObject beamRoot = new GameObject("NexoMegaBeam");
         beamRoot.transform.position = originPos;
 
-        // Capa 1: Aura Exterior Azul/Dorada
         SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "OuterGlow", new Color(0.1f, 0.65f, 1f, 0.55f), 20);
-        // Capa 2: Cuerpo Principal Cian Nexo
         SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidCyan", new Color(0.22f, 0.95f, 1f, 0.90f), 21);
-        // Capa 3: Núcleo Incandescente Blanco
         SpriteRenderer coreBeam = CreateBeamLayer(beamRoot.transform, "CoreWhite", new Color(1f, 1f, 1f, 1f), 22);
 
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            // El rayo vibra y pulsa con enorme potencia
             float pulse = 1f + Mathf.Sin(Time.time * 55f) * 0.25f;
             float fadeOut = (elapsed > duration * 0.75f) ? Mathf.InverseLerp(duration, duration * 0.75f, elapsed) : 1f;
             float currentThickness = pulse * fadeOut;
@@ -140,7 +135,6 @@ public class CombatVFXManager : MonoBehaviour
             coreBeam.transform.localScale = new Vector3(length, 0.45f * currentThickness, 1f);
             coreBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
-            // Lanzar chispas de plasma a lo largo del rayo
             if (Random.value > 0.3f)
             {
                 Vector3 sparkPos = originPos + new Vector3(Random.Range(0.5f, length * 0.85f), Random.Range(-0.5f, 0.5f), 0f);
@@ -165,7 +159,6 @@ public class CombatVFXManager : MonoBehaviour
         return sr;
     }
 
-    // Chispas de impacto cuando Kael golpea enemigos o estrella el piso
     public void SpawnHitSparks(Vector3 pos, bool isHeavy, int count = 6)
     {
         for (int i = 0; i < count; i++)
@@ -185,6 +178,10 @@ public class CombatVFXManager : MonoBehaviour
     // --- ALERTAS DE JEFE Y TEXTOS FLOTANTES ---
     public void TriggerBossWarning(string title, string subtitle, float duration = 2.6f)
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBossMusic();
+        }
         StartCoroutine(BossWarningRoutine(title, subtitle, duration));
     }
 
@@ -261,47 +258,71 @@ public class CombatVFXManager : MonoBehaviour
         }
     }
 
+    // --- FUNCIONES AUXILIARES DE ESCALADO NATIVO (1920x1080 -> Píxeles Reales) ---
+    public static Rect ScaleRect(float x, float y, float w, float h)
+    {
+        float sx = Screen.width / 1920f;
+        float sy = Screen.height / 1080f;
+        return new Rect(
+            Mathf.Round(x * sx),
+            Mathf.Round(y * sy),
+            Mathf.Round(w * sx),
+            Mathf.Round(h * sy)
+        );
+    }
+
+    public static int ScaleFont(int baseSize)
+    {
+        float scale = Mathf.Min(Screen.width / 1920f, Screen.height / 1080f);
+        return Mathf.Max(10, Mathf.RoundToInt(baseSize * scale));
+    }
+
+    void DrawStyledText(Rect r, string txt, int baseFontSize, TextAnchor align, Color col)
+    {
+        GUIStyle st = new GUIStyle(GUI.skin.label);
+        st.richText = true;
+        st.fontSize = ScaleFont(baseFontSize);
+        st.fontStyle = FontStyle.Bold;
+        st.alignment = align;
+
+        string shadowTxt = System.Text.RegularExpressions.Regex.Replace(txt, "<color=[^>]+>|</color>", "");
+        st.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
+        GUI.Label(new Rect(r.x + 1f, r.y + 1f, r.width, r.height), shadowTxt, st);
+
+        st.normal.textColor = col;
+        GUI.Label(r, txt, st);
+    }
+
     void OnGUI()
     {
+        GUI.matrix = Matrix4x4.identity;
+
         // 1. Contador de Combo en pantalla (Arriba a la izquierda debajo del HUD)
         if (comboHits >= 2)
         {
-            GUIStyle comboStyle = new GUIStyle(GUI.skin.label);
-            comboStyle.fontSize = Mathf.Clamp(20 + (comboHits / 2), 20, 34);
-            comboStyle.fontStyle = FontStyle.Bold;
-            comboStyle.normal.textColor = (comboHits >= 10) ? new Color(1f, 0.82f, 0.2f) : new Color(0.22f, 0.92f, 1f);
-
-            GUI.color = Color.black;
-            GUI.Label(new Rect(27, 122, 350, 45), $"⚡ COMBO x{comboHits} GOLPES!", comboStyle);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(25, 120, 350, 45), $"⚡ COMBO x{comboHits} GOLPES!", comboStyle);
+            int dynFont = Mathf.Clamp(22 + (comboHits / 2), 22, 36);
+            Color comboCol = (comboHits >= 10) ? new Color(1f, 0.84f, 0.22f) : new Color(0.22f, 0.94f, 1f);
+            Rect comboRect = ScaleRect(28f, 122f, 440f, 52f);
+            DrawStyledText(comboRect, $"⚡ COMBO x{comboHits} GOLPES!", dynFont, TextAnchor.MiddleLeft, comboCol);
         }
 
         // 2. Bandas Cinematográficas (Letterbox) y Cartel durante la Ultimate
         if (ultCinematicActive)
         {
-            // Oscurecer ligeramente el fondo para que el rayo láser brille al máximo
             GUI.color = new Color(0.02f, 0.08f, 0.18f, 0.45f);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
 
-            // Franjas negras de cine arriba y abajo
-            float barH = Screen.height * 0.12f;
+            float barH = Mathf.Round(Screen.height * 0.12f);
             GUI.color = Color.black;
             GUI.DrawTexture(new Rect(0, 0, Screen.width, barH), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0, Screen.height - barH, Screen.width, barH), Texture2D.whiteTexture);
 
-            // Línea neón cian en el borde de la franja
             GUI.color = new Color(0.22f, 0.92f, 1f, 0.9f);
             GUI.DrawTexture(new Rect(0, barH - 3f, Screen.width, 3f), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0, Screen.height - barH, Screen.width, 3f), Texture2D.whiteTexture);
-
-            GUIStyle ultStyle = new GUIStyle(GUI.skin.label);
-            ultStyle.alignment = TextAnchor.MiddleCenter;
-            ultStyle.fontSize = 28;
-            ultStyle.fontStyle = FontStyle.Bold;
-            ultStyle.normal.textColor = new Color(0.22f, 0.95f, 1f);
             GUI.color = Color.white;
-            GUI.Label(new Rect(0, barH * 0.2f, Screen.width, barH * 0.6f), "★ SOBRECARGA NEXO: CAÑÓN DE PLASMA ★", ultStyle);
+
+            DrawStyledText(new Rect(0, barH * 0.18f, Screen.width, barH * 0.64f), "★ SOBRECARGA NEXO: CAÑÓN DE PLASMA ★", 30, TextAnchor.MiddleCenter, new Color(0.22f, 0.95f, 1f));
         }
 
         // 3. Flashazo de impacto de la Ultimate
@@ -320,28 +341,19 @@ public class CombatVFXManager : MonoBehaviour
             GUI.color = new Color(0.85f, 0.05f, 0.15f, pulse * 0.24f);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
 
-            float bannerH = 86f;
-            float bannerY = (Screen.height * 0.34f) - (bannerH / 2f);
+            Rect bannerRect = ScaleRect(0f, 320f, 1920f, 110f);
 
-            GUI.color = new Color(0.08f, 0.02f, 0.05f, 0.92f);
-            GUI.DrawTexture(new Rect(0, bannerY, Screen.width, bannerH), Texture2D.whiteTexture);
+            GUI.color = new Color(0.08f, 0.02f, 0.05f, 0.94f);
+            GUI.DrawTexture(bannerRect, Texture2D.whiteTexture);
 
             GUI.color = new Color(1f, 0.15f, 0.25f, 1f);
-            GUI.DrawTexture(new Rect(0, bannerY, Screen.width, 3f), Texture2D.whiteTexture);
-            GUI.DrawTexture(new Rect(0, bannerY + bannerH - 3f, Screen.width, 3f), Texture2D.whiteTexture);
-
-            GUIStyle warnStyle = new GUIStyle(GUI.skin.label);
-            warnStyle.alignment = TextAnchor.MiddleCenter;
-            warnStyle.fontSize = 26;
-            warnStyle.fontStyle = FontStyle.Bold;
-            warnStyle.normal.textColor = new Color(1f, 0.25f, 0.3f, 0.5f + pulse * 0.5f);
-
+            GUI.DrawTexture(new Rect(bannerRect.x, bannerRect.y, bannerRect.width, 3f), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bannerRect.x, bannerRect.yMax - 3f, bannerRect.width, 3f), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            GUI.Label(new Rect(0, bannerY + 8, Screen.width, 40), warningTitle, warnStyle);
 
-            warnStyle.fontSize = 17;
-            warnStyle.normal.textColor = new Color(1f, 0.85f, 0.3f, 1f);
-            GUI.Label(new Rect(0, bannerY + 46, Screen.width, 30), warningSubtitle, warnStyle);
+            Color titleCol = new Color(1f, 0.28f, 0.34f, 0.55f + pulse * 0.45f);
+            DrawStyledText(ScaleRect(0f, 330f, 1920f, 50f), warningTitle, 30, TextAnchor.MiddleCenter, titleCol);
+            DrawStyledText(ScaleRect(0f, 378f, 1920f, 38f), warningSubtitle, 20, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.3f, 1f));
         }
     }
 
@@ -381,7 +393,6 @@ public class CombatVFXManager : MonoBehaviour
     }
 }
 
-// Partícula de carga que viaja hacia adentro del Guantelete durante la Fase 1 de la Ultimate
 public class ChargeParticle : MonoBehaviour
 {
     private Vector3 targetPos;
@@ -405,7 +416,6 @@ public class ChargeParticle : MonoBehaviour
     }
 }
 
-// Chispas de impacto en golpes y explosiones
 public class SparkParticle : MonoBehaviour
 {
     private Vector2 velocity;
@@ -511,21 +521,24 @@ public class FloatingPopup : MonoBehaviour
         Vector3 screenPos = Camera.main.WorldToScreenPoint(transform.position);
         if (screenPos.z <= 0) return;
 
+        GUI.matrix = Matrix4x4.identity;
+
         float guiY = Screen.height - screenPos.y;
         float alpha = Mathf.Clamp01(1f - (elapsed / duration));
 
         GUIStyle style = new GUIStyle(GUI.skin.label);
-        style.fontSize = fontSize;
+        style.fontSize = CombatVFXManager.ScaleFont(fontSize);
         style.fontStyle = FontStyle.Bold;
         style.alignment = TextAnchor.MiddleCenter;
 
-        Rect rect = new Rect(screenPos.x - 110, guiY - 20, 220, 40);
+        float w = Mathf.Round(260f * (Screen.width / 1920f));
+        float h = Mathf.Round(44f * (Screen.height / 1080f));
+        Rect rect = new Rect(Mathf.Round(screenPos.x - w * 0.5f), Mathf.Round(guiY - h * 0.5f), w, h);
 
-        GUI.color = new Color(0f, 0f, 0f, alpha);
-        GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), text, style);
+        style.normal.textColor = new Color(0f, 0f, 0f, alpha * 0.92f);
+        GUI.Label(new Rect(rect.x + 1f, rect.y + 1f, rect.width, rect.height), text, style);
 
-        GUI.color = new Color(color.r, color.g, color.b, alpha);
+        style.normal.textColor = new Color(color.r, color.g, color.b, alpha);
         GUI.Label(rect, text, style);
-        GUI.color = Color.white;
     }
 }

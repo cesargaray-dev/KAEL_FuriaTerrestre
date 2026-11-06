@@ -174,31 +174,69 @@ public class CompanionDialogueManager : MonoBehaviour
         }
     }
 
+    // --- FUNCIONES AUXILIARES DE ESCALADO NATIVO (1920x1080 -> Píxeles Reales) ---
+    Rect ScaleRect(float x, float y, float w, float h)
+    {
+        float sx = Screen.width / 1920f;
+        float sy = Screen.height / 1080f;
+        return new Rect(
+            Mathf.Round(x * sx),
+            Mathf.Round(y * sy),
+            Mathf.Round(w * sx),
+            Mathf.Round(h * sy)
+        );
+    }
+
+    int ScaleFont(int baseSize)
+    {
+        float scale = Mathf.Min(Screen.width / 1920f, Screen.height / 1080f);
+        return Mathf.Max(10, Mathf.RoundToInt(baseSize * scale));
+    }
+
+    void DrawStyledText(Rect r, string txt, int baseSize, TextAnchor align, Color col, bool wordWrap = false)
+    {
+        GUIStyle st = new GUIStyle(GUI.skin.label);
+        st.richText = true;
+        st.fontSize = ScaleFont(baseSize);
+        st.fontStyle = FontStyle.Bold;
+        st.alignment = align;
+        st.wordWrap = wordWrap;
+
+        string shadowTxt = System.Text.RegularExpressions.Regex.Replace(txt, "<color=[^>]+>|</color>", "");
+        st.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
+        GUI.Label(new Rect(r.x + 1f, r.y + 1f, r.width, r.height), shadowTxt, st);
+
+        st.normal.textColor = col;
+        GUI.Label(r, txt, st);
+    }
+
     void OnGUI()
     {
         if (!isShowingDialogue) return;
         if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill))
             return;
 
-        Matrix4x4 oldMatrix = GUI.matrix;
-        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(Screen.width / 1920f, Screen.height / 1080f, 1f));
+        GUI.matrix = Matrix4x4.identity;
 
-        Rect box = new Rect(520, 110, 880, 160);
+        Rect box = ScaleRect(510f, 98f, 900f, 168f);
         bool isAlert = currentLine.portraitKey == "nexa_alert";
         bool isKael = currentLine.portraitKey.StartsWith("kael");
 
-        Color borderCol = isAlert ? new Color(1f, 0.25f, 0.4f, 0.95f) : (isKael ? new Color(1f, 0.82f, 0.22f, 0.95f) : new Color(0.22f, 0.92f, 1f, 0.95f));
-        Color bgCol = new Color(0.03f, 0.06f, 0.12f, 0.94f);
+        Color borderCol = isAlert ? new Color(1f, 0.25f, 0.4f, 0.96f) : (isKael ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f));
+        Color bgCol = new Color(0.03f, 0.06f, 0.12f, 0.95f);
 
-        // Borde y fondo de la caja
+        // Borde y fondo de la caja holográfica
         GUI.color = borderCol;
         GUI.DrawTexture(box, Texture2D.whiteTexture);
         GUI.color = bgCol;
-        GUI.DrawTexture(new Rect(box.x + 3, box.y + 3, box.width - 6, box.height - 6), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(box.x + 2f, box.y + 2f, box.width - 4f, box.height - 4f), Texture2D.whiteTexture);
+        // Franja superior luminosa de acento
+        GUI.color = borderCol;
+        GUI.DrawTexture(new Rect(box.x, box.y, box.width, 4f), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        // Panel del Retrato (136x136 píxeles, llenando el espacio izquierdo)
-        Rect portRect = new Rect(box.x + 12, box.y + 12, 136, 136);
+        // Panel del Retrato
+        Rect portRect = ScaleRect(524f, 112f, 140f, 140f);
         GUI.color = new Color(0.06f, 0.10f, 0.18f, 1f);
         GUI.DrawTexture(portRect, Texture2D.whiteTexture);
         GUI.color = Color.white;
@@ -212,45 +250,32 @@ public class CompanionDialogueManager : MonoBehaviour
         // Efecto de escaneo holográfico sobre N.E.X.A.
         if (!isKael)
         {
-            float scanY = portRect.y + Mathf.PingPong(Time.unscaledTime * 95f, portRect.height - 4f);
-            GUI.color = new Color(borderCol.r, borderCol.g, borderCol.b, 0.4f);
-            GUI.DrawTexture(new Rect(portRect.x, scanY, portRect.width, 3f), Texture2D.whiteTexture);
+            float scanY = portRect.y + Mathf.PingPong(Time.unscaledTime * (portRect.height * 0.7f), Mathf.Max(1f, portRect.height - 3f));
+            GUI.color = new Color(borderCol.r, borderCol.g, borderCol.b, 0.42f);
+            GUI.DrawTexture(new Rect(portRect.x, scanY, portRect.width, 2f), Texture2D.whiteTexture);
             GUI.color = Color.white;
         }
 
-        // Nombre del hablante
-        GUIStyle nameStyle = new GUIStyle(GUI.skin.label);
-        nameStyle.fontSize = 20;
-        nameStyle.fontStyle = FontStyle.Bold;
-        nameStyle.normal.textColor = borderCol;
-        GUI.Label(new Rect(box.x + 162, box.y + 12, 540, 30), "📡 " + currentLine.speaker, nameStyle);
+        // Nombre del hablante a resolución nativa
+        DrawStyledText(ScaleRect(678f, 110f, 710f, 32f), "📡 " + currentLine.speaker, 20, TextAnchor.MiddleLeft, borderCol, false);
 
-        // Texto con fuente más grande y legible
-        GUIStyle txtStyle = new GUIStyle(GUI.skin.label);
-        txtStyle.fontSize = 19;
-        txtStyle.wordWrap = true;
-        txtStyle.fontStyle = FontStyle.Bold;
-        txtStyle.normal.textColor = Color.white;
-
+        // Texto con fuente nítida nativa
         string shownText = currentLine.text.Substring(0, Mathf.Clamp(visibleChars, 0, currentLine.text.Length));
-        GUI.Label(new Rect(box.x + 162, box.y + 46, 695, 82), shownText, txtStyle);
+        DrawStyledText(ScaleRect(678f, 146f, 712f, 86f), shownText, 19, TextAnchor.UpperLeft, Color.white, true);
 
         // Indicador de avance
-        GUIStyle hintStyle = new GUIStyle(GUI.skin.label);
-        hintStyle.fontSize = 14;
-        hintStyle.alignment = TextAnchor.LowerRight;
-        hintStyle.normal.textColor = new Color(0.7f, 0.85f, 1f);
-        GUI.Label(new Rect(box.x + 160, box.y + 128, 695, 24), (visibleChars < currentLine.text.Length) ? "[Toca para completar]" : "[Toca para continuar ▶]", hintStyle);
+        string hintLabel = (visibleChars < currentLine.text.Length) ? "[Toca para completar]" : "[Toca para continuar ▶]";
+        DrawStyledText(ScaleRect(678f, 234f, 712f, 24f), hintLabel, 14, TextAnchor.MiddleRight, new Color(0.72f, 0.88f, 1f), false);
 
         if (GUI.Button(box, GUIContent.none, GUIStyle.none))
         {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+
             if (visibleChars < currentLine.text.Length)
                 visibleChars = currentLine.text.Length;
             else
                 NextLine();
         }
-
-        GUI.matrix = oldMatrix;
     }
 
     Texture2D GetPortraitTexture(string key)

@@ -52,7 +52,15 @@ public class LevelAudioManager : MonoBehaviour
 
     void Start()
     {
-        // La música sintetizada de fondo SOLO debe sonar en el Nivel 2 (Lab_Zahir)
+        // Si el nuevo AudioManager global está activo con las pistas reales, delegamos la música de fondo a él
+        if (AudioManager.Instance != null)
+        {
+            if (musicSource != null && musicSource.isPlaying)
+                musicSource.Stop();
+            return;
+        }
+
+        // Respaldo: música sintetizada de fondo SOLO si no hay AudioManager global
         bool isLevel2 = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Lab_Zahir";
         if (isLevel2 && backgroundMusicClip != null)
         {
@@ -71,6 +79,15 @@ public class LevelAudioManager : MonoBehaviour
 
     void Update()
     {
+        if (AudioManager.Instance != null)
+        {
+            if (musicSource != null && musicSource.isPlaying)
+                musicSource.Stop();
+
+            float effectiveVol = AudioManager.Instance.isMuted ? 0f : (AudioManager.Instance.masterVolume * 0.65f);
+            sfxVolume = effectiveVol;
+        }
+
         if (musicSource != null) musicSource.volume = musicVolume;
         if (sfxSource != null) sfxSource.volume = sfxVolume;
     }

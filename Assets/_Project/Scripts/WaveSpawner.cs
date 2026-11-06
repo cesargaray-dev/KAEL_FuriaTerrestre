@@ -84,6 +84,11 @@ public class WaveSpawner : MonoBehaviour
             if (kael != null) kael.ResetKaelPosition();
         }
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayCombatMusic();
+        }
+
         StartCoroutine(SpawnNextWaveRoutine());
     }
 
@@ -94,6 +99,15 @@ public class WaveSpawner : MonoBehaviour
 
         bool isMiniBossWave = (currentWave == 5);
         bool isBossWave = (currentWave == totalWaves);
+
+        if (isMiniBossWave || isBossWave)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayBossMusic();
+        }
+        else
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayCombatMusic();
+        }
 
         if (isMiniBossWave && CombatVFXManager.Instance != null)
         {
@@ -240,6 +254,11 @@ public class WaveSpawner : MonoBehaviour
         {
             if (currentWave >= totalWaves)
             {
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayVictoryDilemmaMusic();
+                }
+
                 if (PlayerStats.Instance != null)
                 {
                     PlayerStats.Instance.TriggerEndOfZoneDilemma();
@@ -247,6 +266,11 @@ public class WaveSpawner : MonoBehaviour
             }
             else if (PlayerStats.Instance != null && kaelTransform != null)
             {
+                if (currentWave == 5 && AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayCombatMusic();
+                }
+
                 float heal = Mathf.RoundToInt(PlayerStats.Instance.maxHP * 0.15f);
                 PlayerStats.Instance.currentHP = Mathf.Min(PlayerStats.Instance.maxHP, PlayerStats.Instance.currentHP + heal);
 
