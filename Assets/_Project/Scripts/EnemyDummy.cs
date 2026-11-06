@@ -45,7 +45,6 @@ public class EnemyDummy : MonoBehaviour
     private float walkAnimTimer = 0f;
     private float dieAnimTimer = 0f;
     private float baseGroundY = -2.85f;
-    private float attackLungeOffsetX = 0f;
 
     public static void PreloadLevel2Frames()
     {
@@ -108,7 +107,17 @@ public class EnemyDummy : MonoBehaviour
         if (anim == null) anim = GetComponent<Animator>();
         if (sr != null) originalColor = sr.color;
 
-        KaelAutoController kael = FindFirstObjectByType<KaelAutoController>();
+        LocateKaelTarget();
+    }
+
+    void LocateKaelTarget()
+    {
+        if (KaelAutoController.Instance != null)
+        {
+            kaelTarget = KaelAutoController.Instance.transform;
+            return;
+        }
+        KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
         if (kael != null) kaelTarget = kael.transform;
     }
 
@@ -138,16 +147,36 @@ public class EnemyDummy : MonoBehaviour
 
     void Update()
     {
-        if (isDead || kaelTarget == null) return;
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma))
+        if (isDead) return;
+        if (kaelTarget == null)
+        {
+            LocateKaelTarget();
+            if (kaelTarget == null) return;
+        }
+
+        if (PlayerStats.Instance != null &&
+            (PlayerStats.Instance.isPaused ||
+             PlayerStats.Instance.isGameOver ||
+             PlayerStats.Instance.isLevelCompleted ||
+             PlayerStats.Instance.isChoosingDilemma ||
+             PlayerStats.Instance.isChoosingSkill ||
+             PlayerStats.Instance.isUpgradeTreeOpen))
             return;
 
-        float distToKael = Mathf.Abs(transform.position.x - kaelTarget.position.x);
+        float diffX = kaelTarget.position.x - transform.position.x;
+        float distToKael = Mathf.Abs(diffX);
+        float dirToKael = (Mathf.Abs(diffX) > 0.02f) ? Mathf.Sign(diffX) : -1f;
+
+        // Orientar el sprite del enemigo siempre hacia Kael (por defecto miran a la izquierda, flipX = true si Kael está a la derecha)
+        if (sr != null && !isPlayingAttackAnim)
+        {
+            sr.flipX = (dirToKael > 0f);
+        }
 
         if (distToKael > attackRange && !isChargingHeavy && !isPlayingAttackAnim)
         {
             if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", false);
-            transform.Translate(Vector2.left * moveSpeed * Time.deltaTime, Space.World);
+            transform.Translate(new Vector2(dirToKael, 0f) * (moveSpeed * Time.deltaTime), Space.World);
         }
         else
         {
@@ -182,6 +211,7 @@ public class EnemyDummy : MonoBehaviour
         isPlayingAttackAnim = true;
         transform.localRotation = Quaternion.identity;
         float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
         float lungeMax = (visualType == "Archon") ? 0.14f : 0.34f;
         int totalFrames = (customAttackFrames != null && customAttackFrames.Length > 0) ? customAttackFrames.Length : 8;
 
@@ -192,17 +222,18 @@ public class EnemyDummy : MonoBehaviour
                 sr.sprite = customAttackFrames[f];
 
             float curve = Mathf.Sin((f / (float)Mathf.Max(1, totalFrames - 1)) * Mathf.PI);
-            transform.position = new Vector3(baseX - lungeMax * curve, baseGroundY, transform.position.z);
+            transform.position = new Vector3(baseX + dirToKael * lungeMax * curve, baseGroundY, transform.position.z);
 
             if (f == 3)
             {
                 if (LevelAudioManager.Instance != null)
                     LevelAudioManager.Instance.PlayEnemyAttack();
 
-                if (PlayerStats.Instance != null)
+                bool inStrikeReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.65f);
+                if (inStrikeReach && PlayerStats.Instance != null)
                     PlayerStats.Instance.TakeDamage(damage);
 
-                if (CombatVFXManager.Instance != null && kaelTarget != null)
+                if (inStrikeReach && CombatVFXManager.Instance != null && kaelTarget != null)
                     CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
             }
 
@@ -281,14 +312,16 @@ public class EnemyDummy : MonoBehaviour
         if (!isDead)
         {
             float baseX = transform.position.x;
+            float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
             if (customAttackFrames != null && customAttackFrames.Length > 2)
                 sr.sprite = customAttackFrames[2];
-            transform.position = new Vector3(baseX - 0.45f, baseGroundY, transform.position.z);
+            transform.position = new Vector3(baseX + dirToKael * 0.45f, baseGroundY, transform.position.z);
 
             if (LevelAudioManager.Instance != null)
                 LevelAudioManager.Instance.PlayEnemyAttack();
 
-            if (PlayerStats.Instance != null)
+            bool inHeavyReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.95f);
+            if (inHeavyReach && PlayerStats.Instance != null)
                 PlayerStats.Instance.TakeDamage(damage * 2.0f);
 
             if (CombatVFXManager.Instance != null)
@@ -312,7 +345,8 @@ public class EnemyDummy : MonoBehaviour
         if (knockback > 0f && !isPlayingAttackAnim)
         {
             float resist = (isBoss || isMiniBoss) ? 0.25f : 0.7f;
-            transform.Translate(Vector2.right * knockback * resist, Space.World);
+            float pushDir = (kaelTarget != null && transform.position.x < kaelTarget.position.x) ? -1f : 1f;
+            transform.Translate(Vector2.right * (pushDir * knockback * resist), Space.World);
         }
 
         if (CombatVFXManager.Instance != null)

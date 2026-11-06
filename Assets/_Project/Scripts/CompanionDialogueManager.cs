@@ -63,7 +63,7 @@ public class CompanionDialogueManager : MonoBehaviour
 
     void Update()
     {
-        WaveSpawner spawner = FindFirstObjectByType<WaveSpawner>();
+        WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
         if (spawner != null && !triggeredWaves.Contains(spawner.currentWave))
         {
             TriggerWaveDialogue(spawner.currentWave);
@@ -213,7 +213,7 @@ public class CompanionDialogueManager : MonoBehaviour
     void OnGUI()
     {
         if (!isShowingDialogue) return;
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill))
+        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isUpgradeTreeOpen))
             return;
 
         GUI.matrix = Matrix4x4.identity;

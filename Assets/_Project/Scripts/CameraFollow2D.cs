@@ -5,9 +5,10 @@ public class CameraFollow2D : MonoBehaviour
     public static CameraFollow2D Instance { get; private set; }
 
     public Transform target;
-    public float offsetX = 3.2f;
-    public float smoothSpeed = 6f;
+    public float offsetX = 2.8f;
+    public float smoothSpeed = 6.5f;
 
+    private float currentOffsetX;
     private float fixedY;
     private float fixedZ;
     private float shakeTimer = 0f;
@@ -18,11 +19,16 @@ public class CameraFollow2D : MonoBehaviour
         Instance = this;
         fixedY = transform.position.y;
         fixedZ = transform.position.z;
+        currentOffsetX = offsetX;
     }
 
     void Start()
     {
-        // Alinear la cámara instantáneamente al inicio para que no se mueva sola al dar Play
+        if (target == null && KaelAutoController.Instance != null)
+        {
+            target = KaelAutoController.Instance.transform;
+        }
+
         if (target != null)
         {
             transform.position = new Vector3(target.position.x + offsetX, fixedY, fixedZ);
@@ -37,9 +43,23 @@ public class CameraFollow2D : MonoBehaviour
 
     void LateUpdate()
     {
-        if (target == null) return;
+        if (target == null)
+        {
+            if (KaelAutoController.Instance != null)
+                target = KaelAutoController.Instance.transform;
+            else
+                return;
+        }
 
-        float targetX = target.position.x + offsetX;
+        // Ajustar suavemente el encuadre según si Kael mira/avanza a la derecha o retrocede a la izquierda con A
+        float desiredOffset = offsetX;
+        if (KaelAutoController.Instance != null && KaelAutoController.Instance.isFacingLeft)
+        {
+            desiredOffset = offsetX * 0.45f;
+        }
+        currentOffsetX = Mathf.Lerp(currentOffsetX, desiredOffset, 4.5f * Time.deltaTime);
+
+        float targetX = target.position.x + currentOffsetX;
         float newX = Mathf.Lerp(transform.position.x, targetX, smoothSpeed * Time.deltaTime);
 
         Vector2 shakeOffset = Vector2.zero;
@@ -50,7 +70,7 @@ public class CameraFollow2D : MonoBehaviour
             if (shakeTimer <= 0f) shakeMagnitude = 0f;
         }
 
-        // La altura base (fixedY) jamás se pierde, evitando que la cámara se baje sola
+        // La altura base (fixedY) jamás se pierde
         transform.position = new Vector3(newX + shakeOffset.x, fixedY + shakeOffset.y, fixedZ);
     }
 }

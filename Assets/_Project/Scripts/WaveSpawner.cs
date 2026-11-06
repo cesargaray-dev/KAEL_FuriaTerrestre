@@ -35,14 +35,14 @@ public class WaveSpawner : MonoBehaviour
         }
 
         // Asegurar que exista el gestor de Audio en la escena
-        if (FindFirstObjectByType<LevelAudioManager>() == null)
+        if (FindAnyObjectByType<LevelAudioManager>() == null)
         {
             gameObject.AddComponent<LevelAudioManager>();
         }
 
         if (kaelTransform == null)
         {
-            KaelAutoController kael = FindFirstObjectByType<KaelAutoController>();
+            KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
             if (kael != null) kaelTransform = kael.transform;
         }
 
@@ -54,7 +54,7 @@ public class WaveSpawner : MonoBehaviour
 
     void Update()
     {
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma))
+        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isUpgradeTreeOpen || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma))
             return;
 
         if (!spawningWave && enemiesAlive <= 0 && currentWave < totalWaves)
@@ -68,7 +68,7 @@ public class WaveSpawner : MonoBehaviour
     {
         StopAllCoroutines();
 
-        EnemyDummy[] remaining = FindObjectsByType<EnemyDummy>(FindObjectsSortMode.None);
+        EnemyDummy[] remaining = FindObjectsByType<EnemyDummy>(FindObjectsInactive.Exclude);
         foreach (EnemyDummy e in remaining)
         {
             Destroy(e.gameObject);

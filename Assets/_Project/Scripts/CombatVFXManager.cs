@@ -42,7 +42,7 @@ public class CombatVFXManager : MonoBehaviour
 
     void Start()
     {
-        KaelAutoController kael = FindFirstObjectByType<KaelAutoController>();
+        KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
         if (kael != null) kaelTarget = kael.transform;
     }
 
@@ -119,6 +119,8 @@ public class CombatVFXManager : MonoBehaviour
         SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidCyan", new Color(0.22f, 0.95f, 1f, 0.90f), 21);
         SpriteRenderer coreBeam = CreateBeamLayer(beamRoot.transform, "CoreWhite", new Color(1f, 1f, 1f, 1f), 22);
 
+        float absLen = Mathf.Abs(length);
+        float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
         while (elapsed < duration)
         {
@@ -126,18 +128,18 @@ public class CombatVFXManager : MonoBehaviour
             float fadeOut = (elapsed > duration * 0.75f) ? Mathf.InverseLerp(duration, duration * 0.75f, elapsed) : 1f;
             float currentThickness = pulse * fadeOut;
 
-            outerBeam.transform.localScale = new Vector3(length, 1.85f * currentThickness, 1f);
+            outerBeam.transform.localScale = new Vector3(absLen, 1.85f * currentThickness, 1f);
             outerBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
-            midBeam.transform.localScale = new Vector3(length, 1.05f * currentThickness, 1f);
+            midBeam.transform.localScale = new Vector3(absLen, 1.05f * currentThickness, 1f);
             midBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
-            coreBeam.transform.localScale = new Vector3(length, 0.45f * currentThickness, 1f);
+            coreBeam.transform.localScale = new Vector3(absLen, 0.45f * currentThickness, 1f);
             coreBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
             if (Random.value > 0.3f)
             {
-                Vector3 sparkPos = originPos + new Vector3(Random.Range(0.5f, length * 0.85f), Random.Range(-0.5f, 0.5f), 0f);
+                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, absLen * 0.85f), Random.Range(-0.5f, 0.5f), 0f);
                 SpawnHitSparks(sparkPos, true, 3);
             }
 
@@ -223,7 +225,7 @@ public class CombatVFXManager : MonoBehaviour
     {
         if (kaelTarget == null)
         {
-            KaelAutoController kael = FindFirstObjectByType<KaelAutoController>();
+            KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
             if (kael != null) kaelTarget = kael.transform;
         }
 
