@@ -582,22 +582,45 @@ public class KaelAutoController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (anim == null) return;
+        if (anim != null)
+        {
+            AnimatorStateInfo state = anim.IsInTransition(0)
+                ? anim.GetNextAnimatorStateInfo(0)
+                : anim.GetCurrentAnimatorStateInfo(0);
 
-        AnimatorStateInfo state = anim.IsInTransition(0)
-            ? anim.GetNextAnimatorStateInfo(0)
-            : anim.GetCurrentAnimatorStateInfo(0);
+            float s = scaleAttack;
 
-        float s = scaleAttack;
+            if (isCastingUlt || state.IsName("Kael_Ultimate"))
+                s = scaleUlt;
+            else if (state.IsName("Kael_Run"))
+                s = scaleRun;
+            else if (state.IsName("Kael_Idle"))
+                s = scaleIdle;
 
-        if (isCastingUlt || state.IsName("Kael_Ultimate"))
-            s = scaleUlt;
-        else if (state.IsName("Kael_Run"))
-            s = scaleRun;
-        else if (state.IsName("Kael_Idle"))
-            s = scaleIdle;
+            transform.localScale = new Vector3(s, s, 1f);
+        }
 
-        transform.localScale = new Vector3(s, s, 1f);
+        if (spriteRenderer == null || isCastingUlt) return;
+
+        if (riposteSpriteTimer > 0f)
+        {
+            riposteSpriteTimer -= Time.unscaledDeltaTime;
+            float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
+            int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
+            if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
+            {
+                spriteRenderer.sprite = kaelRiposteSprites[idx];
+            }
+        }
+        else if (isGuarding)
+        {
+            float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
+            int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
+            if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
+            {
+                spriteRenderer.sprite = kaelBlockSprites[idx];
+            }
+        }
     }
 
     void ExecuteComboStep(float effectiveRate, bool isPureza, bool isCorrupcion)
@@ -876,31 +899,6 @@ public class KaelAutoController : MonoBehaviour
         }
 
         isCastingUlt = false;
-    }
-
-    void LateUpdate()
-    {
-        if (spriteRenderer == null || isCastingUlt) return;
-
-        if (riposteSpriteTimer > 0f)
-        {
-            riposteSpriteTimer -= Time.unscaledDeltaTime;
-            float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
-            int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
-            if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
-            {
-                spriteRenderer.sprite = kaelRiposteSprites[idx];
-            }
-        }
-        else if (isGuarding)
-        {
-            float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
-            int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
-            if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
-            {
-                spriteRenderer.sprite = kaelBlockSprites[idx];
-            }
-        }
     }
 
     // --- LECTURA HÍBRIDA DE TECLADO (Compatible con Input System nuevo y Input Manager clásico) ---
