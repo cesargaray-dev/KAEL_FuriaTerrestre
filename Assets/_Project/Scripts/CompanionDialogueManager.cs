@@ -25,6 +25,9 @@ public class CompanionDialogueManager : MonoBehaviour
     private Texture2D portKaelShout;
     private Texture2D portNexaNormal;
     private Texture2D portNexaAlert;
+    private Texture2D panelCyanTex;
+    private Texture2D panelCrimsonTex;
+    private Texture2D panelGoldTex;
 
     private Queue<DialogueLine> lineQueue = new Queue<DialogueLine>();
     private DialogueLine currentLine;
@@ -44,16 +47,21 @@ public class CompanionDialogueManager : MonoBehaviour
         }
         Instance = this;
 
-        portKaelNormal = LoadTexAsTexture("StoryUI/Portrait_Kael_Normal");
-        portKaelShout  = LoadTexAsTexture("StoryUI/Portrait_Kael_Shout");
-        portNexaNormal = LoadTexAsTexture("StoryUI/Portrait_Nexa_Normal");
-        portNexaAlert  = LoadTexAsTexture("StoryUI/Portrait_Nexa_Alert");
+        portKaelNormal  = LoadTexAsTexture("StoryUI/Portrait_Kael_Normal");
+        portKaelShout   = LoadTexAsTexture("StoryUI/Portrait_Kael_Shout");
+        portNexaNormal  = LoadTexAsTexture("StoryUI/Portrait_Nexa_Normal");
+        portNexaAlert   = LoadTexAsTexture("StoryUI/Portrait_Nexa_Alert");
+        panelCyanTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Cyan");
+        panelCrimsonTex = LoadTexAsTexture("StoryUI/Panel_Cyber_Crimson");
+        panelGoldTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Gold");
     }
 
     Texture2D LoadTexAsTexture(string path)
     {
+        Texture2D tex = Resources.Load<Texture2D>(path);
+        if (tex != null) return tex;
         Sprite sp = Resources.Load<Sprite>(path);
-        return (sp != null) ? sp.texture : Resources.Load<Texture2D>(path);
+        return (sp != null) ? sp.texture : null;
     }
 
     void Start()
@@ -218,33 +226,44 @@ public class CompanionDialogueManager : MonoBehaviour
 
         GUI.matrix = Matrix4x4.identity;
 
-        Rect box = ScaleRect(510f, 98f, 900f, 168f);
+        Rect box = ScaleRect(490f, 94f, 940f, 174f);
         bool isAlert = currentLine.portraitKey == "nexa_alert";
         bool isKael = currentLine.portraitKey.StartsWith("kael");
 
         Color borderCol = isAlert ? new Color(1f, 0.25f, 0.4f, 0.96f) : (isKael ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f));
-        Color bgCol = new Color(0.03f, 0.06f, 0.12f, 0.95f);
+        Color bgCol = new Color(0.03f, 0.06f, 0.12f, 0.96f);
 
-        // Borde y fondo de la caja holográfica
-        GUI.color = borderCol;
-        GUI.DrawTexture(box, Texture2D.whiteTexture);
-        GUI.color = bgCol;
-        GUI.DrawTexture(new Rect(box.x + 2f, box.y + 2f, box.width - 4f, box.height - 4f), Texture2D.whiteTexture);
-        // Franja superior luminosa de acento
-        GUI.color = borderCol;
-        GUI.DrawTexture(new Rect(box.x, box.y, box.width, 4f), Texture2D.whiteTexture);
-        GUI.color = Color.white;
+        Texture2D panelSkin = isAlert ? panelCrimsonTex : (isKael ? panelGoldTex : panelCyanTex);
+        if (panelSkin != null)
+        {
+            GUI.color = new Color(1f, 1f, 1f, 0.98f);
+            GUI.DrawTexture(box, panelSkin, ScaleMode.StretchToFill);
+            GUI.color = Color.white;
+        }
+        else
+        {
+            GUI.color = borderCol;
+            GUI.DrawTexture(box, Texture2D.whiteTexture);
+            GUI.color = bgCol;
+            GUI.DrawTexture(new Rect(box.x + 2f, box.y + 2f, box.width - 4f, box.height - 4f), Texture2D.whiteTexture);
+            GUI.color = borderCol;
+            GUI.DrawTexture(new Rect(box.x, box.y, box.width, 4f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+        }
 
-        // Panel del Retrato
-        Rect portRect = ScaleRect(524f, 112f, 140f, 140f);
-        GUI.color = new Color(0.06f, 0.10f, 0.18f, 1f);
+        // Panel del Retrato con marco luminoso
+        Rect portFrame = ScaleRect(512f, 110f, 142f, 142f);
+        GUI.color = borderCol;
+        GUI.DrawTexture(portFrame, Texture2D.whiteTexture);
+        Rect portRect = new Rect(portFrame.x + 2f, portFrame.y + 2f, portFrame.width - 4f, portFrame.height - 4f);
+        GUI.color = new Color(0.04f, 0.07f, 0.14f, 1f);
         GUI.DrawTexture(portRect, Texture2D.whiteTexture);
         GUI.color = Color.white;
 
         Texture2D activePort = GetPortraitTexture(currentLine.portraitKey);
         if (activePort != null)
         {
-            GUI.DrawTexture(portRect, activePort, ScaleMode.ScaleAndCrop);
+            GUI.DrawTexture(portRect, activePort, ScaleMode.ScaleToFit);
         }
 
         // Efecto de escaneo holográfico sobre N.E.X.A.
@@ -257,15 +276,15 @@ public class CompanionDialogueManager : MonoBehaviour
         }
 
         // Nombre del hablante a resolución nativa
-        DrawStyledText(ScaleRect(678f, 110f, 710f, 32f), "📡 " + currentLine.speaker, 20, TextAnchor.MiddleLeft, borderCol, false);
+        DrawStyledText(ScaleRect(672f, 108f, 736f, 32f), "📡 " + currentLine.speaker, 20, TextAnchor.MiddleLeft, borderCol, false);
 
         // Texto con fuente nítida nativa
         string shownText = currentLine.text.Substring(0, Mathf.Clamp(visibleChars, 0, currentLine.text.Length));
-        DrawStyledText(ScaleRect(678f, 146f, 712f, 86f), shownText, 19, TextAnchor.UpperLeft, Color.white, true);
+        DrawStyledText(ScaleRect(672f, 144f, 736f, 88f), shownText, 19, TextAnchor.UpperLeft, Color.white, true);
 
         // Indicador de avance
         string hintLabel = (visibleChars < currentLine.text.Length) ? "[Toca para completar]" : "[Toca para continuar ▶]";
-        DrawStyledText(ScaleRect(678f, 234f, 712f, 24f), hintLabel, 14, TextAnchor.MiddleRight, new Color(0.72f, 0.88f, 1f), false);
+        DrawStyledText(ScaleRect(672f, 234f, 736f, 24f), hintLabel, 14, TextAnchor.MiddleRight, new Color(0.72f, 0.88f, 1f), false);
 
         if (GUI.Button(box, GUIContent.none, GUIStyle.none))
         {

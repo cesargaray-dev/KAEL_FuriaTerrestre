@@ -10,6 +10,11 @@ public class MainMenuAndIntroController : MonoBehaviour
     private Texture2D[] introSlides = new Texture2D[4];
     private Texture2D portKaelShout;
     private Texture2D portNexaNormal;
+    private Texture2D btnCyanTex;
+    private Texture2D btnGoldTex;
+    private Texture2D btnPurpleTex;
+    private Texture2D btnCrimsonTex;
+    private Texture2D panelCyanTex;
 
     private bool inCinematic = false;
     private bool showCredits = false;
@@ -62,8 +67,13 @@ public class MainMenuAndIntroController : MonoBehaviour
         {
             introSlides[i] = LoadTex($"StoryUI/Intro_{i + 1}");
         }
-        portKaelShout = LoadTex("StoryUI/Portrait_Kael_Shout");
+        portKaelShout  = LoadTex("StoryUI/Portrait_Kael_Shout");
         portNexaNormal = LoadTex("StoryUI/Portrait_Nexa_Normal");
+        btnCyanTex     = LoadTex("StoryUI/Btn_Cyber_Cyan");
+        btnGoldTex     = LoadTex("StoryUI/Btn_Cyber_Gold");
+        btnPurpleTex   = LoadTex("StoryUI/Btn_Cyber_Purple");
+        btnCrimsonTex  = LoadTex("StoryUI/Btn_Cyber_Crimson");
+        panelCyanTex   = LoadTex("StoryUI/Panel_Cyber_Cyan");
 
         InitSparks();
     }
@@ -97,8 +107,10 @@ public class MainMenuAndIntroController : MonoBehaviour
 
     Texture2D LoadTex(string path)
     {
+        Texture2D tex = Resources.Load<Texture2D>(path);
+        if (tex != null) return tex;
         Sprite sp = Resources.Load<Sprite>(path);
-        return (sp != null) ? sp.texture : Resources.Load<Texture2D>(path);
+        return (sp != null) ? sp.texture : null;
     }
 
     void Update()
@@ -418,7 +430,16 @@ public class MainMenuAndIntroController : MonoBehaviour
         }
 
         Rect dialogBox = ScaleRect(160, 815, 1600, 235);
-        DrawCyberPanelDouble(dialogBox, new Color(0.03f, 0.06f, 0.12f, 0.96f), new Color(0.22f, 0.88f, 1f), new Color(1f, 0.82f, 0.22f, 0.45f), 2.5f);
+        if (panelCyanTex != null)
+        {
+            GUI.color = new Color(1f, 1f, 1f, 0.98f);
+            GUI.DrawTexture(dialogBox, panelCyanTex, ScaleMode.StretchToFill);
+            GUI.color = Color.white;
+        }
+        else
+        {
+            DrawCyberPanelDouble(dialogBox, new Color(0.03f, 0.06f, 0.12f, 0.96f), new Color(0.22f, 0.88f, 1f), new Color(1f, 0.82f, 0.22f, 0.45f), 2.5f);
+        }
 
         Texture2D port = (currentSlide == 1) ? portKaelShout : ((currentSlide >= 2) ? portNexaNormal : null);
         float textStartX = 195f;
@@ -426,11 +447,14 @@ public class MainMenuAndIntroController : MonoBehaviour
 
         if (port != null)
         {
-            Rect pRect = ScaleRect(178, 833, 200, 200);
-            GUI.color = new Color(0.06f, 0.10f, 0.18f, 1f);
+            Rect pFrame = ScaleRect(178, 833, 200, 200);
+            GUI.color = (currentSlide == 1) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
+            GUI.DrawTexture(pFrame, Texture2D.whiteTexture);
+            Rect pRect = new Rect(pFrame.x + 2f, pFrame.y + 2f, pFrame.width - 4f, pFrame.height - 4f);
+            GUI.color = new Color(0.04f, 0.07f, 0.14f, 1f);
             GUI.DrawTexture(pRect, Texture2D.whiteTexture);
             GUI.color = Color.white;
-            GUI.DrawTexture(pRect, port, ScaleMode.ScaleAndCrop);
+            GUI.DrawTexture(pRect, port, ScaleMode.ScaleToFit);
 
             textStartX = 398f;
             textWidth = 1065f;
@@ -484,18 +508,38 @@ public class MainMenuAndIntroController : MonoBehaviour
         // Desplazamiento horizontal suave al pasar el cursor
         Rect r = ScaleRect(baseRect.x - hVal * 8f, baseRect.y - hVal * 2f, baseRect.width + hVal * 12f, baseRect.height + hVal * 4f);
 
-        float pulse = pulseGlow ? (0.78f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4.5f)) * 0.22f) : 1f;
-        Color outerBorder = hovered ? Color.white : new Color(border.r, border.g, border.b, pulse);
-        Color innerBorder = new Color(border.r, border.g, border.b, hovered ? 0.65f : 0.30f);
-        Color finalBg = Color.Lerp(bg, new Color(border.r * 0.38f, border.g * 0.38f, border.b * 0.38f, 0.98f), hVal * 0.55f);
+        float pulse = pulseGlow ? (0.85f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4.5f)) * 0.15f) : 1f;
 
-        DrawCyberPanelDouble(r, finalBg, outerBorder, innerBorder, pulseGlow ? 2.5f : 2f);
+        Texture2D btnSkin = btnCyanTex;
+        if (btnIndex == 1) btnSkin = btnGoldTex;
+        else if (btnIndex == 2) btnSkin = btnPurpleTex;
+        else if (btnIndex == 4) btnSkin = btnCrimsonTex;
 
-        // Barra lateral izquierda luminosa
-        float sideBarW = Mathf.Max(5f, Mathf.Round((8f + hVal * 5f) * (Screen.width / 1920f)));
-        GUI.color = hovered ? new Color(1f, 0.86f, 0.28f, 1f) : border;
-        GUI.DrawTexture(new Rect(r.x + 2f, r.y + 2f, sideBarW, r.height - 4f), Texture2D.whiteTexture);
-        GUI.color = Color.white;
+        if (btnSkin != null)
+        {
+            float br = hovered ? 1.24f : pulse;
+            GUI.color = new Color(br, br, br, 1f);
+            GUI.DrawTexture(r, btnSkin, ScaleMode.StretchToFill);
+            if (hovered)
+            {
+                GUI.color = new Color(1f, 0.94f, 0.65f, 0.14f);
+                GUI.DrawTexture(new Rect(r.x + 4f, r.y + 4f, r.width - 8f, r.height - 8f), Texture2D.whiteTexture);
+            }
+            GUI.color = Color.white;
+        }
+        else
+        {
+            Color outerBorder = hovered ? Color.white : new Color(border.r, border.g, border.b, pulse);
+            Color innerBorder = new Color(border.r, border.g, border.b, hovered ? 0.65f : 0.30f);
+            Color finalBg = Color.Lerp(bg, new Color(border.r * 0.38f, border.g * 0.38f, border.b * 0.38f, 0.98f), hVal * 0.55f);
+
+            DrawCyberPanelDouble(r, finalBg, outerBorder, innerBorder, pulseGlow ? 2.5f : 2f);
+
+            float sideBarW = Mathf.Max(5f, Mathf.Round((8f + hVal * 5f) * (Screen.width / 1920f)));
+            GUI.color = hovered ? new Color(1f, 0.86f, 0.28f, 1f) : border;
+            GUI.DrawTexture(new Rect(r.x + 2f, r.y + 2f, sideBarW, r.height - 4f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+        }
 
         DrawStyledText(r, label, 20, TextAnchor.MiddleCenter, hovered ? new Color(1f, 0.96f, 0.82f) : Color.white);
         return GUI.Button(r, GUIContent.none, GUIStyle.none);

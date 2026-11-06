@@ -479,12 +479,31 @@ public class EnemyDummy : MonoBehaviour
 
         if (isBoss || isMiniBoss)
         {
-            Rect bgBox = PlayerStats.ScaleRect(736f, 12f, 448f, 68f);
-            Rect titleRect = PlayerStats.ScaleRect(740f, 15f, 440f, 26f);
-            Rect barRect = PlayerStats.ScaleRect(748f, 44f, 424f, 24f);
+            if (PlayerStats.Instance != null &&
+                (PlayerStats.Instance.isPaused ||
+                 PlayerStats.Instance.isGameOver ||
+                 PlayerStats.Instance.isLevelCompleted ||
+                 PlayerStats.Instance.isChoosingDilemma ||
+                 PlayerStats.Instance.isChoosingSkill ||
+                 PlayerStats.Instance.isUpgradeTreeOpen))
+                return;
 
-            GUI.color = new Color(0.05f, 0.02f, 0.08f, 0.96f);
-            GUI.DrawTexture(bgBox, Texture2D.whiteTexture);
+            Rect bgBox = PlayerStats.ScaleRect(720f, 10f, 480f, 74f);
+            Rect titleRect = PlayerStats.ScaleRect(732f, 14f, 456f, 26f);
+            Rect barRect = PlayerStats.ScaleRect(742f, 44f, 436f, 24f);
+
+            Texture2D bossPanel = PlayerStats.LoadResTex(isBoss ? "StoryUI/Panel_Cyber_Crimson" : "StoryUI/Panel_Cyber_Gold");
+            if (bossPanel != null)
+            {
+                GUI.color = new Color(1f, 1f, 1f, 0.98f);
+                GUI.DrawTexture(bgBox, bossPanel, ScaleMode.StretchToFill);
+                GUI.color = Color.white;
+            }
+            else
+            {
+                GUI.color = new Color(0.05f, 0.02f, 0.08f, 0.96f);
+                GUI.DrawTexture(bgBox, Texture2D.whiteTexture);
+            }
 
             GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
             titleStyle.alignment = TextAnchor.MiddleCenter;
@@ -494,15 +513,22 @@ public class EnemyDummy : MonoBehaviour
             string bossTxt = $"☠ {enemyTitle.ToUpper()} ☠";
             titleStyle.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
             GUI.Label(new Rect(titleRect.x + 1f, titleRect.y + 1f, titleRect.width, titleRect.height), bossTxt, titleStyle);
-            titleStyle.normal.textColor = isBoss ? new Color(1f, 0.35f, 0.55f) : new Color(1f, 0.65f, 0.2f);
+            titleStyle.normal.textColor = isBoss ? new Color(1f, 0.35f, 0.55f) : new Color(1f, 0.72f, 0.22f);
             GUI.Label(titleRect, bossTxt, titleStyle);
 
-            GUI.color = new Color(0.25f, 0.05f, 0.12f);
+            GUI.color = new Color(0.18f, 0.04f, 0.09f, 0.96f);
             GUI.DrawTexture(barRect, Texture2D.whiteTexture);
 
             float bossFill = Mathf.Clamp01(currentHP / Mathf.Max(1f, maxHP));
-            GUI.color = isBoss ? new Color(0.95f, 0.15f, 0.35f) : new Color(0.95f, 0.5f, 0.1f);
-            GUI.DrawTexture(new Rect(barRect.x, barRect.y, Mathf.Round(barRect.width * bossFill), barRect.height), Texture2D.whiteTexture);
+            float fillW = Mathf.Round(barRect.width * bossFill);
+            if (fillW > 0f)
+            {
+                GUI.color = isBoss ? new Color(0.95f, 0.15f, 0.35f) : new Color(0.95f, 0.52f, 0.12f);
+                GUI.DrawTexture(new Rect(barRect.x, barRect.y, fillW, barRect.height), Texture2D.whiteTexture);
+                // Reflejo superior cristalino
+                GUI.color = new Color(1f, 1f, 1f, 0.24f);
+                GUI.DrawTexture(new Rect(barRect.x, barRect.y, fillW, Mathf.Max(2f, barRect.height * 0.32f)), Texture2D.whiteTexture);
+            }
             GUI.color = Color.white;
 
             titleStyle.fontSize = PlayerStats.ScaleFont(13);
