@@ -38,7 +38,7 @@ public static class Level3MonsterAssetGenerator
                 Sprite sp = Sprite.Create(
                     tex,
                     new Rect(0f, 0f, tex.width, tex.height),
-                    new Vector2(0.5f, 0.03f),
+                    new Vector2(0.5f, 0.025f),
                     pixelsPerUnit,
                     0,
                     SpriteMeshType.FullRect
@@ -281,11 +281,28 @@ public static class Level3MonsterAssetGenerator
     }
 
     /// <summary>
-    /// Barrera de Energía Vorst destructible para el tramo jugable del Puente Nivel 1 -> Nivel 2.
+    /// Compuerta de Fuerza Biomecánica Vorst destructible para el tramo jugable del Puente Nivel 1 -> Nivel 2.
+    /// Carga el sprite HD pixel-art de Resources/StoryUI/Vorst_Energy_Gate.
     /// </summary>
     public static Sprite GetVorstEnergyBarrierSprite()
     {
         if (cachedEnergyBarrier != null) return cachedEnergyBarrier;
+
+        Texture2D gateTex = Resources.Load<Texture2D>("StoryUI/Vorst_Energy_Gate");
+        if (gateTex != null)
+        {
+            gateTex.filterMode = FilterMode.Point;
+            gateTex.wrapMode = TextureWrapMode.Clamp;
+            cachedEnergyBarrier = Sprite.Create(
+                gateTex,
+                new Rect(0f, 0f, gateTex.width, gateTex.height),
+                new Vector2(0.5f, 0.025f),
+                135f,
+                0,
+                SpriteMeshType.FullRect
+            );
+            return cachedEnergyBarrier;
+        }
 
         int w = 96, h = 256;
         Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);

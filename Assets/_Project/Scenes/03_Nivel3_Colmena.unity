@@ -271,7 +271,7 @@ MonoBehaviour:
   baseEnemiesPerWave: 5
   spawnDistanceAhead: 11
   enemySpacing: 1.5
-  groundY: -2.85
+  groundY: -2.95
   isLevel2BaseVorst: 0
   isLevel3Hive: 1
   difficultyMultiplier: 2.35

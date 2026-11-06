@@ -34,7 +34,7 @@ public class InfiniteBackground : MonoBehaviour
                 if (bgTex != null)
                 {
                     bgTex.wrapMode = TextureWrapMode.Repeat;
-                    bgTex.filterMode = FilterMode.Bilinear;
+                    bgTex.filterMode = FilterMode.Point;
                     sr.sprite = Sprite.Create(
                         bgTex,
                         new Rect(0f, 0f, bgTex.width, bgTex.height),

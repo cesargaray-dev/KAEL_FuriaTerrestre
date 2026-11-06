@@ -651,6 +651,19 @@ public class PlayerStats : MonoBehaviour
 
     void OnGUI()
     {
+        // Ocultar por completo el HUD de combate durante la Fase 1 cinemática del Puente o durante los 3 Finales Cinemáticos
+        if (BridgeLevel1To2Controller.Instance != null &&
+            BridgeLevel1To2Controller.Instance.isBridgeActive &&
+            !BridgeLevel1To2Controller.Instance.isInPlayablePhase)
+        {
+            return;
+        }
+        if (EndingCinematicController.Instance != null &&
+            EndingCinematicController.Instance.isEndingActive)
+        {
+            return;
+        }
+
         GUI.matrix = Matrix4x4.identity;
 
         DrawKaelWorldHealthBar();
@@ -764,7 +777,7 @@ public class PlayerStats : MonoBehaviour
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f);
             rankCol = Color.Lerp(new Color(1f, 0.22f, 0.78f), new Color(0.22f, 0.96f, 1f), pulse);
             cardSkin = texPanelCrimson;
-            rankTitle = "⚡ SOBREMARCHA NEXO (OVERDRIVE) ⚡";
+            rankTitle = "⚡ SOBREMARCHA NEXO ⚡";
             buffSubtitle = "+30% VEL. ATAQUE  |  +20% MOVIMIENTO  |  +30% ORO";
         }
         else if (comboCount >= 12)
@@ -784,9 +797,9 @@ public class PlayerStats : MonoBehaviour
 
         DrawSkinnedCyberPanel(comboCard, cardSkin, rankCol);
 
-        int hitFontSize = Mathf.Clamp(22 + Mathf.RoundToInt(punch * 0.4f), 22, 30);
-        DrawStyledText(ScaleRect(1474f, 98f, 195f, 38f), $"🔥 x{comboCount} HITS", hitFontSize, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(ScaleRect(1660f, 100f, 226f, 34f), rankTitle, 14, TextAnchor.MiddleRight, rankCol);
+        int hitFontSize = Mathf.Clamp(20 + Mathf.RoundToInt(punch * 0.3f), 20, 25);
+        DrawStyledText(ScaleRect(1472f, 98f, 155f, 36f), $"🔥 x{comboCount} HITS", hitFontSize, TextAnchor.MiddleLeft, Color.white, false);
+        DrawStyledText(ScaleRect(1630f, 100f, 256f, 34f), rankTitle, 13, TextAnchor.MiddleRight, rankCol, false);
 
         DrawStyledText(ScaleRect(1474f, 136f, 410f, 24f), buffSubtitle, 12, TextAnchor.MiddleCenter, new Color(0.90f, 0.96f, 1f));
 

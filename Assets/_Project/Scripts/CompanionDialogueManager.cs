@@ -262,6 +262,13 @@ public class CompanionDialogueManager : MonoBehaviour
     void OnGUI()
     {
         if (!isShowingDialogue) return;
+        if (BridgeLevel1To2Controller.Instance != null &&
+            BridgeLevel1To2Controller.Instance.isBridgeActive &&
+            !BridgeLevel1To2Controller.Instance.isInPlayablePhase)
+            return;
+        if (EndingCinematicController.Instance != null &&
+            EndingCinematicController.Instance.isEndingActive)
+            return;
         if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isUpgradeTreeOpen))
             return;
 

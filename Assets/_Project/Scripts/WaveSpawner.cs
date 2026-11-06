@@ -33,11 +33,13 @@ public class WaveSpawner : MonoBehaviour
         {
             isLevel3Hive = true;
             isLevel2BaseVorst = false;
+            groundY = -2.95f;
             EnemyDummy.PreloadLevel3Frames();
         }
         else if (sceneName == "Lab_Zahir" || (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2))
         {
             isLevel2BaseVorst = true;
+            groundY = -2.95f;
             EnemyDummy.PreloadLevel2Frames();
         }
 
@@ -53,7 +55,7 @@ public class WaveSpawner : MonoBehaviour
             if (kael != null) kaelTransform = kael.transform;
         }
 
-        if (groundY < -3.0f) groundY = -2.85f;
+        if (groundY < -3.05f) groundY = -2.95f;
 
         StartCoroutine(SpawnNextWaveRoutine());
     }
@@ -210,12 +212,12 @@ public class WaveSpawner : MonoBehaviour
                     enemy.isBoss = true;
                     if (isLevel3Hive)
                     {
-                        // BLOQUE 5: JEFE FINAL DEL NIVEL 3 (VORTEX-OMEGA, escala 2.4x)
+                        // BLOQUE 5: JEFE FINAL DEL NIVEL 3 (VORTEX-OMEGA)
                         enemy.enemyTitle = "Carcelero Biotecnológico VORTEX-OMEGA";
                         enemy.SetupLevel3Visuals("VortexOmega");
-                        enemyObj.transform.localScale = Vector3.one * 2.40f;
+                        enemyObj.transform.localScale = Vector3.one * 1.68f;
                         if (sr != null) sr.color = Color.white;
-                        enemy.attackRange = 2.55f;
+                        enemy.attackRange = 2.45f;
                         enemy.attackRate = 1.05f;
                         enemy.moveSpeed = 1.60f;
                         enemy.maxHP = 3200f;
@@ -253,10 +255,10 @@ public class WaveSpawner : MonoBehaviour
                     enemy.isMiniBoss = true;
                     if (isLevel3Hive)
                     {
-                        // BLOQUE 5: MINI-JEFE OLEADA 5 DEL NIVEL 3 (Inquisidor Psíquico Vorst, escala 1.9x)
+                        // BLOQUE 5: MINI-JEFE OLEADA 5 DEL NIVEL 3 (Inquisidor Psíquico Vorst)
                         enemy.enemyTitle = "Inquisidor Psíquico Vorst";
                         enemy.SetupLevel3Visuals("HiveInquisitor");
-                        enemyObj.transform.localScale = Vector3.one * 1.90f;
+                        enemyObj.transform.localScale = Vector3.one * 1.48f;
                         if (sr != null) sr.color = Color.white;
                         enemy.maxHP = 1350f;
                         enemy.damage = 18f;

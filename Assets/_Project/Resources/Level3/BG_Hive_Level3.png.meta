@@ -1,7 +1,10 @@
 fileFormatVersion: 2
 guid: 7fbc43805b2eb8ff57058716500183b8
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: 2800000
+    second: BG_Hive_Level3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -34,16 +37,16 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapModeU: 1
+    wrapModeV: 1
+    wrapModeW: 1
   nPOTScale: 0
   lightmap: 0
-  compressionQuality: 50
-  spriteMode: 0
+  compressionQuality: 100
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -54,7 +57,7 @@ TextureImporter:
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
-  textureType: 0
+  textureType: 8
   textureShape: 1
   singleChannelComponent: 0
   flipbookRows: 1
@@ -71,12 +74,12 @@ TextureImporter:
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 0
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -84,19 +87,18 @@ TextureImporter:
     serializedVersion: 2
     sprites: []
     outline: []
-    customOutline: []
+    customData: 
     physicsShape: []
     bones: []
-    spriteID: 
-    internalID: 0
+    spriteID: 83a609e1c4e7708966206b6f00f0cd7f
+    internalID: 2800000
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-     spriteCustomMetadata:
-      entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      BG_Hive_Level3: 2800000
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

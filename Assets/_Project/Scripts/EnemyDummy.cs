@@ -60,7 +60,7 @@ public class EnemyDummy : MonoBehaviour
     private bool useCustomSprites = false;
     private float walkAnimTimer = 0f;
     private float dieAnimTimer = 0f;
-    private float baseGroundY = -2.85f;
+    private float baseGroundY = -2.95f;
 
     public static void PreloadLevel2Frames()
     {
@@ -81,21 +81,21 @@ public class EnemyDummy : MonoBehaviour
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioStalker", "Attack", 148f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioStalker", "Die", 148f);
 
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Walk", 136f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Attack", 136f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Die", 136f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Walk", 140f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Attack", 140f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Die", 140f);
 
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Walk", 112f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Attack", 112f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Die", 112f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Walk", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Attack", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Die", 122f);
 
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Walk", 115f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Attack", 115f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Die", 115f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Walk", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Attack", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Die", 122f);
 
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Walk", 105f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Attack", 105f);
-        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Die", 105f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Walk", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Attack", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Die", 118f);
     }
 
     private static void PreloadSet(string prefix, float ppu)
@@ -230,10 +230,10 @@ public class EnemyDummy : MonoBehaviour
 
         float ppu = 140f;
         if (resourcePrefix == "BioStalker") ppu = 148f;
-        else if (resourcePrefix == "BioLasher") ppu = 136f;
-        else if (resourcePrefix == "BioHulk") ppu = 112f;
-        else if (resourcePrefix == "HiveInquisitor") ppu = 115f;
-        else if (resourcePrefix == "VortexOmega") ppu = 105f;
+        else if (resourcePrefix == "BioLasher") ppu = 140f;
+        else if (resourcePrefix == "BioHulk") ppu = 122f;
+        else if (resourcePrefix == "HiveInquisitor") ppu = 122f;
+        else if (resourcePrefix == "VortexOmega") ppu = 118f;
 
         customWalkFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Walk", ppu);
         customAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Attack", ppu);
