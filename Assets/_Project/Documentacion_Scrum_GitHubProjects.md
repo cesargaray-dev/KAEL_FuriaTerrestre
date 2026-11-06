@@ -15,8 +15,8 @@ El equipo de desarrollo se organiza bajo una estructura paritaria de desarrollo 
 
 | Integrante | Usuario GitHub | Rol Principal | Especialidad Técnica y Módulos | Carga de Issues |
 | :--- | :--- | :--- | :--- | :---: |
-| **Cesar Enrique Garay García** | `@cesargaray-dev` / `@Cesax69` | **Tech Lead & Senior Unity Developer** | Arquitectura de combate, máquinas de estado de Kael, físicas, optimización de fuentes nativas en OnGUI, sistema de audio con crossfade, oleadas y lógica de jefes finales. | **10 Issues (50%)** |
-| **Zahir Andrés Rodríguez Mora** | `@ZahirAndres` | **Senior Technical Artist & Systems Integrator** | Dirección de arte 2D, escenarios de niveles (Nivel 2 Base Vorst, Nivel 3 y 4), spritesheets de enemigos, animación frame-by-frame, diseño de interfaz de arsenal y códice. | **10 Issues (50%)** |
+| **Cesar Enrique Garay García** | `@cesargaray-dev` / `@Cesax69` | **Tech Lead & Senior Unity Developer** | Arquitectura de combate, máquinas de estado de Kael, físicas, optimización de fuentes nativas en OnGUI, sistema de audio con crossfade, oleadas, Nivel 3 (Nave Núcleo) y lógica de jefes. | **10 Issues (50%)** |
+| **Zahir Andrés Rodríguez Mora** | `@ZahirAndres` | **Senior Technical Artist & Systems Integrator** | Dirección de arte 2D, escenarios de niveles (Nivel 2 Base Vorst y Nivel 4 Trono de la Disonancia), spritesheets de enemigos, animación frame-by-frame, diseño de interfaz de arsenal y códice. | **10 Issues (50%)** |
 
 ---
 
@@ -175,11 +175,11 @@ Para clasificar los ítems de backlog y permitir filtros en los tableros Kanban 
 - **Archivos:** `PlayerStats.cs`, `KaelAutoController.cs`, `CombatVFXManager.cs`
 - **Descripción:** Mutación visual según dilemas morales: Ruta de la Humanidad (armadura blanca y dorada, aura cian pura, regeneración aumentada) vs Ruta de la Disonancia (brazo biomecánico púrpura con cuchillas óseas, ojos rojos, daño corrosivo y drenaje de vida por sobrecarga).
 
-#### Issue #23: `[S4 - TODO] Nivel 4 Final: "El Trono de la Disonancia" y Batalla de 3 Fases contra el Soberano Supremo`
+#### Issue #23: `[S4 - TODO] Nivel 3: 'Interior de la Nave Núcleo - El Laberinto de Bio-Cables'`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
 - **Etiquetas:** `sprint-4`, `programacion`, `narrativa-niveles`, `audio-vfx`, `por-hacer`
-- **Archivos:** `04_Final_NexusThroneroom.unity`, `SovereignBossAI.cs`, `AudioManager.cs`
-- **Descripción:** Escena final climática contra el Soberano Vorst con Lía en la cápsula central: Fase 1 (Duelo marcial y teletransporte), Fase 2 (Pilares de plasma orbital) y Fase 3 (Absorción de energía del reactor requiriendo Parries y Sobrecarga).
+- **Archivos:** `03_Mothership_Interior.unity`, `WaveSpawner.cs`, `CompanionDialogueManager.cs`, `PlayerStats.cs`
+- **Descripción:** Escenario del vientre de la nave nodriza: plataformas biomecánicas suspendidas, peligros de conductos de plasma, oleadas con Mini-Jefe Inquisidor Psíquico (oleada 5), Jefe Carcelero Biotecnológico (oleada 10), diálogos de N.E.X.A. y el dilema moral de las cápsulas de estasis.
 
 #### Issue #24: `[S4 - TODO] Sistema de 3 Finales Cinemáticos según el Nivel de Disonancia Nexo`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
@@ -193,11 +193,11 @@ Para clasificar los ítems de backlog y permitir filtros en los tableros Kanban 
 - **Archivos:** `VorstCodexUI.cs`, `Assets/_Project/Resources/Codex/`
 - **Descripción:** Enciclopedia táctica interactiva en el menú con fichas de datos de cada espécimen alienígena: modelo animado, puntos débiles, debilidades elementales, lore de la invasión y registro histórico de bajas conseguidas.
 
-#### Issue #26: `[S4 - TODO] Nivel 3: "Interior de la Nave Núcleo - El Laberinto de Bio-Cables"`
+#### Issue #26: `[S4 - TODO] Nivel 4 Final: 'El Trono de la Disonancia' y Batalla de 3 Fases contra el Soberano Supremo`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)
 - **Etiquetas:** `sprint-4`, `narrativa-niveles`, `arte-animacion`, `por-hacer`
-- **Archivos:** `03_Mothership_Interior.unity`, `WaveSpawner.cs`
-- **Descripción:** Escenario del vientre de la nave nodriza: plataformas biomecánicas suspendidas, trampas de bio-cables y dos nuevos tipos de enemigos (Ciber-Zánganos explosivos y Centinelas con escudo de plasma).
+- **Archivos:** `04_Final_NexusThroneroom.unity`, `SovereignBossAI.cs`, `WaveSpawner.cs`, `EndingsManager.cs`
+- **Descripción:** Escenario de máxima tensión en la cúpula superior con la cápsula de Lía interactiva, guardia pretoriana de élite, Custodio Pretoriano (oleada 5), confesión de N.E.X.A. sobre el origen del Guantelete (oleada 8) y batalla climática en 3 fases contra el Arconte Supremo / Soberano Vorst.
 
 #### Issue #27: `[S4 - TODO] Cinemáticas Intermedias entre Niveles 2, 3 y 4 e Ilustraciones Finales de Desenlace`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)
