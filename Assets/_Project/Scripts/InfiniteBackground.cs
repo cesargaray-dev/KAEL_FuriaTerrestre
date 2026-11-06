@@ -11,19 +11,26 @@ public class InfiniteBackground : MonoBehaviour
         if (targetCamera == null && Camera.main != null)
             targetCamera = Camera.main.transform;
 
-        bool isLevel2 = SceneManager.GetActiveScene().name == "Lab_Zahir";
-        if (isLevel2 && Camera.main != null)
+        string sceneName = SceneManager.GetActiveScene().name;
+        bool isLevel3 = (sceneName == "03_Nivel3_Colmena") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3);
+        bool isLevel2 = !isLevel3 && ((sceneName == "Lab_Zahir") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2));
+
+        if ((isLevel2 || isLevel3) && Camera.main != null)
         {
-            Camera.main.backgroundColor = new Color(0.05f, 0.02f, 0.12f, 1f);
+            Camera.main.backgroundColor = isLevel3
+                ? new Color(0.04f, 0.015f, 0.09f, 1f)
+                : new Color(0.05f, 0.02f, 0.12f, 1f);
         }
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null)
         {
-            // En Nivel 2 (o si falta el sprite en el prefab/escena), cargamos la textura simétrica sin costuras (2048x1024)
-            if (isLevel2 || sr.sprite == null)
+            if (isLevel3 || isLevel2 || sr.sprite == null)
             {
-                Texture2D bgTex = Resources.Load<Texture2D>("Level2/BG_BaseVorst_Level2");
+                string bgPath = isLevel3 ? "Level3/BG_Hive_Level3" : "Level2/BG_BaseVorst_Level2";
+                Texture2D bgTex = Resources.Load<Texture2D>(bgPath);
                 if (bgTex != null)
                 {
                     bgTex.wrapMode = TextureWrapMode.Repeat;
@@ -41,10 +48,7 @@ public class InfiniteBackground : MonoBehaviour
 
             if (sr.sprite != null)
             {
-                // Calcula el ancho exacto de 1 ciclo completo sin costuras
                 singleTileWidth = sr.sprite.bounds.size.x;
-
-                // Repite el escenario 9 veces a lo ancho en modo FullRect Tiled para un bucle infinito 100% continuo
                 sr.drawMode = SpriteDrawMode.Tiled;
                 sr.tileMode = SpriteTileMode.Continuous;
                 sr.size = new Vector2(singleTileWidth * 9f, sr.sprite.bounds.size.y);

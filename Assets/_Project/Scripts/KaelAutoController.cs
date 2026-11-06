@@ -26,6 +26,20 @@ public class KaelAutoController : MonoBehaviour
     public bool isMovingManual = false;
     public int currentCombo = 0;
 
+    // --- BLOQUE 1 (Issue #16): Bloqueo Perfecto ("Parry Nexo") y Escudo Hexagonal ---
+    public bool isBlocking => isGuarding;
+    public float lastBlockStartTime = -99f;
+    public const float PARRY_WINDOW_SECONDS = 0.35f;
+    private bool wasGuardingLastFrame = false;
+    private bool isExecutingRiposte = false;
+    private GameObject hexShieldObj;
+    private SpriteRenderer hexShieldRenderer;
+
+    // --- BLOQUE 2 (Issue #17) y BLOQUE 4 (Issue #22): Temporizadores de Afterimages y Auras ---
+    private float afterimageTimer = 0f;
+    private float overdriveArcTimer = 0f;
+    private float moralAuraTimer = 0f;
+
     // Controles opcionales desde botones del HUD
     [HideInInspector] public bool hudMoveLeftHeld = false;
     [HideInInspector] public bool hudMoveRightHeld = false;
@@ -60,13 +74,31 @@ public class KaelAutoController : MonoBehaviour
         }
         startPosition = transform.position;
         maxReachedX = startPosition.x;
+
+        CreateHexShieldObject();
+    }
+
+    private void CreateHexShieldObject()
+    {
+        if (hexShieldObj != null) return;
+        hexShieldObj = new GameObject("NexoHexShield_Hologram");
+        hexShieldObj.transform.SetParent(transform, false);
+        hexShieldObj.transform.localPosition = new Vector3(0.75f, 0.58f, 0f);
+
+        hexShieldRenderer = hexShieldObj.AddComponent<SpriteRenderer>();
+        hexShieldRenderer.sprite = Level3MonsterAssetGenerator.GetHexShieldSprite(false, false);
+        hexShieldRenderer.sortingOrder = 22;
+        hexShieldObj.SetActive(false);
     }
 
     public void ResetKaelPosition()
     {
         StopAllCoroutines();
+        Time.timeScale = 1f;
         isCastingUlt = false;
         isGuarding = false;
+        wasGuardingLastFrame = false;
+        isExecutingRiposte = false;
         isFacingLeft = false;
         isMovingManual = false;
         currentCombo = 0;
@@ -74,7 +106,10 @@ public class KaelAutoController : MonoBehaviour
         attackAnimEndTimer = 0f;
 
         transform.position = startPosition;
+        transform.localRotation = Quaternion.identity;
         maxReachedX = startPosition.x;
+
+        if (hexShieldObj != null) hexShieldObj.SetActive(false);
 
         if (spriteRenderer != null)
         {
@@ -92,6 +127,134 @@ public class KaelAutoController : MonoBehaviour
             anim.SetInteger("ComboStep", 0);
             anim.SetBool("IsRunning", false);
         }
+    }
+
+    /// <summary>
+    /// BLOQUE 1 (Issue #16): Verifica si Kael está bloqueando dentro de la ventana de 0.35s de Parry Perfecto.
+    /// </summary>
+    public bool IsWithinPerfectParryWindow()
+    {
+        return isGuarding && (Time.unscaledTime - lastBlockStartTime <= PARRY_WINDOW_SECONDS);
+    }
+
+    /// <summary>
+    /// BLOQUE 1 (Issue #16): Ejecuta la Ralentización Temporal (Bullet-Time) y el Contragolpe Automático (Riposte).
+    /// </summary>
+    public void ExecuteParryRiposte(EnemyDummy attacker)
+    {
+        if (!isExecutingRiposte)
+        {
+            StartCoroutine(ParryRiposteRoutine(attacker));
+        }
+    }
+
+    private IEnumerator ParryRiposteRoutine(EnemyDummy attacker)
+    {
+        isExecutingRiposte = true;
+
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        bool isCorrupcion = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+
+        Color primaryParryCol = isCorrupcion
+            ? new Color(1f, 0.18f, 0.45f)
+            : (isPureza ? new Color(1f, 0.90f, 0.32f) : new Color(0.25f, 0.98f, 1f));
+        Color secondaryParryCol = isCorrupcion
+            ? new Color(0.68f, 0.12f, 1f)
+            : (isPureza ? new Color(0.25f, 0.98f, 1f) : Color.white);
+
+        float dirSign = isFacingLeft ? -1f : 1f;
+        Vector3 shieldPos = transform.position + new Vector3(dirSign * 0.78f, 0.62f, 0f);
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayParryClang(true);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnParryFlashAndShockwave(shieldPos, primaryParryCol, secondaryParryCol);
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 1.55f,
+                "⚡ ¡PARRY PERFECTO! +20% ULT",
+                primaryParryCol,
+                22,
+                1.1f
+            );
+            CombatVFXManager.Instance.RegisterComboHit();
+        }
+
+        // Recargar +20% de barra de Ultimate y curar +10% si está en Pureza Nexo (Bloque 4)
+        if (PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.AddUltCharge(20f);
+            if (isPureza)
+            {
+                PlayerStats.Instance.HealPercent(0.10f);
+                if (CombatVFXManager.Instance != null)
+                    CombatVFXManager.Instance.SpawnHealingParticles(transform.position + Vector3.up * 0.4f);
+            }
+        }
+
+        // Bullet-Time (Time.timeScale = 0.22f durante 0.20s reales)
+        Time.timeScale = 0.22f;
+        yield return new WaitForSecondsRealtime(0.20f);
+        if (PlayerStats.Instance == null || (!PlayerStats.Instance.isPaused && !PlayerStats.Instance.isUpgradeTreeOpen && !PlayerStats.Instance.isChoosingDilemma))
+        {
+            Time.timeScale = 1f;
+        }
+
+        // Animación y ejecución del Contragolpe Automático (Riposte) con 180% del daño base
+        if (anim != null)
+        {
+            anim.SetBool("IsRunning", false);
+            anim.SetInteger("ComboStep", 3);
+            anim.Play("Kael_Atk3", 0, 0f);
+        }
+        attackAnimEndTimer = 0.34f;
+
+        if (CombatVFXManager.Instance != null && spriteRenderer != null)
+        {
+            CombatVFXManager.Instance.SpawnAfterimageGhost(
+                spriteRenderer.sprite,
+                transform.position,
+                transform.localScale,
+                isFacingLeft,
+                new Color(primaryParryCol.r, primaryParryCol.g, primaryParryCol.b, 0.75f)
+            );
+        }
+
+        float baseDmg = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackDamage : 12f;
+        float riposteDmg = baseDmg * 1.80f;
+
+        // Golpear, empujar y aturdir durante 1.8s al atacante y enemigos frontales cercanos
+        HashSet<EnemyDummy> struck = new HashSet<EnemyDummy>();
+        if (attacker != null)
+        {
+            struck.Add(attacker);
+            attacker.TakeDamage(riposteDmg, true, knockback: 2.2f);
+            attacker.ApplyStun(1.8f);
+            if (isCorrupcion) attacker.ApplyPlasmaBurn(baseDmg * 0.35f, 3.2f);
+        }
+
+        Vector2 facingDir = isFacingLeft ? Vector2.left : Vector2.right;
+        List<EnemyDummy> frontEnemies = FindEnemiesInAttackArc(attackRange + 0.65f, facingDir);
+        foreach (EnemyDummy e in frontEnemies)
+        {
+            if (e != null && !struck.Contains(e))
+            {
+                struck.Add(e);
+                e.TakeDamage(riposteDmg * 0.85f, true, knockback: 1.4f);
+                e.ApplyStun(1.8f);
+                if (isCorrupcion) e.ApplyPlasmaBurn(baseDmg * 0.35f, 3.2f);
+            }
+        }
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.ShakeCamera(0.18f, 0.14f);
+        }
+
+        // Permitir encadenar otro Parry inmediato sin esperar a soltar y volver a presionar S
+        lastBlockStartTime = Time.unscaledTime;
+        isExecutingRiposte = false;
     }
 
     void Update()
@@ -131,9 +294,24 @@ public class KaelAutoController : MonoBehaviour
             return;
         }
 
+        // Si estamos en la Fase 1 narrativa del Puente Nivel 1 -> Nivel 2, pausar input de Kael
+        if (BridgeLevel1To2Controller.Instance != null &&
+            BridgeLevel1To2Controller.Instance.isBridgeActive &&
+            !BridgeLevel1To2Controller.Instance.isInPlayablePhase)
+        {
+            if (anim != null) anim.SetBool("IsRunning", false);
+            return;
+        }
+
         if (isCastingUlt) return;
 
-        // Reiniciar el parámetro ComboStep del Animator cuando concluye el swing actual
+        bool isOverdrive = (PlayerStats.Instance != null && PlayerStats.Instance.isOverdriveActive);
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        bool isCorrupcion = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+
+        // Efectos pasivos de Sobremarcha Nexo (Overdrive - Bloque 2) y Evolución Moral (Bloque 4)
+        UpdateOverdriveAndMoralVisuals(isOverdrive, isPureza, isCorrupcion);
+
         if (attackAnimEndTimer > 0f)
         {
             attackAnimEndTimer -= Time.deltaTime;
@@ -143,7 +321,6 @@ public class KaelAutoController : MonoBehaviour
             }
         }
 
-        // Si pasó la ventana de 1.2s desde el último golpe, el contador de combo vuelve a 0
         if (currentCombo > 0 && Time.time - lastAttackTime > COMBO_WINDOW && attackAnimEndTimer <= 0f)
         {
             currentCombo = 0;
@@ -165,29 +342,60 @@ public class KaelAutoController : MonoBehaviour
             TriggerManualAttack();
         }
 
-        // 3. POSTURA DEFENSIVA / GUARDIA NEXO: Mantener S o Flecha Abajo
+        // 3. POSTURA DEFENSIVA / PARRY NEXO (BLOQUE 1): Mantener S o Flecha Abajo
         bool guardInput = IsGuardHeld() || hudGuardHeld;
         if (guardInput)
         {
+            if (!wasGuardingLastFrame)
+            {
+                // Registrar el instante exacto en que se presionó S para la ventana de Parry Perfecto (0.35s)
+                lastBlockStartTime = Time.unscaledTime;
+            }
+            wasGuardingLastFrame = true;
             isGuarding = true;
             isMovingManual = false;
+
             if (anim != null)
             {
                 if (attackAnimEndTimer <= 0f) anim.SetInteger("ComboStep", 0);
                 anim.SetBool("IsRunning", false);
             }
 
+            // Inclinación defensiva firme y despliegue del Escudo Hexagonal Holográfico
+            float dirSign = isFacingLeft ? -1f : 1f;
+            transform.localRotation = Quaternion.Euler(0f, 0f, isFacingLeft ? 5.5f : -5.5f);
+
+            if (hexShieldObj != null && hexShieldRenderer != null)
+            {
+                hexShieldObj.SetActive(true);
+                hexShieldRenderer.sprite = Level3MonsterAssetGenerator.GetHexShieldSprite(isPureza, isCorrupcion);
+                hexShieldObj.transform.localPosition = new Vector3(dirSign * 0.76f, 0.58f, 0f);
+                float shieldBreath = 0.95f + Mathf.Sin(Time.unscaledTime * 9f) * 0.08f;
+                bool inParryWindow = IsWithinPerfectParryWindow();
+                if (inParryWindow) shieldBreath *= 1.14f;
+                hexShieldObj.transform.localScale = new Vector3(shieldBreath, shieldBreath, 1f);
+                hexShieldObj.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(Time.unscaledTime * 3.5f) * 12f);
+            }
+
             if (spriteRenderer != null)
             {
-                float pulse = 0.82f + Mathf.Sin(Time.time * 10f) * 0.12f;
-                spriteRenderer.color = new Color(0.45f, 0.94f, 1.0f, pulse);
+                float pulse = 0.85f + Mathf.Sin(Time.unscaledTime * 12f) * 0.12f;
+                if (isCorrupcion)
+                    spriteRenderer.color = new Color(1f, 0.45f, 0.72f, pulse);
+                else if (isPureza)
+                    spriteRenderer.color = new Color(0.55f, 1.0f, 0.95f, pulse);
+                else
+                    spriteRenderer.color = new Color(0.45f, 0.94f, 1.0f, pulse);
             }
             return;
         }
-        else if (isGuarding)
+        else if (isGuarding || wasGuardingLastFrame)
         {
+            wasGuardingLastFrame = false;
             isGuarding = false;
-            if (spriteRenderer != null) spriteRenderer.color = baseSpriteColor;
+            transform.localRotation = Quaternion.identity;
+            if (hexShieldObj != null) hexShieldObj.SetActive(false);
+            if (spriteRenderer != null) spriteRenderer.color = GetMoralBaseTint(isPureza, isCorrupcion);
         }
 
         // 4. MOVIMIENTO MANUAL: A / Flecha Izquierda y D / Flecha Derecha
@@ -195,7 +403,6 @@ public class KaelAutoController : MonoBehaviour
         if (IsLeftHeld() || hudMoveLeftHeld) moveDir -= 1f;
         if (IsRightHeld() || hudMoveRightHeld) moveDir += 1f;
 
-        // Permitir moverse siempre que no esté a mitad del impacto inicial del golpe
         bool lockedInAttackSwing = (attackAnimEndTimer > 0.16f);
 
         if (Mathf.Abs(moveDir) > 0.01f && !lockedInAttackSwing)
@@ -209,12 +416,13 @@ public class KaelAutoController : MonoBehaviour
             }
 
             float speedBonus = (PlayerStats.Instance != null) ? PlayerStats.Instance.moveSpeedMultiplier : 1.0f;
+            // BLOQUE 2: +20% Velocidad de movimiento durante Sobremarcha Nexo (Overdrive)
+            if (isOverdrive) speedBonus *= 1.20f;
             float effectiveSpeed = moveSpeed * speedBonus;
 
             Vector3 delta = (moveDir < 0f ? Vector3.left : Vector3.right) * (effectiveSpeed * Time.deltaTime);
             Vector3 nextPos = transform.position + delta;
 
-            // Limitar posición izquierda para que no se salga demasiado atrás de la cámara
             float minLeftX = Mathf.Max(startPosition.x - 4.5f, maxReachedX - 11.5f);
             if (nextPos.x < minLeftX) nextPos.x = minLeftX;
 
@@ -237,6 +445,78 @@ public class KaelAutoController : MonoBehaviour
         }
     }
 
+    private Color GetMoralBaseTint(bool isPureza, bool isCorrupcion)
+    {
+        if (isCorrupcion) return new Color(1f, 0.88f, 0.95f, 1f);
+        if (isPureza) return new Color(0.92f, 1f, 1f, 1f);
+        return baseSpriteColor;
+    }
+
+    private void UpdateOverdriveAndMoralVisuals(bool isOverdrive, bool isPureza, bool isCorrupcion)
+    {
+        if (CombatVFXManager.Instance == null) return;
+
+        // BLOQUE 2 (Issue #17): Sombras holográficas (Afterimage Ghost Trail) y arcos eléctricos en Overdrive
+        if (isOverdrive)
+        {
+            if (isMovingManual || attackAnimEndTimer > 0f)
+            {
+                afterimageTimer -= Time.deltaTime;
+                if (afterimageTimer <= 0f && spriteRenderer != null)
+                {
+                    afterimageTimer = 0.055f;
+                    Color ghostCol = isCorrupcion
+                        ? new Color(1f, 0.18f, 0.52f, 0.58f)
+                        : new Color(0.18f, 0.95f, 1f, 0.58f);
+                    CombatVFXManager.Instance.SpawnAfterimageGhost(
+                        spriteRenderer.sprite,
+                        transform.position,
+                        transform.localScale,
+                        isFacingLeft,
+                        ghostCol
+                    );
+                }
+            }
+
+            overdriveArcTimer -= Time.deltaTime;
+            if (overdriveArcTimer <= 0f)
+            {
+                overdriveArcTimer = 0.085f;
+                Color arcCol = isCorrupcion
+                    ? new Color(1f, 0.20f, 0.55f, 0.9f)
+                    : new Color(0.22f, 0.96f, 1f, 0.9f);
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 0.55f, arcCol);
+            }
+        }
+
+        // BLOQUE 4 (Issue #22): Partículas ambientales de Pureza Nexo o Relámpagos Oscuros de Disonancia Vorst
+        if (isPureza || isCorrupcion)
+        {
+            moralAuraTimer -= Time.deltaTime;
+            if (moralAuraTimer <= 0f)
+            {
+                moralAuraTimer = 0.26f;
+                if (isPureza)
+                {
+                    Color runeCol = (Random.value > 0.5f)
+                        ? new Color(0.30f, 0.98f, 1f, 0.85f)
+                        : new Color(1f, 0.90f, 0.35f, 0.85f);
+                    CombatVFXManager.Instance.SpawnFloatingRuneOrSpore(
+                        transform.position + new Vector3(Random.Range(-0.45f, 0.45f), Random.Range(0.2f, 1.1f), 0f),
+                        runeCol
+                    );
+                }
+                else if (isCorrupcion)
+                {
+                    CombatVFXManager.Instance.SpawnElectricArc(
+                        transform.position + Vector3.up * 0.5f,
+                        new Color(0.72f, 0.12f, 1f, 0.88f)
+                    );
+                }
+            }
+        }
+    }
+
     public void TriggerManualAttack()
     {
         if (isCastingUlt) return;
@@ -250,12 +530,23 @@ public class KaelAutoController : MonoBehaviour
             return;
 
         float rate = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackRate : 1.2f;
+        // BLOQUE 2: +30% Velocidad de ataque durante Sobremarcha Nexo (Overdrive)
+        if (PlayerStats.Instance != null && PlayerStats.Instance.isOverdriveActive)
+        {
+            rate *= 1.30f;
+        }
         if (Time.time < nextAttackTime) return;
 
         isGuarding = false;
-        if (spriteRenderer != null) spriteRenderer.color = baseSpriteColor;
+        wasGuardingLastFrame = false;
+        transform.localRotation = Quaternion.identity;
+        if (hexShieldObj != null) hexShieldObj.SetActive(false);
 
-        ExecuteComboStep();
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        bool isCorrupcion = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+        if (spriteRenderer != null) spriteRenderer.color = GetMoralBaseTint(isPureza, isCorrupcion);
+
+        ExecuteComboStep(rate, isPureza, isCorrupcion);
         nextAttackTime = Time.time + (1f / Mathf.Max(0.5f, rate));
     }
 
@@ -279,9 +570,8 @@ public class KaelAutoController : MonoBehaviour
         transform.localScale = new Vector3(s, s, 1f);
     }
 
-    void ExecuteComboStep()
+    void ExecuteComboStep(float effectiveRate, bool isPureza, bool isCorrupcion)
     {
-        // Si presiona dentro de la ventana de 1.2s tras el golpe anterior, avanza el combo (1 -> 2 -> 3); si no, reinicia a 1
         if (Time.time - lastAttackTime <= COMBO_WINDOW && currentCombo > 0)
         {
             currentCombo = (currentCombo % 3) + 1;
@@ -292,9 +582,7 @@ public class KaelAutoController : MonoBehaviour
         }
 
         lastAttackTime = Time.time;
-
-        float rate = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackRate : 1.2f;
-        attackAnimEndTimer = Mathf.Clamp(0.42f / Mathf.Max(1f, rate * 0.75f), 0.24f, 0.44f);
+        attackAnimEndTimer = Mathf.Clamp(0.42f / Mathf.Max(1f, effectiveRate * 0.75f), 0.20f, 0.44f);
 
         if (anim != null)
         {
@@ -306,7 +594,8 @@ public class KaelAutoController : MonoBehaviour
 
         float baseDmg = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackDamage : 12f;
         bool isCrit = (PlayerStats.Instance != null && Random.value <= PlayerStats.Instance.critChance);
-        float critMult = isCrit ? 2.0f : 1.0f;
+        // BLOQUE 4: En Corrupción / Disonancia Vorst, los críticos otorgan +22% de daño adicional
+        float critMult = isCrit ? (isCorrupcion ? 2.22f : 2.0f) : 1.0f;
 
         if (AudioManager.Instance != null)
         {
@@ -320,7 +609,6 @@ public class KaelAutoController : MonoBehaviour
         Vector2 facingDir = isFacingLeft ? Vector2.left : Vector2.right;
         float dirSign = isFacingLeft ? -1f : 1f;
 
-        //Pequeño avance táctico al golpear para dar sensación de peso Action RPG
         transform.position += new Vector3(dirSign * (currentCombo == 3 ? 0.14f : 0.06f), 0f, 0f);
         if (transform.position.x > maxReachedX) maxReachedX = transform.position.x;
 
@@ -331,7 +619,6 @@ public class KaelAutoController : MonoBehaviour
             List<EnemyDummy> targets = FindEnemiesInAttackArc(attackRange, facingDir);
             if (targets.Count > 0)
             {
-                // Golpe 1 golpea hasta 2 enemigos cercanos al frente; Golpe 2 hasta 3 enemigos
                 int maxTargets = (currentCombo == 1) ? 2 : 3;
                 int hitCount = Mathf.Min(targets.Count, maxTargets);
                 for (int i = 0; i < hitCount; i++)
@@ -340,6 +627,7 @@ public class KaelAutoController : MonoBehaviour
                     if (target != null)
                     {
                         target.TakeDamage(baseDmg * critMult, isCrit, knockback: 0.12f);
+                        if (isCorrupcion) target.ApplyPlasmaBurn(baseDmg * 0.35f, 3.2f);
                         hitAnyEnemy = true;
                         if (CombatVFXManager.Instance != null)
                         {
@@ -355,7 +643,6 @@ public class KaelAutoController : MonoBehaviour
             }
             else
             {
-                // Chispas de energía del Guantelete al golpear al aire para dar respuesta inmediata
                 if (CombatVFXManager.Instance != null)
                 {
                     CombatVFXManager.Instance.SpawnHitSparks(transform.position + new Vector3(dirSign * 0.95f, 0.55f, 0f), false, 3);
@@ -364,7 +651,6 @@ public class KaelAutoController : MonoBehaviour
         }
         else
         {
-            // 3er Golpe Sísmico en área + empuje fuerte
             float slamBonus = (PlayerStats.Instance != null) ? PlayerStats.Instance.comboFinisherMultiplier : 1.6f;
             float slamDamage = baseDmg * slamBonus * critMult;
 
@@ -374,6 +660,7 @@ public class KaelAutoController : MonoBehaviour
                 if (enemy != null)
                 {
                     enemy.TakeDamage(slamDamage, isCrit, knockback: 0.42f);
+                    if (isCorrupcion) enemy.ApplyPlasmaBurn(baseDmg * 0.45f, 3.5f);
                     hitAnyEnemy = true;
                     if (CombatVFXManager.Instance != null)
                     {
@@ -384,6 +671,10 @@ public class KaelAutoController : MonoBehaviour
 
             if (CombatVFXManager.Instance != null)
             {
+                Color waveCol = isCorrupcion
+                    ? new Color(1f, 0.18f, 0.48f)
+                    : (isPureza ? new Color(1f, 0.88f, 0.32f) : new Color(0.22f, 0.92f, 1f));
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + new Vector3(dirSign * 1.05f, 0.35f, 0f), waveCol, 2.1f);
                 CombatVFXManager.Instance.SpawnHitSparks(transform.position + new Vector3(dirSign * 1.15f, 0.15f, 0f), true, 14);
                 CombatVFXManager.Instance.ShakeCamera(0.15f, 0.09f);
             }
@@ -400,7 +691,6 @@ public class KaelAutoController : MonoBehaviour
         List<EnemyDummy> result = new List<EnemyDummy>();
         Vector2 origin = (Vector2)transform.position + Vector2.up * 0.5f;
 
-        // 1. RaycastAll y OverlapBoxAll en la dirección en la que mira Kael
         RaycastHit2D[] rayHits = Physics2D.RaycastAll(origin, facingDir, range, enemyLayer);
         foreach (RaycastHit2D hit in rayHits)
         {
@@ -422,7 +712,6 @@ public class KaelAutoController : MonoBehaviour
             }
         }
 
-        // 2. Verificación directa por posición sobre todos los enemigos activos en la escena (garantiza 100% compatibilidad en Nivel 1 y Nivel 2)
         EnemyDummy[] allEnemies = FindObjectsByType<EnemyDummy>(FindObjectsInactive.Exclude);
         foreach (EnemyDummy e in allEnemies)
         {
@@ -435,7 +724,6 @@ public class KaelAutoController : MonoBehaviour
             }
         }
 
-        // Ordenar por cercanía a Kael
         result.Sort((a, b) =>
             Mathf.Abs(a.transform.position.x - transform.position.x)
             .CompareTo(Mathf.Abs(b.transform.position.x - transform.position.x)));
@@ -457,8 +745,23 @@ public class KaelAutoController : MonoBehaviour
     {
         isCastingUlt = true;
         isGuarding = false;
+        wasGuardingLastFrame = false;
         isMovingManual = false;
-        if (spriteRenderer != null) spriteRenderer.color = baseSpriteColor;
+        transform.localRotation = Quaternion.identity;
+        if (hexShieldObj != null) hexShieldObj.SetActive(false);
+
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        bool isCorrupcion = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+
+        if (spriteRenderer != null) spriteRenderer.color = GetMoralBaseTint(isPureza, isCorrupcion);
+
+        // BLOQUE 4: En Pureza Nexo, activar la Ultimate restaura 10% de la vida máxima con partículas verdes/doradas
+        if (isPureza && PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.HealPercent(0.10f);
+            if (CombatVFXManager.Instance != null)
+                CombatVFXManager.Instance.SpawnHealingParticles(transform.position + Vector3.up * 0.5f);
+        }
 
         if (anim != null)
         {
@@ -478,7 +781,11 @@ public class KaelAutoController : MonoBehaviour
         {
             CombatVFXManager.Instance.SetUltimateCinematic(true, triggerFlash: false);
             CombatVFXManager.Instance.SpawnUltChargeInward(gauntletPos, 0.50f);
-            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.55f, "⚡ ¡CARGANDO CAÑÓN NEXO! ⚡", Color.cyan, 22, 0.7f);
+            string chargeLabel = isCorrupcion
+                ? "⚡ ¡CANALIZANDO DISONANCIA ABISAL! ⚡"
+                : (isPureza ? "☀ ¡CANALIZANDO PUREZA SOLAR NEXO! ☀" : "⚡ ¡CARGANDO CAÑÓN NEXO! ⚡");
+            Color chargeCol = isCorrupcion ? new Color(1f, 0.22f, 0.52f) : (isPureza ? new Color(1f, 0.90f, 0.35f) : Color.cyan);
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.55f, chargeLabel, chargeCol, 22, 0.7f);
             CombatVFXManager.Instance.ShakeCamera(0.55f, 0.05f);
         }
 
@@ -503,6 +810,7 @@ public class KaelAutoController : MonoBehaviour
         }
 
         float ultBonus = (PlayerStats.Instance != null) ? PlayerStats.Instance.ultimateDamageMultiplier : 1.0f;
+        if (isCorrupcion) ultBonus *= 1.22f;
         float hitDamage = ((PlayerStats.Instance != null) ? PlayerStats.Instance.attackDamage : 12f) * 0.95f * ultBonus;
 
         for (int wave = 0; wave < 5; wave++)
@@ -513,6 +821,7 @@ public class KaelAutoController : MonoBehaviour
                 if (enemy != null)
                 {
                     enemy.TakeDamage(hitDamage, isCrit: true, knockback: 0.24f);
+                    if (isCorrupcion) enemy.ApplyPlasmaBurn(hitDamage * 0.35f, 3.5f);
                     if (CombatVFXManager.Instance != null)
                     {
                         CombatVFXManager.Instance.RegisterComboHit();

@@ -129,23 +129,23 @@ Para clasificar los ítems de backlog y permitir filtros en los tableros Kanban 
 
 ### 🟡 SPRINT 3: COMBATE TÁCTICO AVANZADO Y ARSENAL (EN PROGRESO)
 
-#### Issue #16: `[S3 - TODO] Mecánica de Bloqueo Perfecto (Parry) con Ralentización Temporal y Contragolpe`
+#### Issue #16: `[S3 - DONE] Mecánica de Bloqueo Perfecto (Parry) con Ralentización Temporal y Contragolpe`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
-- **Etiquetas:** `sprint-3`, `programacion`, `audio-vfx`, `por-hacer`
-- **Archivos:** `KaelAutoController.cs`, `PlayerStats.cs`, `CombatVFXManager.cs`
-- **Descripción:** Ventana de 0.20s al presionar `S`: anulación del 100% de daño, hit-stop cinematográfico (`Time.timeScale = 0.20f`), onda expansiva dorada y habilitación de Contragolpe Nexo Crítico (+150% de daño y aturdimiento de 1.5s).
+- **Etiquetas:** `sprint-3`, `programacion`, `audio-vfx`, `completado`
+- **Archivos:** `KaelAutoController.cs`, `PlayerStats.cs`, `CombatVFXManager.cs`, `EnemyDummy.cs`
+- **Descripción:** Ventana de 0.35s al presionar `S` con Escudo Hexagonal Holográfico: reducción del 45% de daño en bloqueo normal y anulación del 100% en Parry Perfecto con Bullet-Time (`Time.timeScale = 0.22f` por 0.20s), onda expansiva y Contragolpe Nexo automático (180% daño, retroceso, aturdimiento de 1.8s y +20% de carga de Ultimate).
 
-#### Issue #17: `[S3 - TODO] Modo Sobremarcha Nexo por Racha de Combos (Overdrive)`
+#### Issue #17: `[S3 - DONE] Modo Sobremarcha Nexo por Racha de Combos (Overdrive)`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
-- **Etiquetas:** `sprint-3`, `programacion`, `audio-vfx`, `ui-ux`, `por-hacer`
+- **Etiquetas:** `sprint-3`, `programacion`, `audio-vfx`, `ui-ux`, `completado`
 - **Archivos:** `KaelAutoController.cs`, `PlayerStats.cs`, `CombatVFXManager.cs`
-- **Descripción:** Medidor de combo en el HUD con decaimiento tras 3.5s. Al llegar a x30 impactos sin recibir daño, Kael entra en Sobremarcha (+25% velocidad, +35% cadencia, estelas cromáticas *Ghost Trails* y ondas de corte de plasma por golpe).
+- **Descripción:** Medidor estilizado de combo en el HUD derecho con decaimiento tras 4.5s y rangos (`5+ SINCRONIZADO`, `12+ IMPARABLE`, `20+ ⚡ SOBREMARCHA NEXO`). En Overdrive: +30% cadencia de ataque, +20% velocidad de movimiento, +30% oro extra, estelas fantasma cian (*Afterimages*) y arcos eléctricos ascendentes.
 
-#### Issue #18: `[S3 - TODO] Cinemática Puente Jugable de Transición entre Nivel 1 y Nivel 2`
+#### Issue #18: `[S3 - DONE] Cinemática Puente Jugable de Transición entre Nivel 1 y Nivel 2`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
-- **Etiquetas:** `sprint-3`, `narrativa-niveles`, `audio-vfx`, `programacion`, `por-hacer`
-- **Archivos:** `LevelTransitionController.cs`, `CompanionDialogueManager.cs`, `PlayerStats.cs`
-- **Descripción:** Secuencia interactiva tras vencer al Comandante Vorst del Nivel 1: colapso de compuertas, avistamiento de la Nave Núcleo, diálogo de emergencia de N.E.X.A. y carga asíncrona hacia `Lab_Zahir` conservando oro y mejoras.
+- **Etiquetas:** `sprint-3`, `narrativa-niveles`, `audio-vfx`, `programacion`, `completado`
+- **Archivos:** `BridgeLevel1To2Controller.cs`, `CompanionDialogueManager.cs`, `PlayerStats.cs`
+- **Descripción:** Secuencia interactiva de 2 fases tras completar el Nivel 1: Fase 1 narrativa animada en 4 actos (Torre de Tracción elevando la cápsula de Lía y mutación del Guantelete) y Fase 2 con tramo jugable de infiltración donde Kael avanza con `A/D`, rompe la Barrera de Energía Vorst con `J` y cruza el umbral hacia `Lab_Zahir`.
 
 #### Issue #19: `[S3 - TODO] Dron Centinela N.E.X.A. de Soporte Táctico y Asistencia de Fuego`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)
@@ -169,23 +169,23 @@ Para clasificar los ítems de backlog y permitir filtros en los tableros Kanban 
 
 ### 🔵 SPRINT 4: MORALIDAD, CÓDICE Y DESENLACE (PLANIFICADO)
 
-#### Issue #22: `[S4 - TODO] Sistema de Transformación Visual Dinámica de Kael (Compasión vs Disonancia)`
+#### Issue #22: `[S4 - DONE] Sistema de Transformación Visual Dinámica de Kael (Compasión vs Disonancia)`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
-- **Etiquetas:** `sprint-4`, `programacion`, `arte-animacion`, `narrativa-niveles`, `por-hacer`
-- **Archivos:** `PlayerStats.cs`, `KaelAutoController.cs`, `CombatVFXManager.cs`
-- **Descripción:** Mutación visual según dilemas morales: Ruta de la Humanidad (armadura blanca y dorada, aura cian pura, regeneración aumentada) vs Ruta de la Disonancia (brazo biomecánico púrpura con cuchillas óseas, ojos rojos, daño corrosivo y drenaje de vida por sobrecarga).
+- **Etiquetas:** `sprint-4`, `programacion`, `arte-animacion`, `narrativa-niveles`, `completado`
+- **Archivos:** `PlayerStats.cs`, `KaelAutoController.cs`, `CombatVFXManager.cs`, `CompanionDialogueManager.cs`
+- **Descripción:** Mutación visual y jugable en tiempo real según `compassionPoints` vs `rigorPoints`: Pureza Nexo (aura Cian Cristalino y Blanco/Dorado Solar, curación del 10% de vida máxima al ejecutar Ultimate o Parry Perfecto) vs Disonancia Vorst (Púrpura Abisal y Carmesí Vorst, +22% de daño crítico agresivo, quemadura de plasma DoT e interferencia roja de glitch en el retrato de N.E.X.A.).
 
-#### Issue #23: `[S4 - TODO] Nivel 3: 'Interior de la Nave Núcleo - El Laberinto de Bio-Cables'`
+#### Issue #23: `[S4 - DONE] Nivel 3: 'Interior de la Nave Núcleo - El Laberinto de Bio-Cables'`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
-- **Etiquetas:** `sprint-4`, `programacion`, `narrativa-niveles`, `audio-vfx`, `por-hacer`
-- **Archivos:** `03_Mothership_Interior.unity`, `WaveSpawner.cs`, `CompanionDialogueManager.cs`, `PlayerStats.cs`
-- **Descripción:** Escenario del vientre de la nave nodriza: plataformas biomecánicas suspendidas, peligros de conductos de plasma, oleadas con Mini-Jefe Inquisidor Psíquico (oleada 5), Jefe Carcelero Biotecnológico (oleada 10), diálogos de N.E.X.A. y el dilema moral de las cápsulas de estasis.
+- **Etiquetas:** `sprint-4`, `programacion`, `narrativa-niveles`, `audio-vfx`, `completado`
+- **Archivos:** `03_Nivel3_Colmena.unity`, `Level3EnvironmentBuilder.cs`, `Level3MonsterAssetGenerator.cs`, `WaveSpawner.cs`, `EnemyDummy.cs`
+- **Descripción:** Escenario biomecánico con parallax multicapa y cápsulas de estasis; 3 monstruos exclusivos (`BioStalker`, `BioLasher`, `BioHulk`), Mini-Jefe Inquisidor Psíquico en oleada 5 (`HiveInquisitor`), Jefe Final Carcelero Biotecnológico `VORTEX-OMEGA` en oleada 10 (con pilares sísmicos y fase de furia < 45% HP), diálogos de N.E.X.A. y dilema moral de las cápsulas de estasis.
 
-#### Issue #24: `[S4 - TODO] Sistema de 3 Finales Cinemáticos según el Nivel de Disonancia Nexo`
+#### Issue #24: `[S4 - DONE] Sistema de 3 Finales Cinemáticos según el Nivel de Disonancia Nexo`
 - **Asignado a:** Cesar Enrique Garay García (`@cesargaray-dev`)
-- **Etiquetas:** `sprint-4`, `narrativa-niveles`, `ui-ux`, `audio-vfx`, `por-hacer`
-- **Archivos:** `EndingsManager.cs`, `PlayerStats.cs`
-- **Descripción:** 3 epílogos cinematográficos según las decisiones tomadas: Final 1 (Rescate Puro y reconstrucción terrestre), Final 2 (El Guardián Silencioso y exilio estelar) y Final 3 (El Nuevo Soberano y dominación de la armada Vorst).
+- **Etiquetas:** `sprint-4`, `narrativa-niveles`, `ui-ux`, `audio-vfx`, `completado`
+- **Archivos:** `EndingCinematicController.cs`, `PlayerStats.cs`, `Resources/StoryUI/Ending_*.png`
+- **Descripción:** 3 desenlaces cinematográficos ilustrados con narración teletipo, retrato reactivo y estadísticas finales de campaña: Final 1 Luminoso ("El Héroe de la Tierra"), Final 2 Oscuro ("El Señor de la Disonancia") y Final 3 Neutral ("El Último Legado de N.E.X.A.").
 
 #### Issue #25: `[S4 - TODO] Códice / Bestiario Holográfico Vorst Interactivo`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)

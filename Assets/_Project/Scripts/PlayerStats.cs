@@ -54,6 +54,14 @@ public class PlayerStats : MonoBehaviour
     private string choiceSummary = "";
     private float levelTimer = 0f;
 
+    [Header("Bloque 2 (Issue #17): Racha de Combos y Modo Sobremarcha Nexo (Overdrive)")]
+    public int comboCount = 0;
+    public float comboDecayTimer = 0f;
+    public const float MAX_COMBO_DECAY = 4.5f;
+    public bool isOverdriveActive => comboCount >= 20;
+    private float comboPunchTimer = 0f;
+    private bool wasOverdriveActive = false;
+
     [Header("Carga de Habilidad Ultimate (0 a 100)")]
     public float currentUltCharge = 0f;
     public float maxUltCharge = 100f;
@@ -121,11 +129,20 @@ public class PlayerStats : MonoBehaviour
 
         LoadCyberUITextures();
 
-        if (SceneManager.GetActiveScene().name == "Lab_Zahir")
+        string activeScene = SceneManager.GetActiveScene().name;
+        if (activeScene == "03_Nivel3_Colmena")
+        {
+            levelNumber = 3;
+            zoneName = "NAVE NÚCLEO VORST — COLMENA DE BIO-CABLES";
+            nextLevelSceneName = "";
+            ResetSkillsToBase();
+            LoadProgressIfContinuing();
+        }
+        else if (activeScene == "Lab_Zahir")
         {
             levelNumber = 2;
             zoneName = "BASE VORST — NÚCLEO CENTRAL";
-            nextLevelSceneName = "";
+            nextLevelSceneName = "03_Nivel3_Colmena";
             ResetSkillsToBase();
             LoadProgressIfContinuing();
         }
@@ -263,13 +280,68 @@ public class PlayerStats : MonoBehaviour
             {
                 currentHP = Mathf.Min(maxHP, currentHP + hpRegenPerSec * Time.deltaTime);
             }
+
+            // BLOQUE 2 (Issue #17): Decaimiento de racha de combos (4.5s)
+            if (comboCount > 0)
+            {
+                comboDecayTimer -= Time.deltaTime;
+                if (comboDecayTimer <= 0f)
+                {
+                    comboCount = 0;
+                    comboDecayTimer = 0f;
+                    wasOverdriveActive = false;
+                }
+            }
+            if (comboPunchTimer > 0f)
+            {
+                comboPunchTimer = Mathf.Max(0f, comboPunchTimer - Time.unscaledDeltaTime * 3.5f);
+            }
+        }
+    }
+
+    public void RegisterComboHit()
+    {
+        comboCount++;
+        comboDecayTimer = MAX_COMBO_DECAY;
+        comboPunchTimer = 0.22f;
+
+        if (isOverdriveActive && !wasOverdriveActive)
+        {
+            wasOverdriveActive = true;
+            if (CombatVFXManager.Instance != null && kaelTransform != null)
+            {
+                CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.22f, 0.95f, 1f), 0.38f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(kaelTransform.position + Vector3.up * 0.6f, new Color(1f, 0.25f, 0.85f), 2.8f);
+                CombatVFXManager.Instance.SpawnFloatingText(
+                    kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.55f),
+                    "⚡ ¡SOBREMARCHA NEXO (OVERDRIVE)! ⚡",
+                    new Color(1f, 0.35f, 0.92f), 23, 1.3f
+                );
+            }
+        }
+    }
+
+    public void HealPercent(float pct)
+    {
+        if (currentHP <= 0f) return;
+        float healAmt = Mathf.Max(1f, Mathf.Round(maxHP * pct));
+        currentHP = Mathf.Min(maxHP, currentHP + healAmt);
+        OnStatsChanged?.Invoke();
+
+        if (CombatVFXManager.Instance != null && kaelTransform != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.35f),
+                $"✨ +{Mathf.RoundToInt(healAmt)} HP (PUREZA NEXO)",
+                new Color(0.25f, 1f, 0.65f), 18, 0.95f
+            );
         }
     }
 
     public void RecalculateStats()
     {
-        float hpBonus = (compassionPoints > 0) ? 1.20f : 1.0f;
-        float atkBonus = ((rigorPoints > 0) ? 1.25f : 1.0f) * (1f + branchFuria * 0.18f);
+        float hpBonus = (compassionPoints > 0) ? (1f + compassionPoints * 0.20f) : 1.0f;
+        float atkBonus = ((rigorPoints > 0) ? (1f + rigorPoints * 0.25f) : 1.0f) * (1f + branchFuria * 0.18f);
 
         maxHP = Mathf.RoundToInt((100f + ((levelHp - 1) * 35f) + ((playerLevel - 1) * 20f) + (branchGuardian * 40f) + (levelArmor * 28f)) * hpBonus);
         hpRegenPerSec = 1.0f + (branchGuardian * 3.5f) + (levelArmor * 0.6f);
@@ -315,7 +387,9 @@ public class PlayerStats : MonoBehaviour
 
     public void AddRewards(int baseGold, int expAmount)
     {
-        int finalGold = Mathf.RoundToInt(baseGold * goldMultiplier);
+        // BLOQUE 2 (Issue #17): +30% Bono de Oro al derrotar enemigos durante Sobremarcha Nexo (Overdrive)
+        float effectiveGoldMult = goldMultiplier * (isOverdriveActive ? 1.30f : 1.0f);
+        int finalGold = Mathf.RoundToInt(baseGold * effectiveGoldMult);
         gold += finalGold;
         currentExp += expAmount;
 
@@ -365,16 +439,37 @@ public class PlayerStats : MonoBehaviour
         return true;
     }
 
-    public void TakeDamage(float dmg)
+    public void TakeDamage(float dmg, EnemyDummy attacker = null)
     {
         if (isLevelCompleted || isGameOver || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen) return;
+
+        // BLOQUE 1 (Issue #16): Verificar Ventana de Bloqueo Perfecto (Parry Nexo <= 0.35s)
+        if (KaelAutoController.Instance != null && KaelAutoController.Instance.IsWithinPerfectParryWindow())
+        {
+            // ¡PARRY PERFECTO! Kael recibe 0 de daño y ejecuta ralentización temporal + contragolpe automático
+            KaelAutoController.Instance.ExecuteParryRiposte(attacker);
+            return;
+        }
 
         bool guarded = (KaelAutoController.Instance != null && KaelAutoController.Instance.isGuarding);
 
         float finalDmg = dmg * (1f - armorDamageReduction);
         if (guarded)
         {
-            finalDmg *= 0.60f;
+            // BLOQUE 1: Fuera de la ventana perfecta, mantener S reduce el daño en un 45% y reproduce sonido metálico
+            finalDmg *= 0.55f;
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayParryClang(false);
+        }
+        else
+        {
+            // BLOQUE 2: Si Kael recibe daño directo sin bloquear, el contador de combo se rompe
+            if (comboCount > 0)
+            {
+                comboCount = 0;
+                comboDecayTimer = 0f;
+                wasOverdriveActive = false;
+            }
         }
 
         finalDmg = Mathf.Max(1f, finalDmg);
@@ -383,7 +478,7 @@ public class PlayerStats : MonoBehaviour
 
         if (CombatVFXManager.Instance != null && kaelTransform != null)
         {
-            string popTxt = guarded ? $"🛡 -{Mathf.RoundToInt(finalDmg)} (GUARDIA)" : $"-{Mathf.RoundToInt(finalDmg)}";
+            string popTxt = guarded ? $"🛡 -{Mathf.RoundToInt(finalDmg)} (GUARDIA -45%)" : $"-{Mathf.RoundToInt(finalDmg)}";
             Color popCol = guarded ? colCyanNexo : new Color(1f, 0.25f, 0.3f);
             CombatVFXManager.Instance.SpawnFloatingText(
                 kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.2f),
@@ -592,9 +687,11 @@ public class PlayerStats : MonoBehaviour
         if (spawner != null && spawner.currentWave < spawner.totalWaves && spawner.currentWave != 5)
         {
             DrawSkinnedCyberPanel(ScaleRect(775, 12, 410, 68), texPanelCyan, colBorder);
-            string waveHeader = (levelNumber == 2)
-                ? $"BASE VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
-                : $"SECTOR 7 — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}";
+            string waveHeader = (levelNumber == 3)
+                ? $"COLMENA VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
+                : ((levelNumber == 2)
+                    ? $"BASE VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
+                    : $"SECTOR 7 — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}");
             DrawStyledText(ScaleRect(775, 16, 410, 28), waveHeader, 17, TextAnchor.MiddleCenter, colCyanNexo);
             float waveRatio = Mathf.Clamp01((float)spawner.currentWave / Mathf.Max(1, spawner.totalWaves));
             DrawProgressBar(ScaleRect(798, 48, 364, 16), waveRatio, new Color(0.08f, 0.14f, 0.24f), colCyanNexo, "", 11);
@@ -616,6 +713,9 @@ public class PlayerStats : MonoBehaviour
             TogglePause();
         }
 
+        // --- C.2) MEDIDOR ESTILIZADO DE RACHA DE COMBOS Y SOBREMARCHA NEXO (LATERAL DERECHO) + ESTADO MORAL ---
+        DrawComboAndOverdriveHUD();
+
         // --- D) BARRA INFERIOR COMPACTA ESTILO ACTION RPG ---
         DrawActionRpgBottomBar();
 
@@ -625,6 +725,80 @@ public class PlayerStats : MonoBehaviour
         if (isGameOver) DrawGameOverModal(spawner);
         if (isChoosingDilemma) DrawNarrativeDilemmaModal();
         if (isLevelCompleted) DrawVictoryModal(spawner);
+    }
+
+    // =========================================================================
+    // BLOQUE 2 (Issue #17) & BLOQUE 4 (Issue #22): HUD DE COMBO / OVERDRIVE Y MORAL
+    // =========================================================================
+    void DrawComboAndOverdriveHUD()
+    {
+        if (isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isUpgradeTreeOpen)
+            return;
+
+        // 1. Indicador de Transformación Moral Dinámica bajo el perfil de Kael (Bloque 4)
+        if (compassionPoints != rigorPoints)
+        {
+            bool isPureza = (compassionPoints > rigorPoints);
+            Rect moralBadge = ScaleRect(18f, 114f, 512f, 28f);
+            Color mCol = isPureza ? new Color(0.28f, 0.98f, 1f) : new Color(1f, 0.22f, 0.48f);
+            DrawCyberBox(moralBadge, new Color(0.03f, 0.05f, 0.12f, 0.92f), mCol, 1.5f);
+            string moralTxt = isPureza
+                ? $"☀ PUREZA NEXO (Compasión {compassionPoints}) — +10% Curación en Ult/Parry"
+                : $"☣ DISONANCIA VORST (Rigor {rigorPoints}) — +22% Crit + Quemadura Plasma";
+            DrawStyledText(moralBadge, moralTxt, 13, TextAnchor.MiddleCenter, mCol);
+        }
+
+        // 2. Medidor Estilizado de Racha de Combos y Sobremarcha Nexo en el Lateral Derecho (Bloque 2)
+        if (comboCount < 2) return;
+
+        float punch = (comboPunchTimer > 0f) ? Mathf.Sin((comboPunchTimer / 0.22f) * Mathf.PI) * 10f : 0f;
+        Rect comboCard = ScaleRect(1456f - punch * 0.5f, 92f - punch * 0.3f, 446f + punch, 108f + punch * 0.6f);
+
+        Color rankCol = colCyanNexo;
+        Texture2D cardSkin = texPanelCyan;
+        string rankTitle = "CADENCIA ACTIVA";
+        string buffSubtitle = "MANTÉN LA OFENSIVA SIN RECIBIR DAÑO DIRECTO";
+
+        if (isOverdriveActive)
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f);
+            rankCol = Color.Lerp(new Color(1f, 0.22f, 0.78f), new Color(0.22f, 0.96f, 1f), pulse);
+            cardSkin = texPanelCrimson;
+            rankTitle = "⚡ SOBREMARCHA NEXO (OVERDRIVE) ⚡";
+            buffSubtitle = "+30% VEL. ATAQUE  |  +20% MOVIMIENTO  |  +30% ORO";
+        }
+        else if (comboCount >= 12)
+        {
+            rankCol = colGoldYel;
+            cardSkin = texPanelGold;
+            rankTitle = "★ RANGO: IMPARABLE ★";
+            buffSubtitle = $"A {20 - comboCount} GOLPES DE ACTIVAR SOBREMARCHA NEXO";
+        }
+        else if (comboCount >= 5)
+        {
+            rankCol = colCyanNexo;
+            cardSkin = texPanelCyan;
+            rankTitle = "✦ RANGO: SINCRONIZADO ✦";
+            buffSubtitle = $"A {20 - comboCount} GOLPES DE ACTIVAR SOBREMARCHA NEXO";
+        }
+
+        DrawSkinnedCyberPanel(comboCard, cardSkin, rankCol);
+
+        int hitFontSize = Mathf.Clamp(22 + Mathf.RoundToInt(punch * 0.4f), 22, 30);
+        DrawStyledText(ScaleRect(1474f, 98f, 195f, 38f), $"🔥 x{comboCount} HITS", hitFontSize, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(ScaleRect(1660f, 100f, 226f, 34f), rankTitle, 14, TextAnchor.MiddleRight, rankCol);
+
+        DrawStyledText(ScaleRect(1474f, 136f, 410f, 24f), buffSubtitle, 12, TextAnchor.MiddleCenter, new Color(0.90f, 0.96f, 1f));
+
+        float timeRatio = Mathf.Clamp01(comboDecayTimer / MAX_COMBO_DECAY);
+        DrawProgressBar(
+            ScaleRect(1474f, 166f, 410f, 18f),
+            timeRatio,
+            new Color(0.06f, 0.08f, 0.16f, 0.95f),
+            rankCol,
+            $"TIEMPO DE COMBO: {comboDecayTimer:F1}s",
+            11
+        );
     }
 
     // =========================================================================
@@ -1217,7 +1391,10 @@ public class PlayerStats : MonoBehaviour
         int totalWaves = (spawner != null) ? spawner.totalWaves : 10;
         int kills = (spawner != null) ? spawner.totalKillsInLevel : 0;
 
-        DrawStatRow(1050f, 320f, 422f, "ZONA DE COMBATE:", (levelNumber == 2) ? "NIVEL 2 — BASE VORST" : "NIVEL 1 — SECTOR 7", Color.white);
+        string zoneLabel = (levelNumber == 3)
+            ? "NIVEL 3 — COLMENA VORST"
+            : ((levelNumber == 2) ? "NIVEL 2 — BASE VORST" : "NIVEL 1 — SECTOR 7");
+        DrawStatRow(1050f, 320f, 422f, "ZONA DE COMBATE:", zoneLabel, Color.white);
         DrawStatRow(1050f, 358f, 422f, "OLEADA ALCANZADA:", $"OLEADA {waveReached} / {totalWaves}", new Color(1f, 0.48f, 0.52f));
         DrawStatRow(1050f, 396f, 422f, "VORST ELIMINADOS:", $"{kills} BAJAS CONFIRMADAS", colCyanNexo);
         DrawStatRow(1050f, 434f, 422f, "NIVEL DE KAEL:", $"NIVEL {playerLevel} (100% CONSERVADO)", colHpGreen);
@@ -1296,7 +1473,9 @@ public class PlayerStats : MonoBehaviour
         int timeBonus = Mathf.Max(100, 1000 - (timeSec * 4));
         int totalScore = (gold * 10) + (kills * 25) + timeBonus;
 
-        string vicTitle = (levelNumber == 2) ? "★ ¡BASE VORST CONQUISTADA! ★" : "★ ¡SECTOR 7 LIBERADO! ★";
+        string vicTitle = (levelNumber == 3)
+            ? "★ ¡COLMENA VORST CONQUISTADA! ★"
+            : ((levelNumber == 2) ? "★ ¡BASE VORST CONQUISTADA! ★" : "★ ¡SECTOR 7 LIBERADO! ★");
         DrawStyledText(ScaleRect(420f, 178f, 1080f, 48f), vicTitle, 36, TextAnchor.MiddleCenter, colGoldYel);
         DrawStyledText(ScaleRect(420f, 224f, 1080f, 30f), $"Decisión registrada: <color=#38e1ff>{choiceSummary}</color>", 18, TextAnchor.MiddleCenter, Color.white);
 
@@ -1323,21 +1502,64 @@ public class PlayerStats : MonoBehaviour
         DrawCyberBox(totalBox, new Color(0.06f, 0.16f, 0.12f, 0.95f), colHpGreen, 2f);
         DrawStyledText(totalBox, $"PUNTAJE TOTAL:  <color=#2ee678>{totalScore} PTS</color>", 22, TextAnchor.MiddleCenter, Color.white);
 
-        bool hasNextLevel = !string.IsNullOrEmpty(nextLevelSceneName) && Application.CanStreamedLevelBeLoaded(nextLevelSceneName);
-
-        if (hasNextLevel)
+        if (levelNumber == 3)
         {
+            // BLOQUE 6 (Issue #24): Al completar el Nivel 3, lanzar el Sistema de 3 Finales Cinemáticos según Compasión vs Rigor
             if (DrawSkinnedCyberButton(
                 new Rect(424f, 612f, 640f, 82f),
                 texBtnEmerald,
-                $"▶ AVANZAR AL NIVEL {levelNumber + 1} (BASE VORST)",
-                "CONSERVAR NIVEL, ORO Y ÁRBOL DE MEJORAS",
+                "🎬 VER DESENLACE CINEMÁTICO FINAL",
+                "EVALUAR RESONANCIA MORAL (3 FINALES OFICIALES)",
                 20, 13, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 SaveProgressForNextLevel();
+                EndingCinematicController.LaunchEndingFromMoralState();
+            }
+
+            if (DrawSkinnedCyberButton(
+                new Rect(1086f, 612f, 410f, 82f),
+                texBtnCyan,
+                "⌂ MENÚ PRINCIPAL",
+                "GUARDAR Y VOLVER AL INICIO",
+                19, 12, Color.white, colCyanNexo, colCyanNexo, true))
+            {
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                SaveProgressForNextLevel();
                 Time.timeScale = 1f;
-                SceneManager.LoadScene(nextLevelSceneName);
+                SceneManager.LoadScene(0);
+            }
+            return;
+        }
+
+        bool hasNextLevel = !string.IsNullOrEmpty(nextLevelSceneName) && Application.CanStreamedLevelBeLoaded(nextLevelSceneName);
+
+        if (hasNextLevel || levelNumber == 1)
+        {
+            string nextBtnTitle = (levelNumber == 1)
+                ? "▶ AVANZAR AL NIVEL 2 (CINEMÁTICA PUENTE)"
+                : "▶ AVANZAR AL NIVEL 3 (NAVE NÚCLEO COLMENA)";
+
+            if (DrawSkinnedCyberButton(
+                new Rect(424f, 612f, 640f, 82f),
+                texBtnEmerald,
+                nextBtnTitle,
+                "CONSERVAR NIVEL, ORO Y ÁRBOL DE MEJORAS",
+                19, 13, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+            {
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                SaveProgressForNextLevel();
+                Time.timeScale = 1f;
+
+                if (levelNumber == 1)
+                {
+                    // BLOQUE 3 (Issue #18): Ejecutar Cinemática Puente Interactiva y Tramo Jugable antes de cargar Lab_Zahir
+                    BridgeLevel1To2Controller.StartBridgeSequence();
+                }
+                else
+                {
+                    SceneManager.LoadScene(nextLevelSceneName);
+                }
             }
 
             if (DrawSkinnedCyberButton(
@@ -1433,29 +1655,43 @@ public class PlayerStats : MonoBehaviour
         Rect box = ScaleRect(420, 175, 1080, 660);
         DrawSkinnedCyberPanel(box, texPanelCyan, colCyanNexo);
 
+        bool isLv3 = (levelNumber == 3);
         bool isLv2 = (levelNumber == 2);
-        string title = isLv2 ? "DECISIÓN DE LA BASE VORST: LA TORRE DE CONVERGENCIA" : "DECISIÓN DEL SECTOR 7: EL NÚCLEO DEL COMANDANTE";
-        string desc = isLv2
-            ? "Tras caer el Arconte Vorst, la esfera púrpura de la Base Vorst queda expuesta.\nPuedes liberar a los prisioneros humanos en estasis o sobrecargar tu Guantelete con sus orbes."
-            : "Entre los restos del Comandante Vorst encuentras un reactor bio-energético aún activo,\nmientras un grupo de sobrevivientes atrapados en el puente pide auxilio médico.";
 
-        string compDesc = isLv2
-            ? "Desactivar las cámaras de recolección para liberar a los prisioneros humanos cautivos en la Base Vorst."
-            : "Usar la energía del reactor para estabilizar el refugio de los sobrevivientes del Sector 7.";
+        string title = isLv3
+            ? "DECISIÓN DE LA COLMENA VORST: LAS CÁPSULAS DE ESTASIS"
+            : (isLv2 ? "DECISIÓN DE LA BASE VORST: LA TORRE DE CONVERGENCIA" : "DECISIÓN DEL SECTOR 7: EL NÚCLEO DEL COMANDANTE");
 
-        string rigorDesc = isLv2
-            ? "Drenar los 4 orbes psiónicos del Arconte directamente hacia tu brazo para abrir brecha a la Nave Núcleo."
-            : "Devorar el núcleo Vorst con el Guantelete para acelerar tu marcha hacia Lía sin mirar atrás.";
+        string desc = isLv3
+            ? "Tras caer el Carcelero Biotecnológico VORTEX-OMEGA, el reactor maestro de estasis queda en tus manos.\nPuedes liberar de forma segura todas las cápsulas de civiles humanos o drenar el reactor hacia tu Guantelete."
+            : (isLv2
+                ? "Tras caer el Arconte Vorst, la esfera púrpura de la Base Vorst queda expuesta.\nPuedes liberar a los prisioneros humanos en estasis o sobrecargar tu Guantelete con sus orbes."
+                : "Entre los restos del Comandante Vorst encuentras un reactor bio-energético aún activo,\nmientras un grupo de sobrevivientes atrapados en el puente pide auxilio médico.");
 
-        DrawStyledText(ScaleRect(460, 204, 1000, 45), title, 27, TextAnchor.MiddleCenter, colCyanNexo);
-        DrawStyledText(ScaleRect(500, 256, 920, 75), desc, 19, TextAnchor.MiddleCenter, Color.white, true);
+        string compDesc = isLv3
+            ? "Liberar las Cápsulas de Estasis Civiles: Desvía la energía del núcleo de Vortex-Omega para abrir de forma segura todas las cápsulas humanas del Nivel 3."
+            : (isLv2
+                ? "Desactivar las cámaras de recolección para liberar a los prisioneros humanos cautivos en la Base Vorst."
+                : "Usar la energía del reactor para estabilizar el refugio de los sobrevivientes del Sector 7.");
+
+        string rigorDesc = isLv3
+            ? "Drenar el Reactor de Estasis al Guantelete: Absorbe la energía bio-eléctrica de toda la cámara para sobrecargar el cañón Nexo al máximo antes del desenlace."
+            : (isLv2
+                ? "Drenar los 4 orbes psiónicos del Arconte directamente hacia tu brazo para abrir brecha a la Nave Núcleo."
+                : "Devorar el núcleo Vorst con el Guantelete para acelerar tu marcha hacia Lía sin mirar atrás.");
+
+        string compBonusTxt = isLv3 ? "+1 COMPASIÓN\n+25% VIDA MÁXIMA Y CURACIÓN TOTAL" : "+1 COMPASIÓN\n+20% VIDA MÁXIMA PERMANENTE";
+        string rigorBonusTxt = isLv3 ? "+1 RIGOR\n+30% DAÑO DE ATAQUE Y CRÍTICO" : "+1 RIGOR\n+25% DAÑO DE ATAQUE PERMANENTE";
+
+        DrawStyledText(ScaleRect(460, 204, 1000, 45), title, 26, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(ScaleRect(500, 256, 920, 75), desc, 18, TextAnchor.MiddleCenter, Color.white, true);
 
         // Opción 1: Compasión
         Rect cardComp = ScaleRect(470, 350, 460, 430);
         DrawSkinnedCyberPanel(cardComp, texPanelCyan, colCyanNexo);
-        DrawStyledText(ScaleRect(490, 372, 420, 40), "♦ COMPASIÓN (HUMANIDAD)", 22, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(ScaleRect(490, 372, 420, 40), "♦ COMPASIÓN (PUREZA NEXO)", 22, TextAnchor.MiddleCenter, colCyanNexo);
         DrawStyledText(ScaleRect(500, 430, 400, 120), compDesc, 17, TextAnchor.MiddleCenter, Color.white, true);
-        DrawStyledText(ScaleRect(490, 565, 420, 60), "+1 COMPASIÓN\n+20% VIDA MÁXIMA PERMANENTE", 17, TextAnchor.MiddleCenter, colHpGreen, true);
+        DrawStyledText(ScaleRect(490, 565, 420, 60), compBonusTxt, 17, TextAnchor.MiddleCenter, colHpGreen, true);
 
         if (DrawSkinnedCyberButton(new Rect(500, 655, 400, 72), texBtnEmerald, "♦ ELEGIR COMPASIÓN", "PROTEGER LA HUMANIDAD", 19, 12, Color.white, colHpGreen, colCyanNexo, true))
         {
@@ -1465,7 +1701,9 @@ public class PlayerStats : MonoBehaviour
                 AudioManager.Instance.PlayVictoryDilemmaMusic();
             }
             compassionPoints++;
-            choiceSummary = isLv2 ? "Liberaste a los prisioneros de la Base Vorst (+1 Compasión)" : "Salvaste a los sobrevivientes (+1 Compasión, +20% HP)";
+            choiceSummary = isLv3
+                ? "Liberaste todas las Cápsulas de Estasis Civiles (+1 Compasión)"
+                : (isLv2 ? "Liberaste a los prisioneros de la Base Vorst (+1 Compasión)" : "Salvaste a los sobrevivientes (+1 Compasión, +20% HP)");
             RecalculateStats();
             currentHP = maxHP;
             isChoosingDilemma = false;
@@ -1476,9 +1714,9 @@ public class PlayerStats : MonoBehaviour
         // Opción 2: Rigor
         Rect cardRigor = ScaleRect(990, 350, 460, 430);
         DrawSkinnedCyberPanel(cardRigor, texPanelCrimson, new Color(1f, 0.35f, 0.55f));
-        DrawStyledText(ScaleRect(1010, 372, 420, 40), "❖ RIGOR (DISONANCIA NEXO)", 22, TextAnchor.MiddleCenter, new Color(1f, 0.45f, 0.62f));
+        DrawStyledText(ScaleRect(1010, 372, 420, 40), "❖ RIGOR (DISONANCIA VORST)", 22, TextAnchor.MiddleCenter, new Color(1f, 0.45f, 0.62f));
         DrawStyledText(ScaleRect(1020, 430, 400, 120), rigorDesc, 17, TextAnchor.MiddleCenter, Color.white, true);
-        DrawStyledText(ScaleRect(1010, 565, 420, 60), "+1 RIGOR\n+25% DAÑO DE ATAQUE PERMANENTE", 17, TextAnchor.MiddleCenter, colGoldYel, true);
+        DrawStyledText(ScaleRect(1010, 565, 420, 60), rigorBonusTxt, 17, TextAnchor.MiddleCenter, colGoldYel, true);
 
         if (DrawSkinnedCyberButton(new Rect(1020, 655, 400, 72), texBtnCrimson, "❖ ELEGIR RIGOR", "SOBRECARGAR EL GUANTELETE", 19, 12, Color.white, colGoldYel, colAttrFuerza, true))
         {
@@ -1488,7 +1726,9 @@ public class PlayerStats : MonoBehaviour
                 AudioManager.Instance.PlayVictoryDilemmaMusic();
             }
             rigorPoints++;
-            choiceSummary = isLv2 ? "Drenaste los orbes psiónicos del Arconte (+1 Rigor)" : "Absorbiste el núcleo Vorst (+1 Rigor, +25% ATK)";
+            choiceSummary = isLv3
+                ? "Drenaste el Reactor de Estasis al Guantelete (+1 Rigor)"
+                : (isLv2 ? "Drenaste los orbes psiónicos del Arconte (+1 Rigor)" : "Absorbiste el núcleo Vorst (+1 Rigor, +25% ATK)");
             RecalculateStats();
             isChoosingDilemma = false;
             isLevelCompleted = true;
@@ -1601,8 +1841,11 @@ public class PlayerStats : MonoBehaviour
 
         if (KaelAutoController.Instance != null && KaelAutoController.Instance.isGuarding)
         {
-            Rect guardTag = new Rect(x - 22f * sx, y - 22f * sy, barW + 44f * sx, 18f * sy);
-            DrawStyledText(guardTag, "🛡 GUARDIA NEXO (-40%)", 12, TextAnchor.MiddleCenter, colCyanNexo);
+            Rect guardTag = new Rect(x - 30f * sx, y - 22f * sy, barW + 60f * sx, 18f * sy);
+            bool inParryWin = KaelAutoController.Instance.IsWithinPerfectParryWindow();
+            string guardTxt = inParryWin ? "⚡ PARRY NEXO (0.35s)" : "🛡 GUARDIA NEXO (-45%)";
+            Color guardCol = inParryWin ? colGoldYel : colCyanNexo;
+            DrawStyledText(guardTag, guardTxt, 12, TextAnchor.MiddleCenter, guardCol);
         }
 
         GUI.color = Color.white;

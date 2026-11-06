@@ -234,6 +234,24 @@ public class AudioManager : MonoBehaviour
             CrossfadeTo(musicVictoryDilemma, duration < 0f ? crossfadeDuration : duration);
     }
 
+    public void PlayVictoryAndDilemmaMusic(float duration = -1f)
+    {
+        PlayVictoryDilemmaMusic(duration);
+    }
+
+    public void PlayHeavyHitSfx()
+    {
+        PlayHitImpact(true);
+    }
+
+    public void PlayParryClang(bool isPerfectParry)
+    {
+        if (_isMuted || sfxSource == null) return;
+        AudioClip clip = isPerfectParry ? sfxLevelUp : sfxHitHeavy;
+        if (clip != null)
+            sfxSource.PlayOneShot(clip, _masterVolume * baseSfxScale * 0.92f);
+    }
+
     public void CrossfadeTo(AudioClip nextClip, float duration = 1.2f)
     {
         if (nextClip == null) return;

@@ -9,6 +9,7 @@ public class CombatVFXManager : MonoBehaviour
     private Sprite expOrbSprite;
     private Sprite sparkSprite;
     private Sprite whitePixelSprite;
+    private Sprite ringSprite;
     private Transform kaelTarget;
 
     // Variables de Alerta de Jefe
@@ -17,11 +18,12 @@ public class CombatVFXManager : MonoBehaviour
     private string warningSubtitle = "";
     private float warningTimer = 0f;
 
-    // Variables de Cinemática de Ultimate
+    // Variables de Cinemática de Ultimate y Flashes de Pantalla
     private bool ultCinematicActive = false;
     private float ultFlashAlpha = 0f;
+    private Color customFlashColor = new Color(0.55f, 0.95f, 1f, 1f);
 
-    // Variables de Contador de Combo
+    // Variables de Contador de Combo (Sincronizadas con PlayerStats)
     private int comboHits = 0;
     private float comboResetTimer = 0f;
 
@@ -38,6 +40,7 @@ public class CombatVFXManager : MonoBehaviour
         expOrbSprite = CreatePixelCircleSprite(9, new Color(0.22f, 0.88f, 1f), new Color(0.1f, 0.45f, 0.9f));
         sparkSprite = CreatePixelCircleSprite(6, Color.white, new Color(0.22f, 0.88f, 1f));
         whitePixelSprite = CreateSolidPixelSprite();
+        ringSprite = CreateRingSprite(64);
     }
 
     void Start()
@@ -56,21 +59,39 @@ public class CombatVFXManager : MonoBehaviour
 
         if (ultFlashAlpha > 0f)
         {
-            ultFlashAlpha = Mathf.MoveTowards(ultFlashAlpha, 0f, Time.unscaledDeltaTime * 2.2f);
+            ultFlashAlpha = Mathf.MoveTowards(ultFlashAlpha, 0f, Time.unscaledDeltaTime * 2.4f);
         }
     }
 
     public void RegisterComboHit()
     {
         comboHits++;
-        comboResetTimer = 2.5f; // El combo se mantiene mientras Kael siga golpeando antes de 2.5s
+        comboResetTimer = 4.5f;
+        if (PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.RegisterComboHit();
+        }
+    }
+
+    public void TriggerScreenFlash(Color flashCol, float alpha = 0.55f)
+    {
+        customFlashColor = flashCol;
+        ultFlashAlpha = Mathf.Max(ultFlashAlpha, alpha);
     }
 
     // --- EFECTOS CINEMÁTICOS DE LA ULTIMATE ---
     public void SetUltimateCinematic(bool active, bool triggerFlash = false)
     {
         ultCinematicActive = active;
-        if (triggerFlash) ultFlashAlpha = 0.65f;
+        if (triggerFlash)
+        {
+            bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+            bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+            customFlashColor = isCorrupt
+                ? new Color(1f, 0.18f, 0.48f)
+                : (isPureza ? new Color(1f, 0.92f, 0.45f) : new Color(0.55f, 0.95f, 1f));
+            ultFlashAlpha = 0.65f;
+        }
     }
 
     // Fase 1 de la Ulti: Partículas de energía absorbidas hacia el Guantelete Nexo
@@ -81,6 +102,9 @@ public class CombatVFXManager : MonoBehaviour
 
     IEnumerator ChargeInwardRoutine(Vector3 centerPos, float duration)
     {
+        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+
         float elapsed = 0f;
         while (elapsed < duration)
         {
@@ -93,31 +117,52 @@ public class CombatVFXManager : MonoBehaviour
                 orb.transform.position = startPos;
                 SpriteRenderer sr = orb.AddComponent<SpriteRenderer>();
                 sr.sprite = (i % 2 == 0) ? expOrbSprite : coinSprite;
+                if (isCorrupt)
+                    sr.color = (i % 2 == 0) ? new Color(1f, 0.18f, 0.45f) : new Color(0.68f, 0.15f, 1f);
+                else if (isPureza)
+                    sr.color = (i % 2 == 0) ? new Color(0.35f, 0.98f, 1f) : new Color(1f, 0.90f, 0.35f);
                 sr.sortingOrder = 25;
 
                 ChargeParticle cp = orb.AddComponent<ChargeParticle>();
                 cp.Init(centerPos, 0.22f);
             }
             elapsed += 0.06f;
-            yield return new WaitForSeconds(0.06f);
+            yield return new WaitForSecondsRealtime(0.06f);
         }
     }
 
-    // Fase 2 de la Ulti: Rayo Láser Gigante de Triple Capa que cruza toda la pantalla
+    // Fase 2 de la Ulti: Rayo Láser Gigante de Triple Capa que cambia según Compasión / Rigor (Bloque 4)
     public void SpawnUltimateMegaBeam(Vector3 originPos, float length, float duration)
     {
-        ultFlashAlpha = 0.75f; // Destello inicial al disparar el cañón
-        StartCoroutine(MegaBeamRoutine(originPos, length, duration));
+        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        customFlashColor = isCorrupt
+            ? new Color(1f, 0.15f, 0.42f)
+            : (isPureza ? new Color(0.45f, 0.98f, 1f) : new Color(0.55f, 0.95f, 1f));
+        ultFlashAlpha = 0.78f;
+        StartCoroutine(MegaBeamRoutine(originPos, length, duration, isPureza, isCorrupt));
     }
 
-    IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration)
+    IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration, bool isPureza, bool isCorrupt)
     {
         GameObject beamRoot = new GameObject("NexoMegaBeam");
         beamRoot.transform.position = originPos;
 
-        SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "OuterGlow", new Color(0.1f, 0.65f, 1f, 0.55f), 20);
-        SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidCyan", new Color(0.22f, 0.95f, 1f, 0.90f), 21);
-        SpriteRenderer coreBeam = CreateBeamLayer(beamRoot.transform, "CoreWhite", new Color(1f, 1f, 1f, 1f), 22);
+        Color outerCol = isCorrupt
+            ? new Color(0.55f, 0.06f, 0.88f, 0.65f)
+            : (isPureza ? new Color(1f, 0.84f, 0.22f, 0.62f) : new Color(0.1f, 0.65f, 1f, 0.55f));
+
+        Color midCol = isCorrupt
+            ? new Color(1f, 0.14f, 0.38f, 0.92f)
+            : (isPureza ? new Color(0.25f, 0.98f, 1f, 0.92f) : new Color(0.22f, 0.95f, 1f, 0.90f));
+
+        Color coreCol = isCorrupt
+            ? new Color(1f, 0.78f, 0.92f, 1f)
+            : new Color(1f, 1f, 1f, 1f);
+
+        SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "OuterGlow", outerCol, 20);
+        SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidBeam", midCol, 21);
+        SpriteRenderer coreBeam = CreateBeamLayer(beamRoot.transform, "CoreBeam", coreCol, 22);
 
         float absLen = Mathf.Abs(length);
         float dirSign = (length < 0f) ? -1f : 1f;
@@ -128,18 +173,18 @@ public class CombatVFXManager : MonoBehaviour
             float fadeOut = (elapsed > duration * 0.75f) ? Mathf.InverseLerp(duration, duration * 0.75f, elapsed) : 1f;
             float currentThickness = pulse * fadeOut;
 
-            outerBeam.transform.localScale = new Vector3(absLen, 1.85f * currentThickness, 1f);
+            outerBeam.transform.localScale = new Vector3(absLen, 1.95f * currentThickness, 1f);
             outerBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
-            midBeam.transform.localScale = new Vector3(absLen, 1.05f * currentThickness, 1f);
+            midBeam.transform.localScale = new Vector3(absLen, 1.10f * currentThickness, 1f);
             midBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
-            coreBeam.transform.localScale = new Vector3(absLen, 0.45f * currentThickness, 1f);
+            coreBeam.transform.localScale = new Vector3(absLen, 0.48f * currentThickness, 1f);
             coreBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
 
-            if (Random.value > 0.3f)
+            if (Random.value > 0.28f)
             {
-                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, absLen * 0.85f), Random.Range(-0.5f, 0.5f), 0f);
+                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, absLen * 0.85f), Random.Range(-0.55f, 0.55f), 0f);
                 SpawnHitSparks(sparkPos, true, 3);
             }
 
@@ -161,15 +206,167 @@ public class CombatVFXManager : MonoBehaviour
         return sr;
     }
 
+    // --- BLOQUE 1: DESTELLO Y ONDA DE CHOQUE RADIAL DE PARRY PERFECTO ---
+    public void SpawnParryFlashAndShockwave(Vector3 pos, Color primaryCol, Color secondaryCol)
+    {
+        TriggerScreenFlash(primaryCol, 0.48f);
+        SpawnShockwaveRing(pos, primaryCol, 2.85f);
+        SpawnShockwaveRing(pos, secondaryCol, 1.95f);
+
+        for (int i = 0; i < 14; i++)
+        {
+            GameObject sp = new GameObject("ParrySpark");
+            sp.transform.position = pos;
+            SpriteRenderer sr = sp.AddComponent<SpriteRenderer>();
+            sr.sprite = sparkSprite;
+            sr.color = (i % 2 == 0) ? primaryCol : secondaryCol;
+            sr.sortingOrder = 26;
+
+            SparkParticle p = sp.AddComponent<SparkParticle>();
+            p.Init(true);
+        }
+    }
+
+    public void SpawnShockwaveRing(Vector3 pos, Color col, float targetScale = 2.4f)
+    {
+        GameObject ringObj = new GameObject("NexoShockwaveRing");
+        ringObj.transform.position = pos;
+        SpriteRenderer sr = ringObj.AddComponent<SpriteRenderer>();
+        sr.sprite = ringSprite;
+        sr.color = col;
+        sr.sortingOrder = 24;
+
+        ShockwaveRingBehaviour ring = ringObj.AddComponent<ShockwaveRingBehaviour>();
+        ring.Init(targetScale, 0.30f);
+    }
+
+    // --- BLOQUE 2: SOMBRAS HOLOGRÁFICAS (AFTERIMAGE GHOST TRAIL) Y ARCOS ELÉCTRICOS EN OVERDRIVE ---
+    public void SpawnAfterimageGhost(Sprite spr, Vector3 pos, Vector3 worldScale, bool flipX, Color ghostColor, int sortingOrder = 9)
+    {
+        if (spr == null) return;
+        GameObject ghost = new GameObject("KaelAfterimageGhost");
+        ghost.transform.position = pos;
+        ghost.transform.localScale = worldScale;
+
+        SpriteRenderer sr = ghost.AddComponent<SpriteRenderer>();
+        sr.sprite = spr;
+        sr.flipX = flipX;
+        sr.color = ghostColor;
+        sr.sortingOrder = sortingOrder;
+
+        AfterimageFade fade = ghost.AddComponent<AfterimageFade>();
+        fade.Init(ghostColor, 0.22f);
+    }
+
+    public void SpawnElectricArc(Vector3 basePos, Color arcColor)
+    {
+        GameObject arc = new GameObject("OverdriveElectricArc");
+        arc.transform.position = basePos + new Vector3(Random.Range(-0.48f, 0.48f), Random.Range(-0.2f, 0.9f), 0f);
+        arc.transform.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-35f, 35f));
+        arc.transform.localScale = new Vector3(0.09f, Random.Range(0.45f, 0.95f), 1f);
+
+        SpriteRenderer sr = arc.AddComponent<SpriteRenderer>();
+        sr.sprite = whitePixelSprite;
+        sr.color = arcColor;
+        sr.sortingOrder = 24;
+
+        RisingParticle rp = arc.AddComponent<RisingParticle>();
+        rp.Init(2.6f, 0.22f);
+    }
+
+    // --- BLOQUE 4: PARTÍCULAS DE CURACIÓN (PUREZA NEXO) Y RUNAS / ESPORAS ---
+    public void SpawnHealingParticles(Vector3 basePos)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            GameObject hpOrb = new GameObject("PurezaHealOrb");
+            hpOrb.transform.position = basePos + new Vector3(Random.Range(-0.55f, 0.55f), Random.Range(-0.2f, 0.7f), 0f);
+            hpOrb.transform.localScale = Vector3.one * Random.Range(0.75f, 1.25f);
+
+            SpriteRenderer sr = hpOrb.AddComponent<SpriteRenderer>();
+            sr.sprite = sparkSprite;
+            sr.color = (i % 2 == 0) ? new Color(0.25f, 1f, 0.65f, 0.95f) : new Color(1f, 0.92f, 0.35f, 0.95f);
+            sr.sortingOrder = 25;
+
+            RisingParticle rp = hpOrb.AddComponent<RisingParticle>();
+            rp.Init(Random.Range(1.8f, 3.0f), Random.Range(0.45f, 0.70f));
+        }
+    }
+
+    public void SpawnFloatingRuneOrSpore(Vector3 worldPos, Color col)
+    {
+        GameObject rune = new GameObject("FloatingRuneSpore");
+        rune.transform.position = worldPos;
+        rune.transform.localScale = Vector3.one * Random.Range(0.55f, 0.95f);
+
+        SpriteRenderer sr = rune.AddComponent<SpriteRenderer>();
+        sr.sprite = sparkSprite;
+        sr.color = col;
+        sr.sortingOrder = 18;
+
+        RisingParticle rp = rune.AddComponent<RisingParticle>();
+        rp.Init(Random.Range(0.9f, 1.6f), Random.Range(0.55f, 0.95f));
+    }
+
+    // --- BLOQUE 5: PILARES DE ENERGÍA PARA EL IMPACTO SÍSMICO DE VORTEX-OMEGA ---
+    public void SpawnEnergyPillar(Vector3 groundPos, Color pillarCol)
+    {
+        StartCoroutine(EnergyPillarRoutine(groundPos, pillarCol));
+    }
+
+    IEnumerator EnergyPillarRoutine(Vector3 groundPos, Color pillarCol)
+    {
+        GameObject pillar = new GameObject("VortexEnergyPillar");
+        pillar.transform.position = groundPos;
+
+        SpriteRenderer outer = CreateBeamLayer(pillar.transform, "PillarOuter", new Color(pillarCol.r, pillarCol.g, pillarCol.b, 0.65f), 19);
+        SpriteRenderer core = CreateBeamLayer(pillar.transform, "PillarCore", Color.white, 20);
+
+        float dur = 0.42f;
+        float t = 0f;
+        while (t < dur)
+        {
+            float p = t / dur;
+            float widthMul = Mathf.Sin(p * Mathf.PI);
+            float height = Mathf.Lerp(0.5f, 6.2f, Mathf.Clamp01(p * 3f));
+
+            outer.transform.localScale = new Vector3(0.95f * widthMul, height, 1f);
+            outer.transform.localPosition = new Vector3(0f, height * 0.5f, 0f);
+
+            core.transform.localScale = new Vector3(0.38f * widthMul, height, 1f);
+            core.transform.localPosition = new Vector3(0f, height * 0.5f, 0f);
+
+            t += Time.deltaTime;
+            yield return null;
+        }
+        Destroy(pillar);
+    }
+
+    public void SpawnEnemyDeathBurst(Vector3 pos, bool isBoss)
+    {
+        SpawnHitSparks(pos, true, isBoss ? 16 : 8);
+        SpawnShockwaveRing(pos, isBoss ? new Color(1f, 0.25f, 0.55f) : new Color(0.22f, 0.92f, 1f), isBoss ? 3.2f : 1.7f);
+    }
+
     public void SpawnHitSparks(Vector3 pos, bool isHeavy, int count = 6)
     {
+        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+
+        Color c1 = isCorrupt
+            ? new Color(1f, 0.18f, 0.45f)
+            : (isPureza ? new Color(0.28f, 0.98f, 1f) : new Color(0.22f, 0.92f, 1f));
+        Color c2 = isCorrupt
+            ? new Color(0.68f, 0.15f, 1f)
+            : (isPureza ? new Color(1f, 0.90f, 0.32f) : new Color(1f, 0.85f, 0.2f));
+
         for (int i = 0; i < count; i++)
         {
             GameObject sp = new GameObject("HitSpark");
             sp.transform.position = pos;
             SpriteRenderer sr = sp.AddComponent<SpriteRenderer>();
             sr.sprite = sparkSprite;
-            sr.color = (i % 2 == 0) ? new Color(0.22f, 0.92f, 1f) : new Color(1f, 0.85f, 0.2f);
+            sr.color = (i % 2 == 0) ? c1 : c2;
             sr.sortingOrder = 23;
 
             SparkParticle p = sp.AddComponent<SparkParticle>();
@@ -299,19 +496,13 @@ public class CombatVFXManager : MonoBehaviour
     {
         GUI.matrix = Matrix4x4.identity;
 
-        // 1. Contador de Combo en pantalla (Arriba a la izquierda debajo del HUD)
-        if (comboHits >= 2)
-        {
-            int dynFont = Mathf.Clamp(22 + (comboHits / 2), 22, 36);
-            Color comboCol = (comboHits >= 10) ? new Color(1f, 0.84f, 0.22f) : new Color(0.22f, 0.94f, 1f);
-            Rect comboRect = ScaleRect(28f, 122f, 440f, 52f);
-            DrawStyledText(comboRect, $"⚡ COMBO x{comboHits} GOLPES!", dynFont, TextAnchor.MiddleLeft, comboCol);
-        }
-
-        // 2. Bandas Cinematográficas (Letterbox) y Cartel durante la Ultimate
+        // 1. Bandas Cinematográficas (Letterbox) y Cartel durante la Ultimate
         if (ultCinematicActive)
         {
-            GUI.color = new Color(0.02f, 0.08f, 0.18f, 0.45f);
+            bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+            Color bannerAccent = isCorrupt ? new Color(1f, 0.20f, 0.48f) : new Color(0.22f, 0.95f, 1f);
+
+            GUI.color = isCorrupt ? new Color(0.14f, 0.02f, 0.16f, 0.45f) : new Color(0.02f, 0.08f, 0.18f, 0.45f);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
 
             float barH = Mathf.Round(Screen.height * 0.12f);
@@ -319,23 +510,26 @@ public class CombatVFXManager : MonoBehaviour
             GUI.DrawTexture(new Rect(0, 0, Screen.width, barH), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0, Screen.height - barH, Screen.width, barH), Texture2D.whiteTexture);
 
-            GUI.color = new Color(0.22f, 0.92f, 1f, 0.9f);
+            GUI.color = bannerAccent;
             GUI.DrawTexture(new Rect(0, barH - 3f, Screen.width, 3f), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0, Screen.height - barH, Screen.width, 3f), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            DrawStyledText(new Rect(0, barH * 0.18f, Screen.width, barH * 0.64f), "★ SOBRECARGA NEXO: CAÑÓN DE PLASMA ★", 30, TextAnchor.MiddleCenter, new Color(0.22f, 0.95f, 1f));
+            string ultTitle = isCorrupt
+                ? "★ SOBRECARGA DISONANTE: CAÑÓN ABISAL VORST ★"
+                : "★ SOBRECARGA NEXO: CAÑÓN DE PLASMA ★";
+            DrawStyledText(new Rect(0, barH * 0.18f, Screen.width, barH * 0.64f), ultTitle, 30, TextAnchor.MiddleCenter, bannerAccent);
         }
 
-        // 3. Flashazo de impacto de la Ultimate
+        // 2. Flashazo de impacto de Ultimate / Parry / Pulso Psiónico
         if (ultFlashAlpha > 0f)
         {
-            GUI.color = new Color(0.55f, 0.95f, 1f, ultFlashAlpha);
+            GUI.color = new Color(customFlashColor.r, customFlashColor.g, customFlashColor.b, ultFlashAlpha);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
         }
 
-        // 4. Alerta Roja de Jefe
+        // 3. Alerta Roja de Jefe
         if (showWarning)
         {
             float pulse = Mathf.Abs(Mathf.Sin(Time.unscaledTime * 8f));
@@ -368,6 +562,25 @@ public class CombatVFXManager : MonoBehaviour
         return Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
     }
 
+    Sprite CreateRingSprite(int size)
+    {
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        float c = (size - 1) * 0.5f;
+        float r = size * 0.45f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), new Vector2(c, c));
+                float a = Mathf.Clamp01(1f - Mathf.Abs(d - r) / 3.5f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+    }
+
     Sprite CreatePixelCircleSprite(int size, Color coreCol, Color borderCol)
     {
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
@@ -395,6 +608,97 @@ public class CombatVFXManager : MonoBehaviour
     }
 }
 
+public class ShockwaveRingBehaviour : MonoBehaviour
+{
+    private float targetScale = 2.4f;
+    private float duration = 0.30f;
+    private float elapsed = 0f;
+    private SpriteRenderer sr;
+    private Color baseColor;
+
+    public void Init(float scale, float dur)
+    {
+        targetScale = scale;
+        duration = dur;
+        sr = GetComponent<SpriteRenderer>();
+        if (sr != null) baseColor = sr.color;
+        transform.localScale = Vector3.one * 0.25f;
+    }
+
+    void Update()
+    {
+        elapsed += Time.unscaledDeltaTime;
+        float t = Mathf.Clamp01(elapsed / duration);
+        transform.localScale = Vector3.one * Mathf.Lerp(0.25f, targetScale, 1f - (1f - t) * (1f - t));
+        if (sr != null)
+        {
+            Color c = baseColor;
+            c.a = baseColor.a * (1f - t);
+            sr.color = c;
+        }
+        if (t >= 1f) Destroy(gameObject);
+    }
+}
+
+public class AfterimageFade : MonoBehaviour
+{
+    private SpriteRenderer sr;
+    private Color startColor;
+    private float duration = 0.22f;
+    private float elapsed = 0f;
+
+    public void Init(Color col, float dur)
+    {
+        sr = GetComponent<SpriteRenderer>();
+        startColor = col;
+        duration = dur;
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(elapsed / duration);
+        if (sr != null)
+        {
+            Color c = startColor;
+            c.a = startColor.a * (1f - t);
+            sr.color = c;
+        }
+        if (t >= 1f) Destroy(gameObject);
+    }
+}
+
+public class RisingParticle : MonoBehaviour
+{
+    private float riseSpeed = 2f;
+    private float duration = 0.4f;
+    private float elapsed = 0f;
+    private SpriteRenderer sr;
+    private Color baseCol;
+
+    public void Init(float speed, float dur)
+    {
+        riseSpeed = speed;
+        duration = dur;
+        sr = GetComponent<SpriteRenderer>();
+        if (sr != null) baseCol = sr.color;
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        transform.position += Vector3.up * (riseSpeed * Time.deltaTime);
+        float t = Mathf.Clamp01(elapsed / duration);
+        if (sr != null)
+        {
+            Color c = baseCol;
+            c.a = baseCol.a * (1f - t);
+            sr.color = c;
+        }
+        if (t >= 1f) Destroy(gameObject);
+    }
+}
+
 public class ChargeParticle : MonoBehaviour
 {
     private Vector3 targetPos;
@@ -411,7 +715,7 @@ public class ChargeParticle : MonoBehaviour
 
     void Update()
     {
-        elapsed += Time.deltaTime;
+        elapsed += Time.unscaledDeltaTime;
         float t = Mathf.Clamp01(elapsed / duration);
         transform.position = Vector3.Lerp(startPos, targetPos, t * t);
         if (t >= 1f) Destroy(gameObject);
@@ -434,9 +738,9 @@ public class SparkParticle : MonoBehaviour
 
     void Update()
     {
-        elapsed += Time.deltaTime;
-        velocity.y -= 12f * Time.deltaTime;
-        transform.position += (Vector3)(velocity * Time.deltaTime);
+        elapsed += Time.unscaledDeltaTime;
+        velocity.y -= 12f * Time.unscaledDeltaTime;
+        transform.position += (Vector3)(velocity * Time.unscaledDeltaTime);
         transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, elapsed / lifetime);
         if (elapsed >= lifetime) Destroy(gameObject);
     }
@@ -512,8 +816,8 @@ public class FloatingPopup : MonoBehaviour
 
     void Update()
     {
-        elapsed += Time.deltaTime;
-        transform.position += Vector3.up * 1.25f * Time.deltaTime;
+        elapsed += Time.unscaledDeltaTime;
+        transform.position += Vector3.up * 1.25f * Time.unscaledDeltaTime;
         if (elapsed >= duration) Destroy(gameObject);
     }
 
@@ -533,8 +837,8 @@ public class FloatingPopup : MonoBehaviour
         style.fontStyle = FontStyle.Bold;
         style.alignment = TextAnchor.MiddleCenter;
 
-        float w = Mathf.Round(260f * (Screen.width / 1920f));
-        float h = Mathf.Round(44f * (Screen.height / 1080f));
+        float w = Mathf.Round(300f * (Screen.width / 1920f));
+        float h = Mathf.Round(48f * (Screen.height / 1080f));
         Rect rect = new Rect(Mathf.Round(screenPos.x - w * 0.5f), Mathf.Round(guiY - h * 0.5f), w, h);
 
         style.normal.textColor = new Color(0f, 0f, 0f, alpha * 0.92f);

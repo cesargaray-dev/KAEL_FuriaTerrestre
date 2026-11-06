@@ -94,13 +94,54 @@ public class CompanionDialogueManager : MonoBehaviour
         }
     }
 
+    public void ShowCustomMessage(string speaker, string text, Color accentColor, float duration = 4.5f)
+    {
+        lineQueue.Clear();
+        isShowingDialogue = false;
+        EnqueueLine(speaker, text, "nexa_normal");
+    }
+
     public void TriggerWaveDialogue(int wave)
     {
         if (triggeredWaves.Contains(wave)) return;
         triggeredWaves.Add(wave);
 
-        bool isLevel2 = (SceneManager.GetActiveScene().name == "Lab_Zahir") ||
-                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2);
+        string sceneName = SceneManager.GetActiveScene().name;
+        bool isLevel3 = (sceneName == "03_Nivel3_Colmena") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3);
+        bool isLevel2 = !isLevel3 && ((sceneName == "Lab_Zahir") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2));
+
+        // --- BLOQUE 5 (Issue #23): DIÁLOGOS EXCLUSIVOS DEL NIVEL 3 (COLMENA DE BIO-CABLES) ---
+        if (isLevel3)
+        {
+            if (wave == 1)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Hemos ingresado al corazón de la Nave Núcleo Vorst: el Laberinto de Bio-Cables. Estos conductos orgánicos alimentan miles de cápsulas de estasis con civiles secuestrados del Sector 7.", "nexa_normal");
+                EnqueueLine("KAEL", "Los monstruos aquí dentro son quimeras biomecánicas puras... ¡Mantente alerta, N.E.X.A., liberaremos a todos!", "kael_shout");
+            }
+            else if (wave == 3)
+            {
+                EnqueueLine("KAEL", "¡Espera! Escuché el eco de la voz de Lía a través del enlace neural del Guantelete... ¡Está muy cerca!", "kael_shout");
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Confirmado, Kael. Su bio-señal resuena con tu matriz Nexo, pero su cápsula real ha sido asegurada por el Carcelero en la cámara principal de este sector.", "nexa_normal");
+            }
+            else if (wave == 5)
+            {
+                EnqueueLine("N.E.X.A. [ALERTA]", "¡Anomalía psiónica detectada! El Inquisidor Psíquico Vorst desciende rodeado de tres anillos mentales. ¡Bloquea con [S] en el instante exacto para hacer Parry a sus ondas!", "nexa_alert");
+                EnqueueLine("KAEL", "¡Ninguna ilusión mental detendrá mi Guantelete!", "kael_shout");
+            }
+            else if (wave == 8)
+            {
+                EnqueueLine("N.E.X.A. [REVELACIÓN]", "Kael... los registros genéticos de estos bio-cables coinciden con tu armadura. Tu Guantelete Nexo fue forjado originalmente con tecnología extraída de este mismo núcleo biomecánico.", "nexa_alert");
+                EnqueueLine("KAEL", "Entonces usaré su propia creación para destruir su colmena desde adentro.", "kael_normal");
+            }
+            else if (wave == 10)
+            {
+                EnqueueLine("N.E.X.A. [EMERGENCIA]", "¡ALERTA EXTREMA! El techo de la cámara colapsa: ¡El Carcelero Biotecnológico VORTEX-OMEGA ha descendido! Custodia el reactor maestro de las cápsulas de estasis.", "nexa_alert");
+                EnqueueLine("KAEL", "¡VORTEX-OMEGA! ¡Devuélveme a Lía y libera a mi gente ahora mismo!", "kael_shout");
+            }
+            return;
+        }
 
         if (isLevel2)
         {
@@ -229,11 +270,16 @@ public class CompanionDialogueManager : MonoBehaviour
         Rect box = ScaleRect(490f, 94f, 940f, 174f);
         bool isAlert = currentLine.portraitKey == "nexa_alert";
         bool isKael = currentLine.portraitKey.StartsWith("kael");
+        bool isCorruptMoral = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
 
         Color borderCol = isAlert ? new Color(1f, 0.25f, 0.4f, 0.96f) : (isKael ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f));
+        if (!isKael && isCorruptMoral)
+        {
+            borderCol = new Color(1f, 0.18f, 0.42f, 0.96f);
+        }
         Color bgCol = new Color(0.03f, 0.06f, 0.12f, 0.96f);
 
-        Texture2D panelSkin = isAlert ? panelCrimsonTex : (isKael ? panelGoldTex : panelCyanTex);
+        Texture2D panelSkin = (isAlert || (!isKael && isCorruptMoral)) ? panelCrimsonTex : (isKael ? panelGoldTex : panelCyanTex);
         if (panelSkin != null)
         {
             GUI.color = new Color(1f, 1f, 1f, 0.98f);
@@ -266,17 +312,33 @@ public class CompanionDialogueManager : MonoBehaviour
             GUI.DrawTexture(portRect, activePort, ScaleMode.ScaleToFit);
         }
 
-        // Efecto de escaneo holográfico sobre N.E.X.A.
+        // Efecto de escaneo holográfico + BLOQUE 4: Líneas de interferencia roja (Glitch) en Corrupción Vorst
         if (!isKael)
         {
             float scanY = portRect.y + Mathf.PingPong(Time.unscaledTime * (portRect.height * 0.7f), Mathf.Max(1f, portRect.height - 3f));
             GUI.color = new Color(borderCol.r, borderCol.g, borderCol.b, 0.42f);
             GUI.DrawTexture(new Rect(portRect.x, scanY, portRect.width, 2f), Texture2D.whiteTexture);
+
+            if (isCorruptMoral)
+            {
+                // Glitch rojo de interferencia biológica sobre N.E.X.A.
+                for (int g = 0; g < 3; g++)
+                {
+                    float gy = portRect.y + Mathf.Repeat((Time.unscaledTime * (65f + g * 37f)) + g * 41f, portRect.height - 4f);
+                    GUI.color = new Color(1f, 0.10f, 0.28f, 0.55f);
+                    GUI.DrawTexture(new Rect(portRect.x, gy, portRect.width, 3f), Texture2D.whiteTexture);
+                }
+            }
             GUI.color = Color.white;
         }
 
         // Nombre del hablante a resolución nativa
-        DrawStyledText(ScaleRect(672f, 108f, 736f, 32f), "📡 " + currentLine.speaker, 20, TextAnchor.MiddleLeft, borderCol, false);
+        string speakerHeader = "📡 " + currentLine.speaker;
+        if (!isKael && isCorruptMoral)
+        {
+            speakerHeader += "  [⚠ GLITCH: SOBRECARGA VORST]";
+        }
+        DrawStyledText(ScaleRect(672f, 108f, 736f, 32f), speakerHeader, 19, TextAnchor.MiddleLeft, borderCol, false);
 
         // Texto con fuente nítida nativa
         string shownText = currentLine.text.Substring(0, Mathf.Clamp(visibleChars, 0, currentLine.text.Length));
