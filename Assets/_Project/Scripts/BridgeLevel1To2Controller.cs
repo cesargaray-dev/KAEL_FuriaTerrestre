@@ -309,6 +309,18 @@ public class BridgeLevel1To2Controller : MonoBehaviour
 
         for (int act = 0; act < 4; act++)
         {
+            Texture2D resTex = Resources.Load<Texture2D>($"StoryUI/Bridge_{act + 1}");
+            if (resTex == null)
+            {
+                Sprite sp = Resources.Load<Sprite>($"StoryUI/Bridge_{act + 1}");
+                if (sp != null) resTex = sp.texture;
+            }
+            if (resTex != null)
+            {
+                actTextures[act] = resTex;
+                continue;
+            }
+
             int w = 512, h = 256;
             Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
             tex.filterMode = FilterMode.Bilinear;

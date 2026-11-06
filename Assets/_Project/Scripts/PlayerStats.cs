@@ -1502,32 +1502,63 @@ public class PlayerStats : MonoBehaviour
         DrawCyberBox(totalBox, new Color(0.06f, 0.16f, 0.12f, 0.95f), colHpGreen, 2f);
         DrawStyledText(totalBox, $"PUNTAJE TOTAL:  <color=#2ee678>{totalScore} PTS</color>", 22, TextAnchor.MiddleCenter, Color.white);
 
-        if (levelNumber == 3)
+        if (levelNumber >= 3)
         {
-            // BLOQUE 6 (Issue #24): Al completar el Nivel 3, lanzar el Sistema de 3 Finales Cinemáticos según Compasión vs Rigor
-            if (DrawSkinnedCyberButton(
-                new Rect(424f, 612f, 640f, 82f),
-                texBtnEmerald,
-                "🎬 VER DESENLACE CINEMÁTICO FINAL",
-                "EVALUAR RESONANCIA MORAL (3 FINALES OFICIALES)",
-                20, 13, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+            bool hasLevel4Scene = (levelNumber == 3) && !string.IsNullOrEmpty(nextLevelSceneName) && Application.CanStreamedLevelBeLoaded(nextLevelSceneName);
+            if (hasLevel4Scene)
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SaveProgressForNextLevel();
-                EndingCinematicController.LaunchEndingFromMoralState();
-            }
+                if (DrawSkinnedCyberButton(
+                    new Rect(424f, 612f, 520f, 82f),
+                    texBtnEmerald,
+                    "⚡ AVANZAR AL NIVEL 4 (TRONO FINAL)",
+                    "SUBIR A LA CÚPULA DONDE ESTÁ CAUTIVA LÍA",
+                    18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    SaveProgressForNextLevel();
+                    Time.timeScale = 1f;
+                    SceneManager.LoadScene(nextLevelSceneName);
+                }
 
-            if (DrawSkinnedCyberButton(
-                new Rect(1086f, 612f, 410f, 82f),
-                texBtnCyan,
-                "⌂ MENÚ PRINCIPAL",
-                "GUARDAR Y VOLVER AL INICIO",
-                19, 12, Color.white, colCyanNexo, colCyanNexo, true))
+                if (DrawSkinnedCyberButton(
+                    new Rect(964f, 612f, 532f, 82f),
+                    texBtnGold,
+                    "🎬 EPÍLOGO FINAL (ISSUE #24)",
+                    "VER LOS 3 FINALES DE RESCATE DE LÍA",
+                    18, 12, Color.white, colGoldYel, colGoldYel, true))
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    SaveProgressForNextLevel();
+                    EndingCinematicController.LaunchEndingFromMoralState();
+                }
+            }
+            else
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SaveProgressForNextLevel();
-                Time.timeScale = 1f;
-                SceneManager.LoadScene(0);
+                // Si estamos en el Nivel 4 Final (o el Nivel 4 de Zahir aún no está integrado en Build Settings), permite disparar el Epílogo Final de Campaña (Issue #24)
+                if (DrawSkinnedCyberButton(
+                    new Rect(424f, 612f, 640f, 82f),
+                    texBtnEmerald,
+                    "🎬 VER DESENLACE FINAL (RESCATE DE LÍA)",
+                    "EVALUAR COMPASIÓN VS RIGOR (3 FINALES DE CAMPAÑA)",
+                    19, 13, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    SaveProgressForNextLevel();
+                    EndingCinematicController.LaunchEndingFromMoralState();
+                }
+
+                if (DrawSkinnedCyberButton(
+                    new Rect(1086f, 612f, 410f, 82f),
+                    texBtnCyan,
+                    "⌂ MENÚ PRINCIPAL",
+                    "GUARDAR Y VOLVER AL INICIO",
+                    19, 12, Color.white, colCyanNexo, colCyanNexo, true))
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    SaveProgressForNextLevel();
+                    Time.timeScale = 1f;
+                    SceneManager.LoadScene(0);
+                }
             }
             return;
         }

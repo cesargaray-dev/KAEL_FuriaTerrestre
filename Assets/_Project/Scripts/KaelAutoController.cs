@@ -32,6 +32,9 @@ public class KaelAutoController : MonoBehaviour
     public const float PARRY_WINDOW_SECONDS = 0.35f;
     private bool wasGuardingLastFrame = false;
     private bool isExecutingRiposte = false;
+    private float riposteSpriteTimer = 0f;
+    private Sprite[] kaelBlockSprites = new Sprite[4];
+    private Sprite[] kaelRiposteSprites = new Sprite[4];
     private GameObject hexShieldObj;
     private SpriteRenderer hexShieldRenderer;
 
@@ -76,6 +79,24 @@ public class KaelAutoController : MonoBehaviour
         maxReachedX = startPosition.x;
 
         CreateHexShieldObject();
+        LoadExtraKaelSprites();
+    }
+
+    private void LoadExtraKaelSprites()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            Texture2D bTex = Resources.Load<Texture2D>($"KaelExtra/Kael_Block_{i}");
+            if (bTex != null)
+            {
+                kaelBlockSprites[i] = Sprite.Create(bTex, new Rect(0, 0, bTex.width, bTex.height), new Vector2(0.5f, 0.12f), 115f);
+            }
+            Texture2D rTex = Resources.Load<Texture2D>($"KaelExtra/Kael_Riposte_{i}");
+            if (rTex != null)
+            {
+                kaelRiposteSprites[i] = Sprite.Create(rTex, new Rect(0, 0, rTex.width, rTex.height), new Vector2(0.5f, 0.12f), 115f);
+            }
+        }
     }
 
     private void CreateHexShieldObject()
@@ -209,6 +230,7 @@ public class KaelAutoController : MonoBehaviour
             anim.Play("Kael_Atk3", 0, 0f);
         }
         attackAnimEndTimer = 0.34f;
+        riposteSpriteTimer = 0.36f;
 
         if (CombatVFXManager.Instance != null && spriteRenderer != null)
         {
@@ -361,20 +383,28 @@ public class KaelAutoController : MonoBehaviour
                 anim.SetBool("IsRunning", false);
             }
 
-            // Inclinación defensiva firme y despliegue del Escudo Hexagonal Holográfico
+            // Si tenemos los sprites pixel-art dedicados de Kael bloqueando con escudo (Kael_Block_0..3), usarlos sin inclinar ni duplicar escudo
+            bool hasCustomBlockSprites = (kaelBlockSprites != null && kaelBlockSprites[0] != null);
             float dirSign = isFacingLeft ? -1f : 1f;
-            transform.localRotation = Quaternion.Euler(0f, 0f, isFacingLeft ? 5.5f : -5.5f);
+            transform.localRotation = hasCustomBlockSprites ? Quaternion.identity : Quaternion.Euler(0f, 0f, isFacingLeft ? 5.5f : -5.5f);
 
             if (hexShieldObj != null && hexShieldRenderer != null)
             {
-                hexShieldObj.SetActive(true);
-                hexShieldRenderer.sprite = Level3MonsterAssetGenerator.GetHexShieldSprite(isPureza, isCorrupcion);
-                hexShieldObj.transform.localPosition = new Vector3(dirSign * 0.76f, 0.58f, 0f);
-                float shieldBreath = 0.95f + Mathf.Sin(Time.unscaledTime * 9f) * 0.08f;
-                bool inParryWindow = IsWithinPerfectParryWindow();
-                if (inParryWindow) shieldBreath *= 1.14f;
-                hexShieldObj.transform.localScale = new Vector3(shieldBreath, shieldBreath, 1f);
-                hexShieldObj.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(Time.unscaledTime * 3.5f) * 12f);
+                if (hasCustomBlockSprites)
+                {
+                    hexShieldObj.SetActive(false);
+                }
+                else
+                {
+                    hexShieldObj.SetActive(true);
+                    hexShieldRenderer.sprite = Level3MonsterAssetGenerator.GetHexShieldSprite(isPureza, isCorrupcion);
+                    hexShieldObj.transform.localPosition = new Vector3(dirSign * 0.76f, 0.58f, 0f);
+                    float shieldBreath = 0.95f + Mathf.Sin(Time.unscaledTime * 9f) * 0.08f;
+                    bool inParryWindow = IsWithinPerfectParryWindow();
+                    if (inParryWindow) shieldBreath *= 1.14f;
+                    hexShieldObj.transform.localScale = new Vector3(shieldBreath, shieldBreath, 1f);
+                    hexShieldObj.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(Time.unscaledTime * 3.5f) * 12f);
+                }
             }
 
             if (spriteRenderer != null)
@@ -846,6 +876,31 @@ public class KaelAutoController : MonoBehaviour
         }
 
         isCastingUlt = false;
+    }
+
+    void LateUpdate()
+    {
+        if (spriteRenderer == null || isCastingUlt) return;
+
+        if (riposteSpriteTimer > 0f)
+        {
+            riposteSpriteTimer -= Time.unscaledDeltaTime;
+            float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
+            int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
+            if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
+            {
+                spriteRenderer.sprite = kaelRiposteSprites[idx];
+            }
+        }
+        else if (isGuarding)
+        {
+            float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
+            int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
+            if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
+            {
+                spriteRenderer.sprite = kaelBlockSprites[idx];
+            }
+        }
     }
 
     // --- LECTURA HÍBRIDA DE TECLADO (Compatible con Input System nuevo y Input Manager clásico) ---
