@@ -102,6 +102,21 @@ public class PlayerStats : MonoBehaviour
     private Texture2D texPanelCrimson;
     private Texture2D texPanelGold;
 
+    [Header("Catálogo de Iconos Pixel-Art HD del Árbol de Habilidades (Issue #20)")]
+    private Texture2D iconFuerzaNexo;
+    private Texture2D iconVigorVital;
+    private Texture2D iconBlindajeTactico;
+    private Texture2D iconCadenciaImpacto;
+    private Texture2D iconRecoleccion;
+    private Texture2D iconTsunamiSismico;
+    private Texture2D iconImpactoMeteoro;
+    private Texture2D iconFuriaContinua;
+    private Texture2D iconVinculoFraternal;
+    private Texture2D iconDisonanciaVorst;
+    private Texture2D iconArmoniaHumana;
+    private Texture2D iconPropulsores;
+    private Texture2D iconSobrecarga;
+
     // Paleta Cyberpunk Nexo
     private readonly Color colBgDark   = new Color(0.04f, 0.06f, 0.12f, 0.94f);
     private readonly Color colBorder   = new Color(0.22f, 0.88f, 1.00f, 0.88f);
@@ -167,6 +182,21 @@ public class PlayerStats : MonoBehaviour
         texPanelCyan    = LoadResTex("StoryUI/Panel_Cyber_Cyan");
         texPanelCrimson = LoadResTex("StoryUI/Panel_Cyber_Crimson");
         texPanelGold    = LoadResTex("StoryUI/Panel_Cyber_Gold");
+
+        // Iconos Pixel-Art HD del Árbol de Habilidades (StoryUI/Icons/)
+        iconFuerzaNexo       = LoadResTex("StoryUI/Icons/Icon_FuerzaNexo");
+        iconVigorVital       = LoadResTex("StoryUI/Icons/Icon_VigorVital");
+        iconBlindajeTactico  = LoadResTex("StoryUI/Icons/Icon_BlindajeTactico");
+        iconCadenciaImpacto  = LoadResTex("StoryUI/Icons/Icon_CadenciaImpacto");
+        iconRecoleccion      = LoadResTex("StoryUI/Icons/Icon_Recoleccion");
+        iconTsunamiSismico   = LoadResTex("StoryUI/Icons/Icon_TsunamiSismico");
+        iconImpactoMeteoro   = LoadResTex("StoryUI/Icons/Icon_ImpactoMeteoro");
+        iconFuriaContinua    = LoadResTex("StoryUI/Icons/Icon_FuriaContinua");
+        iconVinculoFraternal = LoadResTex("StoryUI/Icons/Icon_VinculoFraternal");
+        iconDisonanciaVorst  = LoadResTex("StoryUI/Icons/Icon_DisonanciaVorst");
+        iconArmoniaHumana    = LoadResTex("StoryUI/Icons/Icon_ArmoniaHumana");
+        iconPropulsores      = LoadResTex("StoryUI/Icons/Icon_Propulsores");
+        iconSobrecarga       = LoadResTex("StoryUI/Icons/Icon_Sobrecarga");
     }
 
     public static Texture2D LoadResTex(string path)
@@ -1045,9 +1075,9 @@ public class PlayerStats : MonoBehaviour
                       (levelOvercharge < 5 && gold >= GetArsenalCost(38, levelOvercharge) ? 1 : 0) +
                       (levelSeismicEdge < 5 && gold >= GetArsenalCost(42, levelSeismicEdge) ? 1 : 0);
 
-        DrawTreeTabButton(new Rect(76f, 134f, 564f, 66f), 0, "⚔ RAMA 1: ATRIBUTOS BASE", "5 Nodos de Estadísticas Conectados (Oro)", colCyanNexo, texBtnCyan, r1Count);
-        DrawTreeTabButton(new Rect(660f, 134f, 564f, 66f), 1, "✦ RAMA 2: EVOLUCIÓN NEXO", "Sendas Activas y Pasivas del Guantelete", colExpPurp, texBtnPurple, r2Count);
-        DrawTreeTabButton(new Rect(1244f, 134f, 564f, 66f), 2, "🛡 RAMA 3: ARSENAL Y ARMADURA", "Blindaje, Propulsores y Módulos (Oro)", colGoldYel, texBtnGold, r3Count);
+        DrawTreeTabButton(new Rect(76f, 134f, 564f, 66f), 0, "RAMA 1: ATRIBUTOS PRIMARIOS", "Fuerza, Vigor, Cadencia, Blindaje y Recolección (Oro)", colCyanNexo, texBtnCyan, r1Count);
+        DrawTreeTabButton(new Rect(660f, 134f, 564f, 66f), 1, "RAMA 2: TÉCNICAS DE COMBATE", "Furia Continua, Tsunami Sísmico e Impacto Meteoro", colExpPurp, texBtnPurple, r2Count);
+        DrawTreeTabButton(new Rect(1244f, 134f, 564f, 66f), 2, "RAMA 3: MATRIZ EVOLUTIVA & ARSENAL", "Vínculo Fraternal, Armonía Humana y Disonancia Vorst", colGoldYel, texBtnGold, r3Count);
 
         Rect canvasRect = ScaleRect(76f, 214f, 1732f, 804f);
         DrawCyberBox(canvasRect, new Color(0.02f, 0.03f, 0.07f, 0.94f), new Color(0.15f, 0.36f, 0.55f, 0.65f), 1.5f);
@@ -1130,6 +1160,57 @@ public class PlayerStats : MonoBehaviour
         GUI.color = Color.white;
     }
 
+    // =========================================================================
+    // RENDERIZADOR PROFESIONAL DE BADGE DE ICONO PIXEL-ART HD (ISSUE #20)
+    // =========================================================================
+    void DrawSkillIconBadge(Rect baseRect, Texture2D iconTex, bool isUnlocked, bool isAffordable, Color accentCol)
+    {
+        Rect r = ScaleRect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
+        bool hovered = r.Contains(Event.current.mousePosition);
+
+        // 1. Fondo sutil biselado con resguardo de margen para el marco del icono
+        Color borderCol = isUnlocked ? (hovered ? Color.white : accentCol) : (isAffordable ? colGoldYel : new Color(0.20f, 0.28f, 0.38f, 0.65f));
+        DrawCyberBox(r, new Color(0.02f, 0.04f, 0.08f, 0.88f), borderCol, 1.2f);
+
+        // 2. Textura del Icono con sombreado dinámico de estado
+        if (iconTex != null)
+        {
+            Color prevCol = GUI.color;
+            if (isUnlocked)
+            {
+                // Adquirido / Desbloqueado: Máxima definición y brillo vibrante
+                GUI.color = hovered ? new Color(1.20f, 1.20f, 1.20f, 1f) : Color.white;
+            }
+            else if (isAffordable)
+            {
+                // Disponible para comprar: Tinte dorado cálido
+                GUI.color = new Color(0.92f, 0.88f, 0.74f, 0.95f);
+            }
+            else
+            {
+                // Bloqueado: Silueta holográfica metálica atenuada
+                GUI.color = new Color(0.36f, 0.42f, 0.52f, 0.65f);
+            }
+
+            float pad = Mathf.Max(2f, Mathf.Round(2f * (Screen.width / 1920f)));
+            Rect iconRect = new Rect(r.x + pad, r.y + pad, r.width - pad * 2f, r.height - pad * 2f);
+            GUI.DrawTexture(iconRect, iconTex, ScaleMode.ScaleToFit);
+            GUI.color = prevCol;
+        }
+
+        // 3. Indicador de Estado: Mini-Badge en esquina superior
+        if (isUnlocked)
+        {
+            Rect checkBadge = new Rect(r.x + r.width - ScaleFont(16) - 2f, r.y + 2f, ScaleFont(16), ScaleFont(16));
+            DrawStyledText(checkBadge, "✔", 11, TextAnchor.MiddleCenter, colHpGreen);
+        }
+        else
+        {
+            Rect lockBadge = new Rect(r.x + r.width - ScaleFont(16) - 2f, r.y + 2f, ScaleFont(16), ScaleFont(16));
+            DrawStyledText(lockBadge, "🔒", 11, TextAnchor.MiddleCenter, isAffordable ? colGoldYel : new Color(0.55f, 0.62f, 0.72f));
+        }
+    }
+
     void DrawBranch1BaseAttributesTree()
     {
         Vector2 coreCenter = new Vector2(942f, 305f);
@@ -1147,36 +1228,43 @@ public class PlayerStats : MonoBehaviour
 
         Rect coreRect = ScaleRect(662f, 236f, 560f, 124f);
         DrawSkinnedCyberPanel(coreRect, texPanelCyan, colCyanNexo);
-        DrawStyledText(ScaleRect(662f, 248f, 560f, 36f), $"⚙ NÚCLEO BIOMECÁNICO KAEL (NIVEL {playerLevel})", 20, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(ScaleRect(662f, 248f, 560f, 36f), $"NÚCLEO BIOMECÁNICO KAEL (NIVEL {playerLevel})", 20, TextAnchor.MiddleCenter, colCyanNexo);
         DrawStyledText(ScaleRect(682f, 286f, 520f, 56f),
             "Sincroniza el oro extraído de los núcleos Vorst para potenciar permanentemente los 5 atributos primarios de combate.",
             14, TextAnchor.MiddleCenter, Color.white, true);
 
-        DrawAttributeTreeNode(new Rect(140f, 445f, 440f, 222f), "⚔ FUERZA NEXO", $"ATK Actual: {attackDamage}", "+6 Daño Base (+8% Escala)", "Incrementa la potencia de los 3 golpes del combo y el rayo.", colAttrFuerza, ref levelAtk, false);
-        DrawAttributeTreeNode(new Rect(722f, 445f, 440f, 222f), "♥ VIGOR CELULAR", $"HP Máx: {maxHP}", "+35 HP Máx y Cura +40 HP", "Refuerza la fibra muscular y restaura salud al instante.", colAttrVigor, ref levelHp, true);
-        DrawAttributeTreeNode(new Rect(1304f, 445f, 440f, 222f), "⚡ REFLEJOS NEURALES", $"Cadencia: {attackRate:F2}/s", "+0.14 Golpes por Segundo", "Acelera la respuesta de ataque al presionar [J / Espacio].", colAttrReflejos, ref levelSpd, false);
+        DrawAttributeTreeNode(new Rect(140f, 445f, 440f, 222f), "FUERZA NEXO", $"ATK Actual: {attackDamage}", "+6 Daño Base (+8% Escala)", "Puño bio-mecánico energizado que amplifica la potencia del combo y el rayo.", colAttrFuerza, ref levelAtk, false, iconFuerzaNexo);
+        DrawAttributeTreeNode(new Rect(722f, 445f, 440f, 222f), "VIGOR VITAL", $"HP Máx: {maxHP}", "+35 HP Máx y Cura +40 HP", "Núcleo de corazón ciber-protegido que refuerza la fibra muscular y restaura salud.", colAttrVigor, ref levelHp, true, iconVigorVital);
+        DrawAttributeTreeNode(new Rect(1304f, 445f, 440f, 222f), "CADENCIA DE IMPACTO", $"Cadencia: {attackRate:F2}/s", "+0.14 Golpes por Segundo", "Rayo de descarga rápida que acelera la respuesta al presionar [J / Espacio].", colAttrReflejos, ref levelSpd, false, iconCadenciaImpacto);
 
-        DrawAttributeTreeNode(new Rect(430f, 735f, 440f, 222f), "✦ INSTINTO LETAL", $"Crítico: {Mathf.RoundToInt(critChance * 100)}%", "+4% Probabilidad Crítica (x2 Daño)", "Detecta fracturas en el blindaje Vorst para impactos dobles.", colAttrInstinto, ref levelCrit, false);
-        DrawAttributeTreeNode(new Rect(1014f, 735f, 440f, 222f), "⛃ CARROÑERO VORST", $"Multiplicador: x{goldMultiplier:F2}", "+20% Oro Extraído por Baja", "Maximiza la cosecha de oro de cada enemigo y jefe.", colAttrCarronero, ref levelGold, false);
+        DrawAttributeTreeNode(new Rect(430f, 735f, 440f, 222f), "BLINDAJE TÁCTICO", $"Crítico: {Mathf.RoundToInt(critChance * 100)}%", "+4% Probabilidad Crítica (x2 Daño)", "Placas de coraza hexagonal que localizan fracturas alienígenas para impactos críticos.", colAttrInstinto, ref levelCrit, false, iconBlindajeTactico);
+        DrawAttributeTreeNode(new Rect(1014f, 735f, 440f, 222f), "RECOLECCIÓN CUÁNTICA", $"Multiplicador: x{goldMultiplier:F2}", "+20% Oro Extraído por Baja", "Chip cuántico multiplicador que maximiza la cosecha de créditos y núcleos Vorst.", colAttrCarronero, ref levelGold, false, iconRecoleccion);
     }
 
-    void DrawAttributeTreeNode(Rect baseRect, string title, string currentStat, string bonusText, string loreDesc, Color attrColor, ref int level, bool healOnBuy)
+    void DrawAttributeTreeNode(Rect baseRect, string title, string currentStat, string bonusText, string loreDesc, Color attrColor, ref int level, bool healOnBuy, Texture2D iconTex)
     {
         int cost = GetUpgradeCost(level);
         bool canAfford = (gold >= cost);
+        bool isUnlocked = (level > 1);
 
         Rect r = ScaleRect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
         DrawSkinnedCyberPanel(r, canAfford ? texPanelGold : texPanelCyan, canAfford ? colGoldYel : attrColor);
 
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 12f, baseRect.width - 115f, 30f), title, 18, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(ScaleRect(baseRect.x + baseRect.width - 108f, baseRect.y + 12f, 90f, 30f), $"Nv.{level}", 18, TextAnchor.MiddleRight, attrColor);
+        // Icono Pixel-Art HD con margen generoso
+        DrawSkillIconBadge(new Rect(baseRect.x + 16f, baseRect.y + 16f, 60f, 60f), iconTex, isUnlocked, canAfford, attrColor);
 
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 50f, baseRect.width - 36f, 28f), currentStat, 18, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 78f, baseRect.width - 36f, 24f), $"Bono: {bonusText}", 14, TextAnchor.MiddleLeft, attrColor);
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 106f, baseRect.width - 36f, 42f), loreDesc, 13, TextAnchor.UpperLeft, new Color(0.80f, 0.88f, 0.96f), true);
+        // Textos a la derecha del icono con espacio holgado
+        DrawStyledText(ScaleRect(baseRect.x + 86f, baseRect.y + 14f, baseRect.width - 180f, 26f), title, 17, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(ScaleRect(baseRect.x + baseRect.width - 94f, baseRect.y + 14f, 78f, 26f), $"Nv.{level}", 17, TextAnchor.MiddleRight, attrColor);
+
+        DrawStyledText(ScaleRect(baseRect.x + 86f, baseRect.y + 40f, baseRect.width - 98f, 22f), currentStat, 16, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(ScaleRect(baseRect.x + 86f, baseRect.y + 62f, baseRect.width - 98f, 20f), $"Bono: {bonusText}", 13, TextAnchor.MiddleLeft, attrColor);
+
+        // Lore descriptivo debajo del bloque superior
+        DrawStyledText(ScaleRect(baseRect.x + 16f, baseRect.y + 86f, baseRect.width - 32f, 60f), loreDesc, 13, TextAnchor.UpperLeft, new Color(0.80f, 0.88f, 0.96f), true);
 
         if (DrawSkinnedCyberButton(
-            new Rect(baseRect.x + 16f, baseRect.y + 156f, baseRect.width - 32f, 52f),
+            new Rect(baseRect.x + 16f, baseRect.y + 152f, baseRect.width - 32f, 54f),
             canAfford ? texBtnGold : texBtnCyan,
             canAfford ? $"▲ MEJORAR NODO  •  {cost} ORO" : $"🔒 REQUIERE {cost} ORO",
             "",
@@ -1201,31 +1289,34 @@ public class PlayerStats : MonoBehaviour
             18, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
 
         DrawEvolutionPathColumn(
-            140f, "🔥 SENDA DE LA FURIA", "Ofensiva Crítica y Ruptura",
+            140f, "SENDA DE LA FURIA", "Ofensiva Crítica y Ruptura",
             new Color(1f, 0.38f, 0.36f), texBtnCrimson, ref branchFuria,
             "RANGO I: Puños de Ignición (+18% ATK, +5% CRIT)",
             "RANGO II: Fractura de Núcleo (+36% ATK, +10% CRIT)",
-            "RANGO III+: Sobrecarga Letal (+54% ATK, +15% CRIT)"
+            "RANGO III+: Sobrecarga Letal (+54% ATK, +15% CRIT)",
+            iconFuriaContinua
         );
 
         DrawEvolutionPathColumn(
-            722f, "🛡 SENDA DEL GUARDIÁN", "Bio-Coraza y Regeneración",
+            722f, "SENDA DEL GUARDIÁN", "Bio-Coraza y Regeneración",
             colHpGreen, texBtnEmerald, ref branchGuardian,
             "RANGO I: Tejido Nano-Activo (+40 HP, +3.5 HP/s)",
             "RANGO II: Escudo Celular (+80 HP, +7.0 HP/s)",
-            "RANGO III+: Inmortalidad Nexo (+120 HP, +10.5 HP/s)"
+            "RANGO III+: Inmortalidad Nexo (+120 HP, +10.5 HP/s)",
+            iconTsunamiSismico
         );
 
         DrawEvolutionPathColumn(
-            1304f, "⚡ SENDA DEL NEXO", "Resonancia y Cañón de Plasma",
+            1304f, "SENDA DEL NEXO", "Resonancia y Cañón de Plasma",
             colCyanNexo, texBtnCyan, ref branchNexo,
             "RANGO I: Condensador Ágil (+25% Carga Ultimate)",
             "RANGO II: Reactor de Flujo (+50% Carga Ultimate)",
-            "RANGO III+: Singularidad Nexo (+75% Carga Ultimate)"
+            "RANGO III+: Singularidad Nexo (+75% Carga Ultimate)",
+            iconImpactoMeteoro
         );
     }
 
-    void DrawEvolutionPathColumn(float baseX, string pathTitle, string pathSub, Color pathColor, Texture2D btnSkin, ref int branchLv, string tier1Desc, string tier2Desc, string tier3Desc)
+    void DrawEvolutionPathColumn(float baseX, string pathTitle, string pathSub, Color pathColor, Texture2D btnSkin, ref int branchLv, string tier1Desc, string tier2Desc, string tier3Desc, Texture2D pathIcon)
     {
         float colW = 440f;
         float centerX = baseX + colW * 0.5f;
@@ -1236,12 +1327,15 @@ public class PlayerStats : MonoBehaviour
 
         Rect header = ScaleRect(baseX, 278f, colW, 92f);
         DrawSkinnedCyberPanel(header, texPanelCyan, pathColor);
-        DrawStyledText(ScaleRect(baseX, 288f, colW, 34f), $"{pathTitle} (Nv.{branchLv})", 20, TextAnchor.MiddleCenter, pathColor);
-        DrawStyledText(ScaleRect(baseX, 326f, colW, 28f), pathSub, 14, TextAnchor.MiddleCenter, Color.white);
 
-        DrawTierNodeBox(new Rect(baseX + 20f, 435f, colW - 40f, 120f), "NODO 1", tier1Desc, branchLv >= 1, branchLv == 0, pathColor);
-        DrawTierNodeBox(new Rect(baseX + 20f, 610f, colW - 40f, 120f), "NODO 2", tier2Desc, branchLv >= 2, branchLv == 1, pathColor);
-        DrawTierNodeBox(new Rect(baseX + 20f, 785f, colW - 40f, 120f), "NODO 3+", tier3Desc, branchLv >= 3, branchLv >= 2, pathColor);
+        // Icono en cabecera de la columna
+        DrawSkillIconBadge(new Rect(baseX + 16f, 290f, 68f, 68f), pathIcon, branchLv > 0, skillPoints > 0, pathColor);
+        DrawStyledText(ScaleRect(baseX + 90f, 288f, colW - 100f, 34f), $"{pathTitle} (Nv.{branchLv})", 19, TextAnchor.MiddleLeft, pathColor);
+        DrawStyledText(ScaleRect(baseX + 90f, 324f, colW - 100f, 28f), pathSub, 13, TextAnchor.MiddleLeft, Color.white);
+
+        DrawTierNodeBox(new Rect(baseX + 20f, 435f, colW - 40f, 120f), "NODO 1", tier1Desc, branchLv >= 1, branchLv == 0, pathColor, pathIcon);
+        DrawTierNodeBox(new Rect(baseX + 20f, 610f, colW - 40f, 120f), "NODO 2", tier2Desc, branchLv >= 2, branchLv == 1, pathColor, pathIcon);
+        DrawTierNodeBox(new Rect(baseX + 20f, 785f, colW - 40f, 120f), "NODO 3+", tier3Desc, branchLv >= 3, branchLv >= 2, pathColor, pathIcon);
 
         int goldSynthCost = 65 + (branchLv * 45);
         bool canUseSkillPt = (skillPoints > 0);
@@ -1268,17 +1362,20 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    void DrawTierNodeBox(Rect baseRect, string nodeTag, string desc, bool unlocked, bool isNext, Color pathColor)
+    void DrawTierNodeBox(Rect baseRect, string nodeTag, string desc, bool unlocked, bool isNext, Color pathColor, Texture2D iconTex)
     {
         Rect r = ScaleRect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
         DrawSkinnedCyberPanel(r, unlocked ? texPanelGold : texPanelCyan, unlocked ? pathColor : (isNext ? colGoldYel : Color.gray));
 
+        // Icono en el nodo del tier
+        DrawSkillIconBadge(new Rect(baseRect.x + 12f, baseRect.y + 14f, 54f, 54f), iconTex, unlocked, isNext, pathColor);
+
         string statusBadge = unlocked ? "✔ DESBLOQUEADO" : (isNext ? "◎ SIGUIENTE NODO" : "🔒 POR DESBLOQUEAR");
         Color badgeCol = unlocked ? colHpGreen : (isNext ? colGoldYel : new Color(0.55f, 0.62f, 0.72f));
 
-        DrawStyledText(ScaleRect(baseRect.x + 16f, baseRect.y + 12f, 150f, 26f), nodeTag, 16, TextAnchor.MiddleLeft, unlocked ? Color.white : pathColor);
-        DrawStyledText(ScaleRect(baseRect.x + baseRect.width - 210f, baseRect.y + 12f, 194f, 26f), statusBadge, 13, TextAnchor.MiddleRight, badgeCol);
-        DrawStyledText(ScaleRect(baseRect.x + 16f, baseRect.y + 44f, baseRect.width - 32f, 64f), desc, 15, TextAnchor.MiddleLeft, unlocked ? Color.white : new Color(0.78f, 0.85f, 0.94f), true);
+        DrawStyledText(ScaleRect(baseRect.x + 76f, baseRect.y + 12f, 120f, 26f), nodeTag, 16, TextAnchor.MiddleLeft, unlocked ? Color.white : pathColor);
+        DrawStyledText(ScaleRect(baseRect.x + baseRect.width - 190f, baseRect.y + 12f, 178f, 26f), statusBadge, 13, TextAnchor.MiddleRight, badgeCol);
+        DrawStyledText(ScaleRect(baseRect.x + 76f, baseRect.y + 40f, baseRect.width - 88f, 68f), desc, 14, TextAnchor.MiddleLeft, unlocked ? Color.white : new Color(0.78f, 0.85f, 0.94f), true);
     }
 
     void DrawBranch3ArsenalArmorTree()
@@ -1296,71 +1393,76 @@ public class PlayerStats : MonoBehaviour
 
         Rect chassisRect = ScaleRect(622f, 236f, 640f, 124f);
         DrawSkinnedCyberPanel(chassisRect, texPanelGold, colGoldYel);
-        DrawStyledText(ScaleRect(622f, 248f, 640f, 36f), "🛡 CHASIS DE COMBATE Y ARSENAL NEXO", 20, TextAnchor.MiddleCenter, colGoldYel);
+        DrawStyledText(ScaleRect(622f, 248f, 640f, 36f), "MATRIZ EVOLUTIVA & ARSENAL NEXO", 20, TextAnchor.MiddleCenter, colGoldYel);
         DrawStyledText(ScaleRect(642f, 286f, 600f, 56f),
-            "Instala módulos de blindaje pesado, propulsores tácticos y condensadores de plasma usando el oro recolectado.",
+            "Sincroniza los artefactos ancestrales de Lía, la propulsión armónica y la energía Vorst para potenciar el chasis.",
             14, TextAnchor.MiddleCenter, Color.white, true);
 
         DrawArsenalNode(
             new Rect(230f, 450f, 560f, 225f),
-            "🛡 CORAZA DE TITANIO",
+            "VÍNCULO FRATERNAL (LÍA): CORAZA",
             $"Reducción Daño: {Mathf.RoundToInt(armorDamageReduction * 100)}%  |  +{levelArmor * 28} HP",
             "+6% Defensa Directa y +28 HP Máx por Nivel",
-            "Placas de aleación Vorst que reducen todo el daño recibido (acumulable con el -40% de Guardia [S]).",
-            colCyanNexo, 30, ref levelArmor, true
+            "Colgante ancestral brillante que resuena con el Guantelete, reforzando la fibra celular ante impactos.",
+            colCyanNexo, 30, ref levelArmor, true, iconVinculoFraternal
         );
 
         DrawArsenalNode(
             new Rect(1094f, 450f, 560f, 225f),
-            "🚀 PROPULSORES DE ASALTO",
+            "ARMONÍA HUMANA: PROPULSORES",
             $"Velocidad Mov: +{levelThrusters * 10}%  |  Cadencia: +{levelThrusters * 6}%",
             "+10% Velocidad [A / D] y +6% Velocidad de Golpe",
-            "Micro-turbinas en las botas que permiten reposicionarse y esquivar ataques pesados de jefes.",
-            colHpGreen, 28, ref levelThrusters, false
+            "Silueta envuelta en luz dorada que activa micro-turbinas tácticas para maniobras rápidas de esquiva.",
+            colHpGreen, 28, ref levelThrusters, false, iconArmoniaHumana
         );
 
         DrawArsenalNode(
             new Rect(230f, 740f, 560f, 225f),
-            "🔋 MÓDULO DE SOBRECARGA",
+            "DISONANCIA VORST: SOBRECARGA",
             $"Carga Ulti: +{levelOvercharge * 18}%  |  Daño Ulti: +{levelOvercharge * 12}%",
             "+18% Velocidad de Carga y +12% Daño del Rayo [K]",
-            "Inyectores de plasma que aceleran la recarga de la Sobrecarga Nexo en cada golpe manual.",
-            colExpPurp, 38, ref levelOvercharge, false
+            "Espiral alienígena corrupta que sobrecarga los inyectores de plasma en cada impacto manual.",
+            colExpPurp, 38, ref levelOvercharge, false, iconDisonanciaVorst
         );
 
         DrawArsenalNode(
             new Rect(1094f, 740f, 560f, 225f),
-            "⚔ FILO SÍSMICO VORST",
+            "TSUNAMI SÍSMICO: FILO VORST",
             $"Multiplicador 3er Golpe: {Mathf.RoundToInt(comboFinisherMultiplier * 100)}%  |  +{levelSeismicEdge * 3}% CRIT",
             "+20% Daño en el 3er Golpe del Combo y +3% Crítico",
-            "Amplificador de onda de choque al completar el combo de 3 golpes con [J / Espacio].",
-            colGoldYel, 42, ref levelSeismicEdge, false
+            "Fisura tectónica con onda expansiva devastadora al rematar el combo de 3 golpes con [J / Espacio].",
+            colGoldYel, 42, ref levelSeismicEdge, false, iconTsunamiSismico
         );
     }
 
-    void DrawArsenalNode(Rect baseRect, string title, string currentStat, string bonusText, string desc, Color accentCol, int baseCost, ref int level, bool healOnBuy)
+    void DrawArsenalNode(Rect baseRect, string title, string currentStat, string bonusText, string desc, Color accentCol, int baseCost, ref int level, bool healOnBuy, Texture2D iconTex)
     {
         bool isMaxed = (level >= 5);
         int cost = isMaxed ? 0 : GetArsenalCost(baseCost, level);
         bool canAfford = (!isMaxed && gold >= cost);
+        bool isUnlocked = (level > 0);
 
         Rect r = ScaleRect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
         DrawSkinnedCyberPanel(r, (canAfford || level > 0) ? texPanelGold : texPanelCyan, accentCol);
 
-        string lvTag = (level == 0) ? "NO INSTALADO" : (isMaxed ? "Nv.5 (MÁX)" : $"Nv.{level} / 5");
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 12f, baseRect.width - 175f, 30f), title, 18, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(ScaleRect(baseRect.x + baseRect.width - 165f, baseRect.y + 12f, 146f, 30f), lvTag, 15, TextAnchor.MiddleRight, level > 0 ? colHpGreen : colGoldYel);
+        // Icono Pixel-Art HD con margen generoso
+        DrawSkillIconBadge(new Rect(baseRect.x + 18f, baseRect.y + 16f, 62f, 62f), iconTex, isUnlocked, canAfford, accentCol);
 
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 50f, baseRect.width - 36f, 26f), currentStat, 16, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 76f, baseRect.width - 36f, 24f), $"Efecto: {bonusText}", 14, TextAnchor.MiddleLeft, accentCol);
-        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 104f, baseRect.width - 36f, 48f), desc, 13, TextAnchor.UpperLeft, new Color(0.80f, 0.88f, 0.96f), true);
+        string lvTag = (level == 0) ? "NO INSTALADO" : (isMaxed ? "Nv.5 (MÁX)" : $"Nv.{level} / 5");
+        DrawStyledText(ScaleRect(baseRect.x + 92f, baseRect.y + 14f, baseRect.width - 240f, 26f), title, 17, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(ScaleRect(baseRect.x + baseRect.width - 146f, baseRect.y + 14f, 130f, 26f), lvTag, 15, TextAnchor.MiddleRight, level > 0 ? colHpGreen : colGoldYel);
+
+        DrawStyledText(ScaleRect(baseRect.x + 92f, baseRect.y + 42f, baseRect.width - 104f, 22f), currentStat, 16, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(ScaleRect(baseRect.x + 92f, baseRect.y + 64f, baseRect.width - 104f, 20f), $"Efecto: {bonusText}", 14, TextAnchor.MiddleLeft, accentCol);
+
+        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 88f, baseRect.width - 36f, 60f), desc, 13, TextAnchor.UpperLeft, new Color(0.80f, 0.88f, 0.96f), true);
 
         string btnTxt = isMaxed
             ? "✔ EQUIPAMIENTO AL NIVEL MÁXIMO"
             : (canAfford ? $"▲ {(level == 0 ? "FABRICAR E INSTALAR" : "MEJORAR MÓDULO")}  •  {cost} ORO" : $"🔒 REQUIERE {cost} ORO");
 
         if (DrawSkinnedCyberButton(
-            new Rect(baseRect.x + 16f, baseRect.y + 158f, baseRect.width - 32f, 52f),
+            new Rect(baseRect.x + 18f, baseRect.y + 154f, baseRect.width - 36f, 54f),
             isMaxed ? texBtnEmerald : (canAfford ? texBtnGold : texBtnCyan),
             btnTxt, "",
             15, 11, Color.white, Color.white, accentCol, canAfford))

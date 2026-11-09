@@ -86,6 +86,24 @@ public class StoryAssetProcessor
             successCount++;
         }
 
+        // 5. Procesar Catálogo de Iconos Pixel-Art HD del Árbol de Mejoras
+        string iconsSrcDir = Path.Combine(uiDir, "Icons");
+        string iconsDstDir = Path.Combine(resDir, "Icons");
+        if (Directory.Exists(iconsSrcDir))
+        {
+            if (!Directory.Exists(iconsDstDir)) Directory.CreateDirectory(iconsDstDir);
+            string[] iconFiles = Directory.GetFiles(iconsSrcDir, "*.png");
+            foreach (string srcFile in iconFiles)
+            {
+                string fileName = Path.GetFileName(srcFile);
+                string dstFile = Path.Combine(iconsDstDir, fileName);
+                File.Copy(srcFile, dstFile, true);
+                AssetDatabase.ImportAsset(dstFile, ImportAssetOptions.ForceUpdate);
+                ConfigureSprite(dstFile);
+                successCount++;
+            }
+        }
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
