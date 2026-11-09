@@ -82,6 +82,11 @@ public class KaelAutoController : MonoBehaviour
         LoadExtraKaelSprites();
     }
 
+    void Start()
+    {
+        NexaDroneCompanion.EnsureExists(transform);
+    }
+
     private void LoadExtraKaelSprites()
     {
         for (int i = 0; i < 4; i++)
@@ -131,6 +136,9 @@ public class KaelAutoController : MonoBehaviour
         maxReachedX = startPosition.x;
 
         if (hexShieldObj != null) hexShieldObj.SetActive(false);
+
+        if (NexaDroneCompanion.Instance != null)
+            NexaDroneCompanion.Instance.ResetCompanion();
 
         if (spriteRenderer != null)
         {

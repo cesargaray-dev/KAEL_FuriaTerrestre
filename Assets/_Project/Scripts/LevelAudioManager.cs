@@ -13,6 +13,10 @@ public class LevelAudioManager : MonoBehaviour
     public AudioClip enemyAttackClip;
     public AudioClip enemyDieClip;
     public AudioClip bossAlertClip;
+    public AudioClip dronePlasmaShotClip;
+    public AudioClip shieldDeployClip;
+    public AudioClip shieldAbsorbClip;
+    public AudioClip shieldOverheatClip;
 
     [Header("Control de Volumen")]
     [Range(0f, 1f)] public float musicVolume = 0.35f;
@@ -48,6 +52,10 @@ public class LevelAudioManager : MonoBehaviour
         if (enemyAttackClip == null) enemyAttackClip = GenerateImpactSfx(240f, 80f, 0.14f);
         if (enemyDieClip == null) enemyDieClip = GenerateCrumbleSfx(0.32f);
         if (bossAlertClip == null) bossAlertClip = GenerateAlarmSfx(0.65f);
+        if (dronePlasmaShotClip == null) dronePlasmaShotClip = GenerateImpactSfx(780f, 260f, 0.14f);
+        if (shieldDeployClip == null) shieldDeployClip = GenerateImpactSfx(320f, 680f, 0.32f);
+        if (shieldAbsorbClip == null) shieldAbsorbClip = GenerateImpactSfx(540f, 190f, 0.18f);
+        if (shieldOverheatClip == null) shieldOverheatClip = GenerateCrumbleSfx(0.42f);
     }
 
     void Start()
@@ -121,6 +129,30 @@ public class LevelAudioManager : MonoBehaviour
     {
         if (sfxSource != null && bossAlertClip != null)
             sfxSource.PlayOneShot(bossAlertClip, sfxVolume);
+    }
+
+    public void PlayDronePlasmaShot()
+    {
+        if (sfxSource != null && dronePlasmaShotClip != null)
+            sfxSource.PlayOneShot(dronePlasmaShotClip, sfxVolume * 0.65f);
+    }
+
+    public void PlayShieldDeploy()
+    {
+        if (sfxSource != null && shieldDeployClip != null)
+            sfxSource.PlayOneShot(shieldDeployClip, sfxVolume * 0.90f);
+    }
+
+    public void PlayShieldAbsorb()
+    {
+        if (sfxSource != null && shieldAbsorbClip != null)
+            sfxSource.PlayOneShot(shieldAbsorbClip, sfxVolume * 0.85f);
+    }
+
+    public void PlayShieldOverheat()
+    {
+        if (sfxSource != null && shieldOverheatClip != null)
+            sfxSource.PlayOneShot(shieldOverheatClip, sfxVolume * 0.95f);
     }
 
     // --- SÍNTESIS PROCEDURAL LIGERA (RESPALDO HASTA QUE PONGAS TUS PROPIOS AUDIOS) ---

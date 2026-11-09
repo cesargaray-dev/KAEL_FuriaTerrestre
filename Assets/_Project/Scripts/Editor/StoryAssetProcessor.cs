@@ -75,6 +75,35 @@ public class StoryAssetProcessor
             Debug.LogError("No se encontró Dialogue_Portraits.png en Sprites/UI");
         }
 
+        // 4. Procesar Sprite del Dron N.E.X.A.
+        string droneSrc = Path.Combine(uiDir, "NexaDrone.png");
+        if (File.Exists(droneSrc))
+        {
+            string droneDst = Path.Combine(resDir, "NexaDrone.png");
+            File.Copy(droneSrc, droneDst, true);
+            AssetDatabase.ImportAsset(droneDst, ImportAssetOptions.ForceUpdate);
+            ConfigureSprite(droneDst);
+            successCount++;
+        }
+
+        // 5. Procesar Catálogo de Iconos Pixel-Art HD del Árbol de Mejoras
+        string iconsSrcDir = Path.Combine(uiDir, "Icons");
+        string iconsDstDir = Path.Combine(resDir, "Icons");
+        if (Directory.Exists(iconsSrcDir))
+        {
+            if (!Directory.Exists(iconsDstDir)) Directory.CreateDirectory(iconsDstDir);
+            string[] iconFiles = Directory.GetFiles(iconsSrcDir, "*.png");
+            foreach (string srcFile in iconFiles)
+            {
+                string fileName = Path.GetFileName(srcFile);
+                string dstFile = Path.Combine(iconsDstDir, fileName);
+                File.Copy(srcFile, dstFile, true);
+                AssetDatabase.ImportAsset(dstFile, ImportAssetOptions.ForceUpdate);
+                ConfigureSprite(dstFile);
+                successCount++;
+            }
+        }
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 

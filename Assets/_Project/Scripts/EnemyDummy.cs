@@ -25,6 +25,8 @@ public class EnemyDummy : MonoBehaviour
     private float nextAttackTime;
     private int attackCounter = 0;
     private bool isDead = false;
+    public bool IsDead => isDead;
+    public float CurrentHP => currentHP;
     private bool isChargingHeavy = false;
     private bool isPlayingAttackAnim = false;
     private Transform kaelTarget;

@@ -147,17 +147,17 @@ Para clasificar los ítems de backlog y permitir filtros en los tableros Kanban 
 - **Archivos:** `BridgeLevel1To2Controller.cs`, `CompanionDialogueManager.cs`, `PlayerStats.cs`
 - **Descripción:** Secuencia interactiva de 2 fases tras completar el Nivel 1: Fase 1 narrativa animada en 4 actos (Torre de Tracción elevando la cápsula de Lía y mutación del Guantelete) y Fase 2 con tramo jugable de infiltración donde Kael avanza con `A/D`, rompe la Barrera de Energía Vorst con `J` y cruza el umbral hacia `Lab_Zahir`.
 
-#### Issue #19: `[S3 - TODO] Dron Centinela N.E.X.A. de Soporte Táctico y Asistencia de Fuego`
+#### Issue #19: `[S3 - DONE] Dron Centinela N.E.X.A. de Soporte Táctico y Asistencia de Fuego`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)
-- **Etiquetas:** `sprint-3`, `programacion`, `arte-animacion`, `por-hacer`
+- **Etiquetas:** `sprint-3`, `programacion`, `arte-animacion`, `completado`
 - **Archivos:** `NexaDroneCompanion.cs`, `NexaDrone.prefab`
 - **Descripción:** Compañero flotante que sigue a Kael con física de amortiguación, dispara proyectiles de plasma guiados cada 2.5s y despliega un escudo baluarte que absorbe 3 impactos cuando la salud de Kael cae por debajo del 25%.
 
-#### Issue #20: `[S3 - TODO] Iconos Pixel-Art HD para el Árbol de Habilidades y Matriz Nexo`
+#### Issue #20: `[S3 - DONE] Iconos Pixel-Art HD para el Árbol de Habilidades y Matriz Nexo`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)
-- **Etiquetas:** `sprint-3`, `arte-animacion`, `ui-ux`, `por-hacer`
-- **Archivos:** `Assets/_Project/Resources/StoryUI/Icons/`, `PlayerStats.cs`
-- **Descripción:** Reemplazo de emojis por catálogo completo de iconos 64x64/128x128 para cada nodo de las 3 ramas del Árbol de Mejoras (Atributos Base, Técnicas de Combate y Matriz Evolutiva Nexo) con estética de circuitos cyberpunk.
+- **Etiquetas:** `sprint-3`, `arte-animacion`, `ui-ux`, `completado`
+- **Archivos:** `Assets/_Project/Resources/StoryUI/Icons/`, `Assets/_Project/Sprites/UI/Icons/`, `PlayerStats.cs`, `StoryAssetProcessor.cs`
+- **Descripción:** Reemplazo integral de emojis temporales por catálogo de 13 iconos gráficos pixel-art HD (128x128) con fondos transparentes limpios, estética de circuitos holográficos cyberpunk, marco biselado (`DrawSkillIconBadge`) y sombreado dinámico reactivo al estado adquirido/bloqueado en las 3 ramas del Árbol de Mejoras.
 
 #### Issue #21: `[S3 - TODO] Tienda Táctica de Arsenal con Modificadores Visuales del Guantelete`
 - **Asignado a:** Zahir Andrés Rodríguez Mora (`@ZahirAndres`)
