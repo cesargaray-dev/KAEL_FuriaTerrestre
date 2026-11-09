@@ -47,6 +47,7 @@ public class EnemyDummy : MonoBehaviour
     public bool isLevel3Monster = false;
     private bool hasEnteredRagePhase = false;
     private float hulkStepShakeTimer = 0f;
+    private float nextHulkLaserTime = 0f;
     private readonly List<Transform> psionicRings = new List<Transform>();
 
     // Cache estático en memoria para que no haya NINGÚN tirón ni lectura de disco al spawnear enemigos
@@ -550,6 +551,15 @@ public class EnemyDummy : MonoBehaviour
 
         if (distToKael > attackRange && !isChargingHeavy && !isPlayingAttackAnim)
         {
+            // Cañón Láser de Pecho a Media Distancia para BioHulk:
+            // Si marcha hacia Kael y está entre 3.2m y 7.5m, se detiene y desata su rayo verde neón pesado.
+            if (visualType == "BioHulk" && distToKael >= 3.2f && distToKael <= 7.5f && Time.time >= nextHulkLaserTime)
+            {
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(5.5f, 8.0f);
+                StartCoroutine(BioHulkChestLaserRoutine());
+                return;
+            }
+
             if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", false);
             transform.Translate(new Vector2(dirToKael, 0f) * (moveSpeed * Time.deltaTime), Space.World);
 
@@ -585,11 +595,9 @@ public class EnemyDummy : MonoBehaviour
                 else if (visualType == "BioHulk")
                 {
                     attackCounter++;
-                    int mode = attackCounter % 3;
+                    int mode = attackCounter % 2;
                     if (mode == 0)
                         StartCoroutine(BioHulkGroundSmashRoutine());
-                    else if (mode == 1)
-                        StartCoroutine(BioHulkChestLaserRoutine());
                     else
                         StartCoroutine(TelegraphedHeavyAttack());
                 }
@@ -1123,11 +1131,11 @@ public class EnemyDummy : MonoBehaviour
                 }
             }
 
-            yield return new WaitForSeconds(0.12f);
+            yield return new WaitForSeconds(0.18f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(1.8f, 2.5f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.0f, 2.8f);
         isPlayingAttackAnim = false;
     }
 
@@ -1176,7 +1184,7 @@ public class EnemyDummy : MonoBehaviour
                     CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
             }
 
-            float frameWait = (visualType == "VortexOmega") ? 0.13f : ((visualType == "BioLasher") ? 0.12f : 0.088f);
+            float frameWait = (visualType == "VortexOmega") ? 0.14f : ((visualType == "BioLasher") ? 0.16f : 0.088f);
             yield return new WaitForSeconds(frameWait);
         }
 
@@ -1634,30 +1642,34 @@ public class EnemyDummy : MonoBehaviour
 
         transform.localRotation = Quaternion.identity;
         float distToKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
-        bool isMoving = (distToKael > attackRange);
+        // Margen de 0.35m para evitar que camine o corra en el sitio al chocar con la caja de Kael
+        bool isMoving = (distToKael > (attackRange + 0.35f));
 
         if (isMoving)
         {
             float animSpeed = 8.5f;
             if (visualType == "VortexOmega")
             {
-                animSpeed = hasEnteredRagePhase ? 6.5f : 5.0f;
+                // Marcha mecha imponente y deliberada, sincronizada con su velocidad de desplazamiento
+                animSpeed = hasEnteredRagePhase ? 4.2f : 3.2f;
             }
             else if (visualType == "BioHulk")
             {
-                animSpeed = 5.8f;
+                // Pasos pesados y firmes de coloso acorazado
+                animSpeed = 4.2f;
             }
             else if (visualType == "HiveInquisitor")
             {
-                animSpeed = 5.0f;
+                // Flotación psiónica suave
+                animSpeed = 4.0f;
             }
             else if (visualType == "BioStalker")
             {
-                animSpeed = 10.5f;
+                animSpeed = 9.0f;
             }
             else if (visualType == "BioLasher")
             {
-                animSpeed = 7.5f;
+                animSpeed = 5.5f;
             }
 
             walkAnimTimer += Time.deltaTime * animSpeed;
