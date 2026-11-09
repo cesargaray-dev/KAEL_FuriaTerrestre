@@ -109,6 +109,50 @@ public class WaveSpawner : MonoBehaviour
     }
 
     /// <summary>
+    /// Devuelve el arquetipo (0: BioStalker, 1: BioLasher, 2: BioHulk, 3: HiveInquisitor)
+    /// con composiciones temáticas y no repetitivas para cada oleada del Nivel 3.
+    /// </summary>
+    public static int GetLevel3EnemyArchetype(int wave, int enemyIndex, int totalInWave)
+    {
+        // 0: BioStalker (Pantera ágil melee)
+        // 1: BioLasher (Alienígena levitador a media distancia)
+        // 2: BioHulk (Coloso blindado tanque)
+        // 3: HiveInquisitor (Hechicero psiónico a distancia)
+
+        int[][] waveCompositions = new int[][]
+        {
+            // Oleada 1: Incursión rápida de reconocimiento (Panteras con un tentacular de apoyo)
+            new int[] { 0, 0, 0, 1 },
+            // Oleada 2: Tentáculos en la penumbra (Predominio de tentaculares con panteras flanqueando)
+            new int[] { 0, 1, 1, 0, 1 },
+            // Oleada 3: Primera Muralla Biomecánica (Aparición del primer Coloso tanque)
+            new int[] { 2, 0, 0, 1, 0 },
+            // Oleada 4: Ecos Psiónicos (Lanzadores a distancia Inquisidor + vanguardia de panteras)
+            new int[] { 0, 3, 1, 0, 3 },
+            // Oleada 5: Escolta del Inquisidor Supremo (Coloso protector + acechadores)
+            new int[] { 2, 0, 1, 0, 2 },
+            // Oleada 6: Asedio Blindado (Doble Coloso al frente con soporte de látigos)
+            new int[] { 2, 2, 0, 1, 0, 1 },
+            // Oleada 7: Bombardeo Psiónico Cruzado (Múltiples hechiceros y tentáculos)
+            new int[] { 3, 1, 3, 0, 3, 1 },
+            // Oleada 8: Enjambre Quimérico Equilibrado (Composición híbrida variada)
+            new int[] { 0, 2, 3, 1, 0, 2, 3 },
+            // Oleada 9: Guardia Pretoriana de la Colmena (Tanques colosales + hechiceros psiónicos pesados)
+            new int[] { 2, 3, 2, 1, 3, 0, 2 },
+            // Oleada 10: Escolta del Mecha Vortex-Omega
+            new int[] { 0, 3, 2, 1, 0 }
+        };
+
+        int waveIdx = Mathf.Clamp(wave - 1, 0, waveCompositions.Length - 1);
+        int[] comp = waveCompositions[waveIdx];
+        if (comp != null && comp.Length > 0)
+        {
+            return comp[enemyIndex % comp.Length];
+        }
+        return enemyIndex % 4;
+    }
+
+    /// <summary>
     /// BLOQUE 5 (Issue #23): Cuando el Jefe Final VORTEX-OMEGA entra en Fase de Furia (<45% HP),
     /// invoca 2 Acechadores Quimera (BioStalkers) de escolta.
     /// </summary>
@@ -131,6 +175,7 @@ public class WaveSpawner : MonoBehaviour
                 enemy.moveSpeed = 2.85f;
                 enemy.attackRange = 1.5f;
                 enemy.maxHP = 125f;
+                enemy.currentHP = 125f;
                 enemy.damage = 11f;
                 enemy.goldReward = 22;
                 enemy.expReward = 28;
@@ -165,7 +210,7 @@ public class WaveSpawner : MonoBehaviour
                 ? "⚠ ¡ANOMALÍA PSIÓNICA EN LA COLMENA! ⚠"
                 : (isLevel2BaseVorst ? "⚠ ¡COLOSO DE NÚCLEO ROJO! ⚠" : "⚠ ¡ALERTA DE TANQUE PESADO! ⚠");
             string warnSub = isLevel3Hive
-                ? "MINI-JEFE DE OLEADA 5: INQUISIDOR PSIÓNICO VORST"
+                ? "MINI-JEFE DE OLEADA 5: INQUISIDOR PSIÓNICO SUPREMO"
                 : (isLevel2BaseVorst ? "PRIMER JEFE: BRUTO VORST EN LA OLEADA 5" : "BRUTO VORST DETECTADO EN LA OLEADA 5");
             CombatVFXManager.Instance.TriggerBossWarning(warnTitle, warnSub, 2.4f);
             yield return new WaitForSeconds(2.0f);
@@ -174,10 +219,10 @@ public class WaveSpawner : MonoBehaviour
         {
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
             string warnTitle = isLevel3Hive
-                ? "⚠ AMENAZA EXTREMA: CARCELERO BIOTECNOLÓGICO VORTEX-OMEGA ⚠"
+                ? "⚠ AMENAZA EXTREMA: MECHA BERSERKER VORTEX-OMEGA ⚠"
                 : (isLevel2BaseVorst ? "⚠ ¡SOBERANO DE LA BASE VORST! ⚠" : "⚠ ¡ADVERTENCIA: LÍDER DE ZONA! ⚠");
             string warnSub = isLevel3Hive
-                ? "JEFE DE LA NAVE NÚCLEO — GUARDIÁN DE LAS CÁPSULAS DE ESTASIS"
+                ? "JEFE FINAL DE LA COLMENA — GUARDIÁN DE LAS CÁPSULAS DE ESTASIS"
                 : (isLevel2BaseVorst ? "JEFE FINAL: ARCONTE PSIÓNICO VORST" : "COMANDANTE VORST BLOQUEA LA SALIDA DEL SECTOR 7");
             CombatVFXManager.Instance.TriggerBossWarning(warnTitle, warnSub, 2.8f);
             yield return new WaitForSeconds(2.2f);
@@ -213,17 +258,8 @@ public class WaveSpawner : MonoBehaviour
                     if (isLevel3Hive)
                     {
                         // BLOQUE 5: JEFE FINAL DEL NIVEL 3 (VORTEX-OMEGA)
-                        enemy.enemyTitle = "Carcelero Biotecnológico VORTEX-OMEGA";
-                        enemy.SetupLevel3Visuals("VortexOmega");
-                        enemyObj.transform.localScale = Vector3.one * 1.68f;
                         if (sr != null) sr.color = Color.white;
-                        enemy.attackRange = 2.45f;
-                        enemy.attackRate = 1.05f;
-                        enemy.moveSpeed = 1.60f;
-                        enemy.maxHP = 3200f;
-                        enemy.damage = 26f;
-                        enemy.goldReward = 380;
-                        enemy.expReward = 340;
+                        enemy.SetupLevel3Monster(0, currentWave, boss: true, miniBoss: false);
                     }
                     else if (isLevel2BaseVorst)
                     {
@@ -255,17 +291,9 @@ public class WaveSpawner : MonoBehaviour
                     enemy.isMiniBoss = true;
                     if (isLevel3Hive)
                     {
-                        // BLOQUE 5: MINI-JEFE OLEADA 5 DEL NIVEL 3 (Inquisidor Psíquico Vorst)
-                        enemy.enemyTitle = "Inquisidor Psíquico Vorst";
-                        enemy.SetupLevel3Visuals("HiveInquisitor");
-                        enemyObj.transform.localScale = Vector3.one * 1.48f;
+                        // BLOQUE 5: MINI-JEFE OLEADA 5 DEL NIVEL 3 (Inquisidor Psiónico Supremo)
                         if (sr != null) sr.color = Color.white;
-                        enemy.maxHP = 1350f;
-                        enemy.damage = 18f;
-                        enemy.moveSpeed = 1.65f;
-                        enemy.attackRange = 2.15f;
-                        enemy.goldReward = 175;
-                        enemy.expReward = 160;
+                        enemy.SetupLevel3Monster(3, currentWave, boss: false, miniBoss: true);
                     }
                     else if (isLevel2BaseVorst)
                     {
@@ -297,49 +325,10 @@ public class WaveSpawner : MonoBehaviour
                 {
                     if (isLevel3Hive)
                     {
-                        // BLOQUE 5: 3 MONSTRUOS BIOMECÁNICOS EXCLUSIVOS DEL NIVEL 3 (Cero reutilización básica)
-                        int archetype = (currentWave + i) % 3;
+                        // BLOQUE 5: COMPOSICIONES TEMÁTICAS Y VARIADAS EN CADA OLEADA DEL NIVEL 3
+                        int archetype = GetLevel3EnemyArchetype(currentWave, i, hordeCount);
                         if (sr != null) sr.color = Color.white;
-
-                        if (archetype == 0)
-                        {
-                            // 1. Acechador Quimera Vorst (BioStalker): +35% velocidad, salto y tajo doble
-                            enemy.enemyTitle = "Acechador Quimera Vorst";
-                            enemy.SetupLevel3Visuals("BioStalker");
-                            enemyObj.transform.localScale = Vector3.one * 1.05f;
-                            enemy.moveSpeed = 2.70f;
-                            enemy.attackRange = 1.48f;
-                            enemy.attackRate = 1.20f;
-                            enemy.maxHP = Mathf.RoundToInt(72f * Mathf.Pow(1.16f, currentWave - 1));
-                            enemy.damage = Mathf.RoundToInt(7f * Mathf.Pow(1.13f, currentWave - 1));
-                        }
-                        else if (archetype == 1)
-                        {
-                            // 2. Flagelador de Médula (BioLasher): Levitante sinusoidal, látigo a media distancia
-                            enemy.enemyTitle = "Flagelador de Médula";
-                            enemy.SetupLevel3Visuals("BioLasher");
-                            enemyObj.transform.localScale = Vector3.one * 1.12f;
-                            enemy.moveSpeed = 1.95f;
-                            enemy.attackRange = 2.25f;
-                            enemy.attackRate = 1.0f;
-                            enemy.maxHP = Mathf.RoundToInt(86f * Mathf.Pow(1.16f, currentWave - 1));
-                            enemy.damage = Mathf.RoundToInt(8f * Mathf.Pow(1.14f, currentWave - 1));
-                        }
-                        else
-                        {
-                            // 3. Coloso de Crisálida (BioHulk): Pesado, placas óseas moradas, aplastamiento telegrafiado
-                            enemy.enemyTitle = "Coloso de Crisálida";
-                            enemy.SetupLevel3Visuals("BioHulk");
-                            enemyObj.transform.localScale = Vector3.one * 1.28f;
-                            enemy.moveSpeed = 1.42f;
-                            enemy.attackRange = 1.72f;
-                            enemy.attackRate = 0.82f;
-                            enemy.maxHP = Mathf.RoundToInt(135f * Mathf.Pow(1.17f, currentWave - 1));
-                            enemy.damage = Mathf.RoundToInt(11f * Mathf.Pow(1.14f, currentWave - 1));
-                        }
-
-                        enemy.goldReward = Mathf.RoundToInt(12f + (currentWave * 3.5f));
-                        enemy.expReward = 16 + (currentWave * 4);
+                        enemy.SetupLevel3Monster(archetype, currentWave, boss: false, miniBoss: false);
                     }
                     else if (isLevel2BaseVorst)
                     {

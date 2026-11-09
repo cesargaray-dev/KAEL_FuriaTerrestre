@@ -195,6 +195,61 @@ public class CombatVFXManager : MonoBehaviour
         Destroy(beamRoot);
     }
 
+    /// <summary>
+    /// Spawns a high-intensity 3-layer neon laser beam for VortexOmega's Chest Cannon.
+    /// Projects horizontally along length (positive or negative depending on facing direction).
+    /// </summary>
+    public void SpawnBossLaserBeam(Vector3 originPos, float length, float duration)
+    {
+        StartCoroutine(BossLaserBeamRoutine(originPos, length, duration));
+    }
+
+    private IEnumerator BossLaserBeamRoutine(Vector3 originPos, float length, float duration)
+    {
+        GameObject beamRoot = new GameObject("VortexChestLaserBeam");
+        beamRoot.transform.position = originPos;
+
+        // Multi-layer procedural laser beam: outer magenta glow (#F41582), mid cyan beam (#26F0FF), core white beam
+        Color outerCol = new Color(0.957f, 0.082f, 0.510f, 0.70f);
+        Color midCol   = new Color(0.149f, 0.941f, 1.000f, 0.95f);
+        Color coreCol  = Color.white;
+
+        SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "BossOuterGlow", outerCol, 21);
+        SpriteRenderer midBeam   = CreateBeamLayer(beamRoot.transform, "BossMidBeam",   midCol,   22);
+        SpriteRenderer coreBeam  = CreateBeamLayer(beamRoot.transform, "BossCoreBeam",  coreCol,  23);
+
+        float absLen = Mathf.Abs(length);
+        float dirSign = (length < 0f) ? -1f : 1f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float pulse = 1f + Mathf.Sin(Time.time * 60f) * 0.22f;
+            float fadeOut = (elapsed > duration * 0.70f) ? Mathf.InverseLerp(duration, duration * 0.70f, elapsed) : 1f;
+            float currentThickness = pulse * fadeOut;
+
+            outerBeam.transform.localScale    = new Vector3(absLen, 1.65f * currentThickness, 1f);
+            outerBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+
+            midBeam.transform.localScale      = new Vector3(absLen, 0.88f * currentThickness, 1f);
+            midBeam.transform.localPosition   = new Vector3(length / 2f, 0f, 0f);
+
+            coreBeam.transform.localScale     = new Vector3(absLen, 0.35f * currentThickness, 1f);
+            coreBeam.transform.localPosition  = new Vector3(length / 2f, 0f, 0f);
+
+            if (Random.value > 0.25f)
+            {
+                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.6f, absLen * 0.90f), Random.Range(-0.45f, 0.45f), 0f);
+                SpawnHitSparks(sparkPos, true, 3);
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        Destroy(beamRoot);
+    }
+
     SpriteRenderer CreateBeamLayer(Transform parent, string name, Color col, int sortOrder)
     {
         GameObject go = new GameObject(name);
