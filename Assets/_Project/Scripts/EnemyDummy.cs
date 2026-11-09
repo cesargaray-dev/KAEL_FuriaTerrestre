@@ -284,6 +284,8 @@ public class EnemyDummy : MonoBehaviour
         else if (resourcePrefix == "BioHulk")
         {
             customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Laser", ppu);
+            attackRange = 2.85f;
+            moveSpeed = 1.15f;
         }
         else if (resourcePrefix == "HiveInquisitor")
         {
@@ -406,7 +408,7 @@ public class EnemyDummy : MonoBehaviour
                 SetupLevel3Visuals("BioHulk");
                 transform.localScale = Vector3.one * 1.28f;
                 moveSpeed = 1.15f; // Tanque imparable de marcha pesada
-                attackRange = 2.40f; // Rango suficiente para golpear sin colisionar con la caja de Kael
+                attackRange = 2.85f; // Rango suficiente para golpear sin colisionar con la caja de Kael
                 attackRate = 0.65f;
                 maxHP = Mathf.RoundToInt(150f * Mathf.Pow(1.16f, Mathf.Max(0, wave - 1)));
                 damage = Mathf.RoundToInt(13f * Mathf.Pow(1.14f, Mathf.Max(0, wave - 1)));
@@ -595,11 +597,7 @@ public class EnemyDummy : MonoBehaviour
                 else if (visualType == "BioHulk")
                 {
                     attackCounter++;
-                    int mode = attackCounter % 2;
-                    if (mode == 0)
-                        StartCoroutine(BioHulkGroundSmashRoutine());
-                    else
-                        StartCoroutine(TelegraphedHeavyAttack());
+                    StartCoroutine(BioHulkGroundSmashRoutine());
                 }
                 else if (visualType == "BioLasher")
                 {
@@ -1642,8 +1640,8 @@ public class EnemyDummy : MonoBehaviour
 
         transform.localRotation = Quaternion.identity;
         float distToKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
-        // Margen de 0.35m para evitar que camine o corra en el sitio al chocar con la caja de Kael
-        bool isMoving = (distToKael > (attackRange + 0.35f));
+        // En sincronía con la decisión de Update(): si está en rango de ataque se detiene y adopta postura firme
+        bool isMoving = (distToKael > attackRange);
 
         if (isMoving)
         {

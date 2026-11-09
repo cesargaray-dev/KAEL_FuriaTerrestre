@@ -147,7 +147,7 @@ def place_anchored_frame(cropped_flipped_img, canvas_w, target_right_x, target_f
 
 
 # ==============================================================================
-# 1. BOSS VORTEX-OMEGA (Solid Armor, Clean Sparks, Exact Pivot 343)
+# 1. BOSS VORTEX-OMEGA (Solid Armor, Transparent Background, Exact Pivot Alignment)
 # ==============================================================================
 def process_boss():
     print("\n--- [1/5] Extracting Boss VortexOmega (Solid Armor & Clean Sparks) ---")
@@ -160,13 +160,14 @@ def process_boss():
     # Boss back is 87px to the right of body center.
     # Therefore, target_right_x = (canvas_w - 128) + 87:
     # - On 256 canvas (Walk): target_right_x = 128 + 87 = 215.
-    # - On 384 canvas (Attack, Laser, Trans, Enrage, Die): target_right_x = 256 + 87 = 343.
+    # - On 384 canvas (PhaseTrans, Die): target_right_x = 256 + 87 = 343.
+    # - On 512 canvas (Attack, Laser, EnrageAttack): target_right_x = 384 + 87 = 471.
     row_defs = [
         ("Walk", 35, 175, [0, 240, 475, 710, 960, 1190, 1451], 256, 215),
-        ("Attack", 180, 325, [0, 242, 484, 749, 937, 1235, 1451], 384, 343),
-        ("Laser", 329, 456, [0, 247, 488, 768, 1028, 1220, 1451], 384, 343),
-        ("PhaseTrans", 506, 656, [0, 249, 485, 700, 940, 1198, 1451], 384, 343),
-        ("EnrageAttack", 706, 850, [0, 242, 477, 716, 992, 1226, 1451], 384, 343),
+        ("Attack", 178, 332, [0, 242, 484, 749, 937, 1235, 1451], 512, 471),
+        ("Laser", 332, 458, [0, 247, 488, 768, 1028, 1220, 1451], 512, 471),
+        ("PhaseTrans", 510, 670, [0, 249, 485, 700, 940, 1198, 1451], 384, 343),
+        ("EnrageAttack", 704, 852, [0, 242, 477, 716, 1000, 1226, 1451], 512, 471),
         ("Die", 902, 1070, [0, 247, 476, 710, 955, 1202, 1451], 384, 343),
     ]
 
@@ -178,50 +179,28 @@ def process_boss():
         G = row_arr[:, :, 1].astype(int)
         B = row_arr[:, :, 2].astype(int)
 
-        is_black_outline = (G <= 9) & (R <= 28) & (B <= 36)
         if state_name == "Die":
-            is_vibrant = (
-                (R >= 46)
-                | (G >= 34)
-                | (B >= 48)
-                | ((R - G) >= 16)
-                | ((B - G) >= 18)
-            )
+            is_muddy_bg = (R <= 65) & (G <= 25) & (B <= 25) & (B <= G + 10)
+            is_dark_bg = (R <= 26) & (G <= 26) & (B <= 32)
         else:
-            is_vibrant = (
-                (R >= 66)
-                | (G >= 60)
-                | (B >= 72)
-                | ((R >= 44) & ((R - G) >= 22))
-                | ((B >= 46) & ((B - G) >= 22))
-            )
+            is_muddy_bg = (R <= 105) & (G <= 45) & (B <= 45) & (B <= G + 12)
+            is_dark_bg = (R <= 38) & (G <= 38) & (B <= 45)
+
+        total_bg = is_muddy_bg | is_dark_bg
 
         if state_name == "Walk":
-            top_glow = np.zeros_like(is_black_outline)
+            top_glow = np.zeros_like(total_bg)
             top_glow[:26, :] = (R[:26, :] < 52) & (G[:26, :] >= R[:26, :] - 4) & (B[:26, :] < 82)
-            is_vibrant = is_vibrant & (~top_glow)
+            total_bg = total_bg | top_glow
 
-        core_fg = is_black_outline | is_vibrant
-        sealed_fg = binary_fill_holes(binary_closing(core_fg, structure=np.ones((2, 2))))
-        upper_h = int(row_arr.shape[0] * 0.74)
-        sealed_fg[:upper_h, :] = binary_fill_holes(sealed_fg[:upper_h, :])
+        raw_fg = ~total_bg
 
         raw_frames = []
-        for c in range(6):
+        for c in range(len(boundaries) - 1):
             x1 = boundaries[c]
             x2 = boundaries[c + 1]
             cell_raw = row_arr[:, x1:x2, :].copy()
-            cell_mask = sealed_fg[:, x1:x2].copy()
-
-            # For Attack state cell 4 (the ground slam with sparks):
-            # In the raw sheet, robot body is on the left (x < 150) and sparks are on the right (x >= 150).
-            # We seal the robot body, but for sparks only keep actual bright spark pixels
-            # so the background between spark rays remains 100% transparent!
-            if state_name == "Attack" and c == 4:
-                split_x = 150
-                cell_mask[:, :split_x] = binary_fill_holes(binary_closing(core_fg[:, x1:x1+split_x], structure=np.ones((2, 2))))
-                sparks_px = (cell_raw[:, :, 0] > 140) | ((cell_raw[:, :, 0] > 90) & (cell_raw[:, :, 1] > 60))
-                cell_mask[:, split_x:] = sparks_px[:, split_x:]
+            cell_mask = raw_fg[:, x1:x2].copy()
 
             lbl, num = label(cell_mask)
             if num == 0:
@@ -229,14 +208,19 @@ def process_boss():
                 continue
 
             sizes = np.bincount(lbl.ravel())
-            main_id = np.argmax(sizes[1:]) + 1
-            clean_mask = (lbl == main_id)
-            for cid in range(1, num + 1):
-                if cid != main_id and sizes[cid] >= 400:
-                    clean_mask |= (lbl == cid)
+            valid_labels = np.where((sizes >= 15) & (np.arange(len(sizes)) > 0))[0]
+            clean_mask = np.isin(lbl, valid_labels)
 
-            cell_rgba = np.dstack([cell_raw, np.where(clean_mask, 255, 0).astype(np.uint8)])
-            cell_rgba = clean_cell_slivers(cell_rgba, max_top_sliver_h=16, min_dust_size=35)
+            # Fill crevices inside solid armor without enclosing open air between sparks/rays
+            full_filled = binary_fill_holes(clean_mask)
+            holes = full_filled & ~clean_mask
+            h_lbl, n_h = label(holes)
+            h_sizes = np.bincount(h_lbl.ravel())
+            small_holes = np.isin(h_lbl, np.where((h_sizes <= 60) & (np.arange(len(h_sizes)) > 0))[0])
+            selective_filled = clean_mask | small_holes
+
+            cell_rgba = np.dstack([cell_raw, np.where(selective_filled, 255, 0).astype(np.uint8)])
+            cell_rgba = clean_cell_slivers(cell_rgba, max_top_sliver_h=16, min_dust_size=20)
 
             ys, xs = np.where(cell_rgba[:, :, 3] > 0)
             if len(ys) == 0:
@@ -244,8 +228,15 @@ def process_boss():
                 continue
 
             cropped_arr = cell_rgba[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1, :]
-            # Flip horizontally so boss faces LEFT (toward Kael)
-            flipped = Image.fromarray(cropped_arr).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            cropped_img = Image.fromarray(cropped_arr)
+
+            # In the raw sheet, only Attack cell 4 is already facing LEFT. All others face RIGHT.
+            # We flip right-facing sprites so all frames uniformly face LEFT (toward Kael).
+            should_flip = not (state_name == "Attack" and c == 4)
+            if should_flip:
+                flipped = cropped_img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            else:
+                flipped = cropped_img
 
             canvas = place_anchored_frame(flipped, canvas_w, target_right_x, TARGET_FOOT_Y, BOSS_SCALE)
             raw_frames.append(canvas)
