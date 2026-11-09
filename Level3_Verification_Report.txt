@@ -1,0 +1,147 @@
+================================================================================
+LEVEL 3 AUTOMATED VERIFICATION REPORT — 2026-11-09 18:18:56 UTC
+================================================================================
+Total Tests Passed: 115
+Total Tests Failed: 0
+Overall Status: PASSED (100%)
+================================================================================
+
+--- VERIFICATION 1: Sliced Sprite Inventory & Resources Availability ---
+  [PASS] V1_FolderExists: Resources/Level3 directory exists at C:/Users/cesar/Downloads/unity-proyecto/KAEL_FuriaTerrestre/Assets\_Project\Resources\Level3
+  [PASS] V1_FramesOnDisk: Expected 176 PNG & meta frames on disk, found 176
+  [PASS] V1_ResourcesLoadable: Expected 176 frames loadable via Resources.Load<Texture2D>, loaded 176
+  [PASS] V1_GeneratorValid: Level3MonsterAssetGenerator returned valid Sprite[8] for all states (176/176 frames)
+  [PASS] V1_BioStalker_FrameCount: BioStalker has 24 frames (Walk, Attack, Die x 8)
+  [PASS] V1_BioLasher_FrameCount: BioLasher has 32 frames (Walk, Attack, Tornado, Die x 8)
+  [PASS] V1_BioHulk_FrameCount: BioHulk has 32 frames (Walk, Attack, Laser, Die x 8)
+  [PASS] V1_HiveInquisitor_FrameCount: HiveInquisitor has 40 frames (Walk, Attack, Missiles, VortexFlame, Die x 8)
+  [PASS] V1_VortexOmega_FrameCount: VortexOmega has 48 frames (Walk, Attack, Laser, PhaseTrans, EnrageAttack, Die x 8)
+  -> Category Summary: 9 Passed, 0 Failed
+
+--- VERIFICATION 2: Pivot & Ground Baseline Alignment ---
+  [PASS] V2_PPU_BioStalker: BioStalker calibrated PPU=148f (got 148)
+  [PASS] V2_PPU_BioLasher: BioLasher calibrated PPU=140f (got 140)
+  [PASS] V2_PPU_BioHulk: BioHulk calibrated PPU=122f (got 122)
+  [PASS] V2_PPU_HiveInquisitor: HiveInquisitor calibrated PPU=122f (got 122)
+  [PASS] V2_PPU_VortexOmega: VortexOmega calibrated PPU=118f (got 118)
+  [PASS] V2_WalkFrames_BioStalker: Walk frames exist for BioStalker
+  [PASS] V2_PivotNorm_BioStalker: Normalized pivot for BioStalker is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_WalkFrames_BioLasher: Walk frames exist for BioLasher
+  [PASS] V2_PivotNorm_BioLasher: Normalized pivot for BioLasher is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_WalkFrames_BioHulk: Walk frames exist for BioHulk
+  [PASS] V2_PivotNorm_BioHulk: Normalized pivot for BioHulk is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_WalkFrames_HiveInquisitor: Walk frames exist for HiveInquisitor
+  [PASS] V2_PivotNorm_HiveInquisitor: Normalized pivot for HiveInquisitor is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_WalkFrames_VortexOmega: Walk frames exist for VortexOmega
+  [PASS] V2_PivotNorm_VortexOmega: Normalized pivot for VortexOmega is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_EnemyBaseGroundY: EnemyDummy baseGroundY is set to -2.95 (Expected: -2.95f)
+  [PASS] V2_FeetAtGroundBaseline: Entity transform rests at ground baseline y = -2.95f
+  -> Category Summary: 17 Passed, 0 Failed
+
+--- VERIFICATION 3: Collider Bounds & Ground Alignment ---
+  [PASS] V3_ColSize_BioStalker: BioStalker collider size is (1.50, 1.05)
+  [PASS] V3_ColOffsetX_BioStalker: BioStalker collider offset.x is 0.0f
+  [PASS] V3_ColOffsetY_BioStalker: BioStalker collider offset.y is size.y * 0.5f (0.525 == 0.525)
+  [PASS] V3_LocalBottom_BioStalker: BioStalker local collider bottom is exactly 0.0f
+  [PASS] V3_ColSize_BioLasher: BioLasher collider size is (1.30, 1.55)
+  [PASS] V3_ColOffsetX_BioLasher: BioLasher collider offset.x is 0.0f
+  [PASS] V3_ColOffsetY_BioLasher: BioLasher collider offset.y is size.y * 0.5f (0.775 == 0.775)
+  [PASS] V3_LocalBottom_BioLasher: BioLasher local collider bottom is exactly 0.0f
+  [PASS] V3_ColSize_BioHulk: BioHulk collider size is (1.75, 1.70)
+  [PASS] V3_ColOffsetX_BioHulk: BioHulk collider offset.x is 0.0f
+  [PASS] V3_ColOffsetY_BioHulk: BioHulk collider offset.y is size.y * 0.5f (0.850 == 0.850)
+  [PASS] V3_LocalBottom_BioHulk: BioHulk local collider bottom is exactly 0.0f
+  [PASS] V3_ColSize_HiveInquisitor: HiveInquisitor collider size is (1.20, 1.72)
+  [PASS] V3_ColOffsetX_HiveInquisitor: HiveInquisitor collider offset.x is 0.0f
+  [PASS] V3_ColOffsetY_HiveInquisitor: HiveInquisitor collider offset.y is size.y * 0.5f (0.860 == 0.860)
+  [PASS] V3_LocalBottom_HiveInquisitor: HiveInquisitor local collider bottom is exactly 0.0f
+  [PASS] V3_ColSize_VortexOmega: VortexOmega collider size is (2.00, 1.35)
+  [PASS] V3_ColOffsetX_VortexOmega: VortexOmega collider offset.x is 0.0f
+  [PASS] V3_ColOffsetY_VortexOmega: VortexOmega collider offset.y is size.y * 0.5f (0.675 == 0.675)
+  [PASS] V3_LocalBottom_VortexOmega: VortexOmega local collider bottom is exactly 0.0f
+  [PASS] V3_BoxColExists_Scale_1: BoxCollider2D component exists on enemy
+  [PASS] V3_WorldBottom_Scale_1: At scale 1.00, collider bounds.min.y = -2.9500 (Expected: -2.9500)
+  [PASS] V3_BoxColExists_Scale_1.05: BoxCollider2D component exists on enemy
+  [PASS] V3_WorldBottom_Scale_1.05: At scale 1.05, collider bounds.min.y = -2.9500 (Expected: -2.9500)
+  [PASS] V3_BoxColExists_Scale_1.12: BoxCollider2D component exists on enemy
+  [PASS] V3_WorldBottom_Scale_1.12: At scale 1.12, collider bounds.min.y = -2.9500 (Expected: -2.9500)
+  [PASS] V3_BoxColExists_Scale_1.28: BoxCollider2D component exists on enemy
+  [PASS] V3_WorldBottom_Scale_1.28: At scale 1.28, collider bounds.min.y = -2.9500 (Expected: -2.9500)
+  [PASS] V3_BoxColExists_Scale_1.52: BoxCollider2D component exists on enemy
+  [PASS] V3_WorldBottom_Scale_1.52: At scale 1.52, collider bounds.min.y = -2.9500 (Expected: -2.9500)
+  [PASS] V3_BoxColExists_Scale_1.68: BoxCollider2D component exists on enemy
+  [PASS] V3_WorldBottom_Scale_1.68: At scale 1.68, collider bounds.min.y = -2.9500 (Expected: -2.9500)
+  -> Category Summary: 32 Passed, 0 Failed
+
+--- VERIFICATION 4: WaveSpawner 10-Wave Configuration ---
+  [PASS] V4_TotalWaves10: WaveSpawner totalWaves = 10 (Expected: 10)
+  [PASS] V4_SpawnerGroundY: WaveSpawner groundY = -2.95 (Expected: -2.95f)
+  [PASS] V4_Modulo4RotationCoverage: Modulo 4 regular enemy rotation covers all 4 neon enemy archetypes
+  [PASS] V4_Wave5_IsMiniBoss: Wave 5 enemy has isMiniBoss == true
+  [PASS] V4_Wave5_Title: Wave 5 title is 'Inquisidor Psiónico Supremo'
+  [PASS] V4_Wave5_MaxHP: Wave 5 Mini-Boss maxHP = 1450 (Expected: 1450)
+  [PASS] V4_Wave5_Damage: Wave 5 Mini-Boss damage = 20 (Expected: 20)
+  [PASS] V4_Wave5_Scale: Wave 5 Mini-Boss scale = 1.52 (Expected: 1.52)
+  [PASS] V4_Wave5_PsionicRings: Mini-Boss has 3 psionic rings attached (Expected: 3)
+  [PASS] V4_Wave10_IsBoss: Wave 10 enemy has isBoss == true
+  [PASS] V4_Wave10_Title: Wave 10 title is 'Mecha Berserker VORTEX-OMEGA'
+  [PASS] V4_Wave10_MaxHP: Wave 10 Boss maxHP = 3400 (Expected: 3400)
+  [PASS] V4_Wave10_Damage: Wave 10 Boss damage = 28 (Expected: 28)
+  [PASS] V4_Wave10_Scale: Wave 10 Boss scale = 1.68 (Expected: 1.68)
+  [PASS] V4_EscortTracking_EnemiesAlive: SpawnVortexOmegaEscorts increased enemiesAlive to 3 (1 boss + 2 escorts)
+  [PASS] V4_EscortCount: Spawned exactly 2 escorts
+  [PASS] V4_EscortHP: Escort maxHP=125, currentHP=125
+  [PASS] V4_EscortGroundY: Escort spawned at ground baseline y=-2.95
+  [PASS] V4_EscortHP: Escort maxHP=125, currentHP=125
+  [PASS] V4_EscortGroundY: Escort spawned at ground baseline y=-2.95
+  -> Category Summary: 20 Passed, 0 Failed
+
+--- VERIFICATION 5: Multi-Phase Boss State Machine & VFX ---
+  [PASS] V5_BossLaserFrames: customLaserFrames loaded 8 frames (8)
+  [PASS] V5_BossPhaseTransFrames: customPhaseTransFrames loaded 8 frames (8)
+  [PASS] V5_BossEnrageFrames: customEnrageAttackFrames loaded 8 frames (8)
+  [PASS] V5_BossDieFrames: customDieFrames loaded 8 frames (8)
+  [PASS] V5_LongDistAdvance: At distance 8.2m (> 7.5m), boss advances without triggering attack routine
+  [PASS] V5_RangedLaserTrigger: At distance 4.5m with ready cooldown, chest laser cannon routine starts
+  [PASS] V5_MeleeAttackTrigger: At distance 1.5m with ready cooldown, melee attack routine starts
+  [PASS] V5_HP50ClampTo1700: Health clamped to exactly 1700f (50% maxHP), currentHP = 1700
+  [PASS] V5_InvulnerabilityEngaged: isInvulnerable is true during phase transition
+  [PASS] V5_InvulnerableIgnoresDamage: Health remains 1700f while invulnerable, currentHP = 1700
+  [PASS] V5_Phase2MoveSpeed: Phase 2 moveSpeed = 2 (+25% over 1.60)
+  [PASS] V5_Phase2AttackRate: Phase 2 attackRate = 1.35 (+28% over 1.05)
+  [PASS] V5_Phase2Damage: Phase 2 damage = 32 (Expected: 32)
+  [PASS] V5_InvulnerabilityDropped: isInvulnerable restored to false after transition completes
+  [PASS] V5_DoubleSlashMethodExists: VortexOmegaEnragedDoubleSlashRoutine method exists
+  [PASS] V5_RocketPunchMethodExists: VortexOmegaRocketPunchLungeRoutine method exists
+  [PASS] V5_DeathSlowMoTimeScale: Death routine sets Time.timeScale = 0.28 (0.28 expected)
+  [PASS] V5_DeathTimeScaleRestored: Time.timeScale restored to normal (1.0), actual: 1
+  [PASS] V5_BossChassisRetained: Boss GameObject retained (not destroyed) for victory dilemma
+  [PASS] V5_BossComponentDisabled: Boss EnemyDummy script disabled after meltdown
+  [PASS] V5_LaserVFXMethodExists: CombatVFXManager.SpawnBossLaserBeam method exists
+  [PASS] V5_BioLasherMinHoverZero: BioLasher min hover formula gives 0.0000m (eliminates floor dip)
+  -> Category Summary: 22 Passed, 0 Failed
+
+--- VERIFICATION 6: Scene & Prefab GUID Reference Integrity ---
+  [PASS] V6_SceneFileExists: Scene file exists at Assets/_Project/Scenes/03_Nivel3_Colmena.unity
+  [PASS] V6_SceneLoaded: Scene Assets/_Project/Scenes/03_Nivel3_Colmena.unity opened and loaded cleanly
+  [PASS] V6_SceneMissingScriptsZero: Scene has 0 missing MonoBehaviours across 5 GameObjects (found 0)
+  [PASS] V6_PrefabFileExists: Prefab file exists at Assets/_Project/Prefabs/Enemies/Vorst_Walker.prefab
+  [PASS] V6_PrefabLoaded: Prefab Assets/_Project/Prefabs/Enemies/Vorst_Walker.prefab loaded successfully via AssetDatabase
+  [PASS] V6_PrefabMissingScriptsZero: Vorst_Walker.prefab has 0 missing MonoBehaviours (found 0)
+  [PASS] V6_PrefabSpriteRenderer: Vorst_Walker.prefab contains valid SpriteRenderer
+  [PASS] V6_PrefabBoxCollider: Vorst_Walker.prefab contains valid BoxCollider2D
+  [PASS] V6_PrefabEnemyDummy: Vorst_Walker.prefab contains valid EnemyDummy component
+  [PASS] V6_SceneDanglingGuidsZero: Scene YAML has 0 dangling/broken GUID references (found 0)
+  [PASS] V6_PrefabDanglingGuidsZero: Prefab YAML has 0 dangling/broken GUID references (found 0)
+  -> Category Summary: 11 Passed, 0 Failed
+
+--- VERIFICATION 7: Visual Cleanliness (No text overlays/artifacts) ---
+  [PASS] V7_ValidPNGSize: All 176 frames are non-empty valid PNGs (> 200 bytes)
+  [PASS] V7_CleanPerimeterBorders: All 176/176 frames have 100% transparent 1px outer borders (0 border bleeds)
+  [PASS] V7_AlphaTransparencyMasking: All 176/176 frames have clean background removal (transparent background with visible content)
+  [PASS] V7_CleanCornersNoBanners: All 176/176 frames have transparent 5x5 corners (0 text banners/watermarks)
+  -> Category Summary: 4 Passed, 0 Failed
+
+================================================================================
+ALL 7 VERIFICATION CATEGORIES PASSED WITH ZERO INTEGRITY DEFECTS.
+================================================================================
