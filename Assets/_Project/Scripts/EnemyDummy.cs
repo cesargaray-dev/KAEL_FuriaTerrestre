@@ -21,7 +21,7 @@ public class EnemyDummy : MonoBehaviour
 
     public event Action OnEnemyDied;
 
-    private float currentHP;
+    public float currentHP;
     private float nextAttackTime;
     private int attackCounter = 0;
     private bool isDead = false;
@@ -59,6 +59,12 @@ public class EnemyDummy : MonoBehaviour
     private Sprite[] customWalkFrames;
     private Sprite[] customAttackFrames;
     private Sprite[] customDieFrames;
+    private Sprite[] customLaserFrames;
+    private Sprite[] customPhaseTransFrames;
+    private Sprite[] customEnrageAttackFrames;
+    public bool isInvulnerable = false;
+    private float nextLaserTime = 0f;
+    private float nextRocketLungeTime = 0f;
     private bool useCustomSprites = false;
     private float walkAnimTimer = 0f;
     private float dieAnimTimer = 0f;
@@ -97,6 +103,9 @@ public class EnemyDummy : MonoBehaviour
 
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Walk", 118f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Attack", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Laser", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "PhaseTrans", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "EnrageAttack", 118f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Die", 118f);
     }
 
@@ -147,6 +156,15 @@ public class EnemyDummy : MonoBehaviour
     {
         currentHP = maxHP;
         baseGroundY = transform.position.y;
+
+        if (isLevel3Monster || visualType == "BioStalker" || visualType == "BioLasher" || visualType == "BioHulk" || visualType == "HiveInquisitor" || visualType == "VortexOmega")
+        {
+            isLevel3Monster = true;
+            if (baseGroundY < -3.05f || baseGroundY > -2.85f) baseGroundY = -2.95f;
+            transform.position = new Vector3(transform.position.x, baseGroundY, transform.position.z);
+            AlignColliderToGround(Level3MonsterAssetGenerator.GetDefaultColliderSize(visualType));
+        }
+
         if (sr == null) sr = GetComponent<SpriteRenderer>();
         if (anim == null) anim = GetComponent<Animator>();
         if (sr != null) originalColor = sr.color;
@@ -220,26 +238,43 @@ public class EnemyDummy : MonoBehaviour
     }
 
     /// <summary>
-    /// BLOQUE 5 (Issue #23): Configura los sprites y efectos exclusivos de los 3 monstruos
-    /// y 2 jefes biomecánicos del Nivel 3 (BioStalker, BioLasher, BioHulk, HiveInquisitor, VortexOmega).
+    /// Ajusta las dimensiones del BoxCollider2D y posiciona su offset tal que su base descanse
+    /// exactamente en y = 0 local (alineado con la suela del sprite a groundY = -2.95f global).
+    /// </summary>
+    public void AlignColliderToGround(Vector2 size)
+    {
+        BoxCollider2D box = GetComponent<BoxCollider2D>();
+        if (box == null) box = gameObject.AddComponent<BoxCollider2D>();
+        box.size = size;
+        box.offset = new Vector2(0f, size.y * 0.5f);
+        box.isTrigger = false;
+    }
+
+    /// <summary>
+    /// BLOQUE 5 (Issue #23): Configura los sprites y efectos exclusivos de los 4 monstruos
+    /// y jefes biomecánicos del Nivel 3 (BioStalker, BioLasher, BioHulk, HiveInquisitor, VortexOmega).
     /// </summary>
     public void SetupLevel3Visuals(string resourcePrefix)
     {
         visualType = resourcePrefix;
         isLevel3Monster = true;
+        baseGroundY = -2.95f;
         if (sr == null) sr = GetComponent<SpriteRenderer>();
         if (anim == null) anim = GetComponent<Animator>();
 
-        float ppu = 140f;
-        if (resourcePrefix == "BioStalker") ppu = 148f;
-        else if (resourcePrefix == "BioLasher") ppu = 140f;
-        else if (resourcePrefix == "BioHulk") ppu = 122f;
-        else if (resourcePrefix == "HiveInquisitor") ppu = 122f;
-        else if (resourcePrefix == "VortexOmega") ppu = 118f;
+        float ppu = Level3MonsterAssetGenerator.GetDefaultPPU(resourcePrefix);
+        Vector2 colSize = Level3MonsterAssetGenerator.GetDefaultColliderSize(resourcePrefix);
 
         customWalkFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Walk", ppu);
         customAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Attack", ppu);
         customDieFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Die", ppu);
+
+        if (resourcePrefix == "VortexOmega")
+        {
+            customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Laser", ppu);
+            customPhaseTransFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "PhaseTrans", ppu);
+            customEnrageAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "EnrageAttack", ppu);
+        }
 
         if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
         {
@@ -248,11 +283,14 @@ public class EnemyDummy : MonoBehaviour
             sr.sprite = customWalkFrames[0];
         }
 
-        // Si es el Mini-Jefe de Oleada 5 (HiveInquisitor), creamos sus 3 anillos psiónicos rotatorios
+        AlignColliderToGround(colSize);
+
+        // Si es HiveInquisitor, creamos sus anillos psiónicos rotatorios (3 para Mini-Jefe, 2 para regular)
         if (resourcePrefix == "HiveInquisitor" && psionicRings.Count == 0)
         {
+            int ringCount = isMiniBoss ? 3 : 2;
             Sprite ringSpr = Level3MonsterAssetGenerator.GetPsionicRingSprite();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < ringCount; i++)
             {
                 GameObject ringGo = new GameObject($"PsionicRing_{i}");
                 ringGo.transform.SetParent(transform, false);
@@ -266,6 +304,130 @@ public class EnemyDummy : MonoBehaviour
                 psionicRings.Add(ringGo.transform);
             }
         }
+    }
+
+    /// <summary>
+    /// Configura completamente un monstruo biomecánico del Nivel 3 según su arquetipo (0..3) o rol de jefe.
+    /// Incorpora rotación de 4 enemigos neón en oleadas 1-9, mini-jefe en oleada 5 y jefe en oleada 10.
+    /// </summary>
+    public void SetupLevel3Monster(int archetype, int wave = 1, bool boss = false, bool miniBoss = false)
+    {
+        isBoss = boss;
+        isMiniBoss = miniBoss;
+        baseGroundY = -2.95f;
+
+        if (boss)
+        {
+            enemyTitle = "Mecha Berserker VORTEX-OMEGA";
+            SetupLevel3Visuals("VortexOmega");
+            transform.localScale = Vector3.one * 1.68f;
+            attackRange = 2.65f;
+            attackRate = 0.85f;
+            moveSpeed = 1.25f; // Marcha mecánica pesada, firme y deliberada en Fase 1
+            maxHP = 3400f;
+            damage = 28f;
+            goldReward = 400;
+            expReward = 360;
+            currentHP = maxHP;
+            hasEnteredRagePhase = false;
+            isInvulnerable = false;
+            nextLaserTime = Time.time + 4.0f;
+            nextRocketLungeTime = Time.time + 6.5f;
+            return;
+        }
+
+        if (miniBoss)
+        {
+            enemyTitle = "Inquisidor Psiónico Supremo";
+            SetupLevel3Visuals("HiveInquisitor");
+            transform.localScale = Vector3.one * 1.52f;
+            moveSpeed = 1.35f;
+            attackRange = 6.80f; // Hechicero psiónico a media-larga distancia
+            attackRate = 0.40f;  // Cadencia táctica legible (un ataque cada ~2.5s - 3.2s)
+            maxHP = 1450f;
+            damage = 20f;
+            goldReward = 200;
+            expReward = 180;
+            currentHP = maxHP;
+            return;
+        }
+
+        int type = ((archetype % 4) + 4) % 4;
+        switch (type)
+        {
+            case 0:
+                // 1. Pantera Biomecánica Neón (BioStalker): velocidad máxima, tajo doble, agilidad depredadora
+                enemyTitle = "Pantera Biomecánica Neón";
+                SetupLevel3Visuals("BioStalker");
+                transform.localScale = Vector3.one * 1.05f;
+                moveSpeed = 2.75f;
+                attackRange = 1.50f;
+                attackRate = 1.15f;
+                maxHP = Mathf.RoundToInt(75f * Mathf.Pow(1.15f, Mathf.Max(0, wave - 1)));
+                damage = Mathf.RoundToInt(7f * Mathf.Pow(1.13f, Mathf.Max(0, wave - 1)));
+                break;
+
+            case 1:
+                // 2. Alienígena Neón Tentacular (BioLasher): levitación sinusoidal, látigos psiónicos a media distancia
+                enemyTitle = "Alienígena Neón Tentacular";
+                SetupLevel3Visuals("BioLasher");
+                transform.localScale = Vector3.one * 1.12f;
+                moveSpeed = 1.85f;
+                attackRange = 2.45f;
+                attackRate = 0.90f;
+                maxHP = Mathf.RoundToInt(90f * Mathf.Pow(1.15f, Mathf.Max(0, wave - 1)));
+                damage = Mathf.RoundToInt(9f * Mathf.Pow(1.13f, Mathf.Max(0, wave - 1)));
+                break;
+
+            case 2:
+                // 3. Coloso Blindado Neón (BioHulk): pesado, sacude suelo con pasos, aplastamiento telegrafiado masivo
+                enemyTitle = "Coloso Blindado Neón";
+                SetupLevel3Visuals("BioHulk");
+                transform.localScale = Vector3.one * 1.28f;
+                moveSpeed = 1.15f; // Tanque imparable de marcha pesada
+                attackRange = 2.40f; // Rango suficiente para golpear sin colisionar con la caja de Kael
+                attackRate = 0.65f;
+                maxHP = Mathf.RoundToInt(150f * Mathf.Pow(1.16f, Mathf.Max(0, wave - 1)));
+                damage = Mathf.RoundToInt(13f * Mathf.Pow(1.14f, Mathf.Max(0, wave - 1)));
+                break;
+
+            case 3:
+                // 4. Inquisidor Psiónico Neón (HiveInquisitor regular): hechicero de energía oscura, bombardeo a distancia
+                enemyTitle = "Inquisidor Psiónico Neón";
+                SetupLevel3Visuals("HiveInquisitor");
+                transform.localScale = Vector3.one * 1.18f;
+                moveSpeed = 1.30f;
+                attackRange = 6.20f; // Combate a distancia con orbes y rayos psiónicos
+                attackRate = 0.35f;  // Ataque telegrafiado cada ~2.8s - 3.5s
+                maxHP = Mathf.RoundToInt(110f * Mathf.Pow(1.15f, Mathf.Max(0, wave - 1)));
+                damage = Mathf.RoundToInt(11f * Mathf.Pow(1.13f, Mathf.Max(0, wave - 1)));
+                break;
+        }
+
+        goldReward = Mathf.RoundToInt(12f + (wave * 3.5f));
+        expReward = 16 + (wave * 4);
+        currentHP = maxHP;
+    }
+
+    /// <summary>
+    /// Sobrecarga para asignar arquetipo consultando la oleada activa de WaveSpawner.
+    /// </summary>
+    public void SetupLevel3Monster(int archetype, bool boss, bool miniBoss)
+    {
+        WaveSpawner ws = FindAnyObjectByType<WaveSpawner>();
+        int wave = (ws != null) ? Mathf.Max(1, ws.currentWave) : 1;
+        SetupLevel3Monster(archetype, wave, boss, miniBoss);
+    }
+
+    /// <summary>
+    /// Sobrecarga para asignar visuales y arquetipo directamente por nombre de prefijo.
+    /// </summary>
+    public void SetupLevel3Monster(string prefix, bool boss = false, bool miniBoss = false)
+    {
+        isBoss = boss;
+        isMiniBoss = miniBoss;
+        enemyTitle = Level3MonsterAssetGenerator.GetMonsterDisplayName(prefix);
+        SetupLevel3Visuals(prefix);
     }
 
     /// <summary>
@@ -355,7 +517,13 @@ public class EnemyDummy : MonoBehaviour
         float distToKael = Mathf.Abs(diffX);
         float dirToKael = (Mathf.Abs(diffX) > 0.02f) ? Mathf.Sign(diffX) : -1f;
 
-        if (sr != null && !isPlayingAttackAnim)
+        if (visualType == "VortexOmega")
+        {
+            UpdateVortexOmegaBoss(distToKael, dirToKael);
+            return;
+        }
+
+        if (sr != null && !isPlayingAttackAnim && !isChargingHeavy)
         {
             sr.flipX = (dirToKael > 0f);
         }
@@ -371,9 +539,9 @@ public class EnemyDummy : MonoBehaviour
                 hulkStepShakeTimer -= Time.deltaTime;
                 if (hulkStepShakeTimer <= 0f)
                 {
-                    hulkStepShakeTimer = 0.55f;
+                    hulkStepShakeTimer = 0.65f;
                     if (CombatVFXManager.Instance != null)
-                        CombatVFXManager.Instance.ShakeCamera(0.07f, 0.03f);
+                        CombatVFXManager.Instance.ShakeCamera(0.06f, 0.03f);
                 }
             }
         }
@@ -383,26 +551,216 @@ public class EnemyDummy : MonoBehaviour
 
             if (!isChargingHeavy && !isPlayingAttackAnim && Time.time >= nextAttackTime)
             {
-                attackCounter++;
-                bool triggerHeavy = ((isMiniBoss || isBoss) && attackCounter % 3 == 0) || (visualType == "BioHulk" && attackCounter % 2 == 0);
-                if (triggerHeavy)
+                if (visualType == "HiveInquisitor")
                 {
-                    StartCoroutine(TelegraphedHeavyAttack());
+                    StartCoroutine(HiveInquisitorPsionicAttackRoutine());
                 }
-                else if (useCustomSprites)
+                else if (visualType == "BioHulk")
                 {
-                    StartCoroutine(PlayVisibleAttackRoutine());
+                    attackCounter++;
+                    if (attackCounter % 2 == 0)
+                        StartCoroutine(TelegraphedHeavyAttack());
+                    else
+                        StartCoroutine(BioHulkGroundSmashRoutine());
                 }
                 else
                 {
-                    nextAttackTime = Time.time + (1f / attackRate);
-                    if (PlayerStats.Instance != null)
+                    attackCounter++;
+                    bool triggerHeavy = ((isMiniBoss || isBoss) && attackCounter % 3 == 0);
+                    if (triggerHeavy)
                     {
-                        PlayerStats.Instance.TakeDamage(damage, this);
+                        StartCoroutine(TelegraphedHeavyAttack());
+                    }
+                    else if (useCustomSprites)
+                    {
+                        StartCoroutine(PlayVisibleAttackRoutine());
+                    }
+                    else
+                    {
+                        nextAttackTime = Time.time + (1f / attackRate);
+                        if (PlayerStats.Instance != null)
+                        {
+                            PlayerStats.Instance.TakeDamage(damage, this);
+                        }
                     }
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Ataque a distancia del Inquisidor Psiónico Vorst: canaliza energía oscura, acelera sus anillos psiónicos,
+    /// genera arcos eléctricos en su mano y dispara rayos o proyectiles psiónicos de largo alcance.
+    /// </summary>
+    private IEnumerator HiveInquisitorPsionicAttackRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            string warn = isMiniBoss ? "⚠ ¡VÓRTICE PSIÓNICO SUPREMO!" : "⚠ ¡DESCARGA PSIÓNICA VORST!";
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, warn, new Color(0.85f, 0.25f, 1f), 19, 0.9f);
+        }
+
+        Vector3 handPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.45f);
+
+        // Cuadros 0, 1, 2: Concentración de energía psiónica
+        int totalFrames = (customAttackFrames != null && customAttackFrames.Length >= 8) ? 8 : (customAttackFrames != null ? customAttackFrames.Length : 0);
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
+                sr.sprite = customAttackFrames[f];
+
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(handPos, new Color(0.80f, 0.15f, 1f));
+                CombatVFXManager.Instance.SpawnHitSparks(handPos, false, 3);
+            }
+            yield return new WaitForSeconds(0.16f);
+        }
+
+        // Cuadro 3: Disparo psiónico a distancia
+        if (customAttackFrames != null && customAttackFrames.Length > 3 && customAttackFrames[3] != null)
+            sr.sprite = customAttackFrames[3];
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayBossAlert();
+
+        float beamLength = 8.5f;
+        if (isMiniBoss)
+        {
+            // Mini-Jefe: Rayo continuo psiónico de plasma violeta a distancia
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnBossLaserBeam(handPos, dirToKael * beamLength, 0.50f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(handPos, new Color(0.75f, 0.15f, 1f), 3.2f);
+                CombatVFXManager.Instance.ShakeCamera(0.28f, 0.18f);
+                CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.65f, 0.15f, 0.95f), 0.35f);
+            }
+        }
+        else
+        {
+            // Inquisidor Regular: Disparo de 3 ondas/orbes psiónicos con arcos eléctricos
+            if (CombatVFXManager.Instance != null)
+            {
+                for (int p = 1; p <= 3; p++)
+                {
+                    Vector3 burstPos = handPos + Vector3.right * (dirToKael * p * 1.9f);
+                    CombatVFXManager.Instance.SpawnElectricArc(burstPos, new Color(0.85f, 0.20f, 1f));
+                    CombatVFXManager.Instance.SpawnShockwaveRing(burstPos, new Color(0.80f, 0.15f, 0.95f), 1.6f + p * 0.4f);
+                }
+                CombatVFXManager.Instance.ShakeCamera(0.18f, 0.12f);
+            }
+        }
+
+        // Impacto a Kael si está en el sector frontal del ataque
+        if (kaelTarget != null)
+        {
+            float diffX = kaelTarget.position.x - transform.position.x;
+            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+            float dist = Mathf.Abs(diffX);
+
+            if (isInFront && dist <= beamLength)
+            {
+                if (PlayerStats.Instance != null)
+                {
+                    float dmg = isMiniBoss ? damage * 1.25f : damage;
+                    PlayerStats.Instance.TakeDamage(dmg, this);
+                }
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(0.26f);
+
+        // Cuadros 4..7: Recuperación suave de la postura
+        for (int f = 4; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
+                sr.sprite = customAttackFrames[f];
+            yield return new WaitForSeconds(0.12f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.5f, 3.4f);
+        isPlayingAttackAnim = false;
+    }
+
+    /// <summary>
+    /// Ataque de Impacto Sísmico del Coloso de Crisálida (BioHulk): alza ambos puños, sobrecarga
+    /// sus tanques dorsales y estampa el suelo levantando ondas sísmicas púrpuras y verdes.
+    /// </summary>
+    private IEnumerator BioHulkGroundSmashRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        int totalFrames = (customAttackFrames != null && customAttackFrames.Length >= 8) ? 8 : (customAttackFrames != null ? customAttackFrames.Length : 0);
+
+        // Cuadros 0, 1, 2: Alza los brazos y los tanques brillan
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
+                sr.sprite = customAttackFrames[f];
+
+            if (f == 1 && CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 1.5f, new Color(0.15f, 0.95f, 0.35f));
+            }
+            yield return new WaitForSeconds(0.16f);
+        }
+
+        // Cuadro 3: IMPACTO BRUTAL CONTRA EL SUELO
+        if (customAttackFrames != null && customAttackFrames.Length > 3 && customAttackFrames[3] != null)
+            sr.sprite = customAttackFrames[3];
+
+        transform.position = new Vector3(baseX + dirToKael * 0.35f, baseGroundY, transform.position.z);
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayEnemyAttack();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            Vector3 impactPos = transform.position + Vector3.right * (dirToKael * 0.7f) + Vector3.up * 0.1f;
+            CombatVFXManager.Instance.SpawnShockwaveRing(impactPos, new Color(0.75f, 0.15f, 0.95f), 2.9f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(impactPos, new Color(0.20f, 0.95f, 0.40f), 1.9f);
+            CombatVFXManager.Instance.ShakeCamera(0.32f, 0.22f);
+            CombatVFXManager.Instance.SpawnHitSparks(impactPos, true, 8);
+        }
+
+        bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.65f);
+        if (inReach && PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.TakeDamage(damage * 1.35f, this);
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        // Cuadros 4..7: Recuperación pesada
+        for (int f = 4; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
+                sr.sprite = customAttackFrames[f];
+            yield return new WaitForSeconds(0.14f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(1.8f, 2.6f);
+        isPlayingAttackAnim = false;
     }
 
     // Secuencia de ataque fluida en 8 cuadros (incluye salto parabólico en BioStalker y latigazo en BioLasher)
@@ -450,11 +808,400 @@ public class EnemyDummy : MonoBehaviour
                     CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
             }
 
-            yield return new WaitForSeconds(0.082f);
+            float frameWait = (visualType == "VortexOmega") ? 0.13f : 0.088f;
+            yield return new WaitForSeconds(frameWait);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
         nextAttackTime = Time.time + (0.50f / attackRate);
+        isPlayingAttackAnim = false;
+    }
+
+    // =========================================================================
+    // BLOQUE 5 (Issue #23 & Milestone M3): MÁQUINA DE ESTADOS Y COMBATE MULTI-FASE VORTEX-OMEGA
+    // =========================================================================
+
+    private void UpdateVortexOmegaBoss(float distToKael, float dirToKael)
+    {
+        if (isInvulnerable || isPlayingAttackAnim || isChargingHeavy) return;
+
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (hasEnteredRagePhase)
+        {
+            // FASE 2: COMBATE DE FURIA BIOMECÁNICA (50% -> 0% HP)
+            if (distToKael > attackRange)
+            {
+                if (distToKael <= 5.5f && Time.time >= nextRocketLungeTime)
+                {
+                    StartCoroutine(VortexOmegaRocketPunchLungeRoutine());
+                }
+                else if (distToKael <= 7.5f && Time.time >= nextLaserTime)
+                {
+                    StartCoroutine(VortexOmegaChestLaserRoutine(true));
+                }
+                else
+                {
+                    transform.Translate(new Vector2(dirToKael, 0f) * (moveSpeed * Time.deltaTime), Space.World);
+                }
+            }
+            else
+            {
+                if (Time.time >= nextAttackTime)
+                {
+                    attackCounter++;
+                    if (attackCounter % 3 == 0)
+                    {
+                        StartCoroutine(VortexOmegaRocketPunchLungeRoutine());
+                    }
+                    else
+                    {
+                        StartCoroutine(VortexOmegaEnragedDoubleSlashRoutine());
+                    }
+                }
+            }
+        }
+        else
+        {
+            // FASE 1: COMBATE TÁCTICO MECHA (100% -> 50% HP)
+            if (distToKael > attackRange)
+            {
+                if (distToKael <= 7.5f && Time.time >= nextLaserTime)
+                {
+                    StartCoroutine(VortexOmegaChestLaserRoutine(false));
+                }
+                else
+                {
+                    transform.Translate(new Vector2(dirToKael, 0f) * (moveSpeed * Time.deltaTime), Space.World);
+                }
+            }
+            else
+            {
+                if (Time.time >= nextAttackTime)
+                {
+                    attackCounter++;
+                    if (attackCounter % 3 == 0)
+                    {
+                        StartCoroutine(TelegraphedHeavyAttack());
+                    }
+                    else
+                    {
+                        StartCoroutine(PlayVisibleAttackRoutine());
+                    }
+                }
+            }
+        }
+    }
+
+    private IEnumerator VortexOmegaChestLaserRoutine(bool isEnraged)
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        Vector3 chestPos = transform.position + Vector3.up * 1.40f + Vector3.right * (dirToKael * 0.45f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            string txt = isEnraged ? "⚠ ¡CAÑÓN LÁSER PESADO OVERCLOCK!" : "⚠ ¡CAÑÓN LÁSER DE PECHO OMEGA!";
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.1f, txt, new Color(1f, 0.15f, 0.45f), 22, 1.1f);
+        }
+        if (LevelAudioManager.Instance != null)
+        {
+            LevelAudioManager.Instance.PlayBossAlert();
+        }
+
+        int totalFrames = (customLaserFrames != null && customLaserFrames.Length >= 8) ? 8 : (customLaserFrames != null ? customLaserFrames.Length : 0);
+        float chargeDelay = isEnraged ? 0.14f : 0.18f;
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isInvulnerable) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
+
+            if (CombatVFXManager.Instance != null)
+                CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(1f, 0.20f, 0.55f));
+
+            yield return new WaitForSeconds(chargeDelay);
+        }
+
+        float beamDuration = isEnraged ? 0.60f : 0.50f;
+        float beamLength = 8.5f;
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, beamDuration);
+            CombatVFXManager.Instance.ShakeCamera(0.38f, 0.22f);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.15f, 0.45f), 0.42f);
+        }
+        if (LevelAudioManager.Instance != null)
+        {
+            LevelAudioManager.Instance.PlayUltimateLaser();
+        }
+
+        float minX = Mathf.Min(chestPos.x, chestPos.x + dirToKael * beamLength);
+        float maxX = Mathf.Max(chestPos.x, chestPos.x + dirToKael * beamLength);
+        if (kaelTarget != null)
+        {
+            float kx = kaelTarget.position.x;
+            float ky = kaelTarget.position.y;
+            if (kx >= minX && kx <= maxX && ky >= chestPos.y - 1.6f && ky <= chestPos.y + 0.8f)
+            {
+                float laserDmg = damage * (isEnraged ? 1.45f : 1.20f);
+                if (PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(laserDmg, this);
+                }
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
+                }
+            }
+        }
+
+        for (int f = 3; f <= 5; f++)
+        {
+            if (isDead) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
+            yield return new WaitForSeconds(0.14f);
+        }
+
+        for (int f = 6; f < totalFrames; f++)
+        {
+            if (isDead) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
+            yield return new WaitForSeconds(0.12f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextLaserTime = Time.time + (isEnraged ? 3.2f : 4.6f);
+        nextAttackTime = Time.time + (0.55f / attackRate);
+        isPlayingAttackAnim = false;
+    }
+
+    private IEnumerator VortexOmegaPhaseTransitionRoutine()
+    {
+        hasEnteredRagePhase = true;
+        isInvulnerable = true;
+        isPlayingAttackAnim = true;
+        isChargingHeavy = false;
+        stunTimer = 0f;
+
+        float baseX = transform.position.x;
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayBossAlert();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.TriggerBossWarning(
+                "⚠ ¡SOBRECARGA DEL NÚCLEO: FASE 2 MECHA BERSERKER! ⚠",
+                "VORTEX-OMEGA ENTRA EN ESTADO DE FURIA CRÍTICA (+25% VELOCIDAD)",
+                2.2f
+            );
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.15f, 0.45f), 0.75f);
+            CombatVFXManager.Instance.ShakeCamera(0.65f, 0.30f);
+        }
+
+        int totalFrames = (customPhaseTransFrames != null && customPhaseTransFrames.Length >= 8) ? 8 : (customPhaseTransFrames != null ? customPhaseTransFrames.Length : 0);
+        for (int f = 0; f < totalFrames; f++)
+        {
+            if (isDead) yield break;
+
+            if (customPhaseTransFrames != null && f < customPhaseTransFrames.Length && customPhaseTransFrames[f] != null)
+                sr.sprite = customPhaseTransFrames[f];
+
+            if (sr != null)
+                sr.color = (f % 2 == 0) ? Color.white : new Color(1f, 0.35f, 0.65f);
+
+            if (CombatVFXManager.Instance != null)
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * UnityEngine.Random.Range(0.4f, 1.8f), new Color(1f, 0.2f, 0.5f));
+
+            if (f == 4 && CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(1.00f, 0.15f, 0.45f), 4.5f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.15f, 0.95f, 1.00f), 3.2f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(1.00f, 0.85f, 0.20f), 2.0f);
+                CombatVFXManager.Instance.SpawnEnergyPillar(transform.position + Vector3.left * 1.8f, new Color(1f, 0.20f, 0.55f));
+                CombatVFXManager.Instance.SpawnEnergyPillar(transform.position + Vector3.right * 1.8f, new Color(0f, 0.95f, 1f));
+                CombatVFXManager.Instance.SpawnHitSparks(transform.position + Vector3.up * 1.1f, true, 16);
+                CombatVFXManager.Instance.ShakeCamera(0.55f, 0.25f);
+                CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.2f, 0.5f), 0.60f);
+            }
+
+            yield return new WaitForSeconds(0.18f);
+        }
+
+        WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
+        if (spawner != null)
+        {
+            spawner.SpawnVortexOmegaEscorts(transform.position);
+        }
+
+        moveSpeed = 2.00f; // Furia biomecánica en Fase 2
+        attackRate = 1.35f;
+        damage = 32f;
+        originalColor = new Color(1f, 0.70f, 0.85f, 1f);
+        if (sr != null) sr.color = originalColor;
+
+        yield return new WaitForSeconds(0.20f);
+
+        isInvulnerable = false;
+        isPlayingAttackAnim = false;
+        nextAttackTime = Time.time + 0.35f;
+        nextLaserTime = Time.time + 2.5f;
+        nextRocketLungeTime = Time.time + 3.0f;
+    }
+
+    private IEnumerator VortexOmegaEnragedDoubleSlashRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        int totalFrames = (customEnrageAttackFrames != null && customEnrageAttackFrames.Length >= 8) ? 8 : (customEnrageAttackFrames != null ? customEnrageAttackFrames.Length : 0);
+        float lungeMax = 0.58f;
+
+        for (int f = 0; f < totalFrames; f++)
+        {
+            if (isDead || isStunned)
+            {
+                isPlayingAttackAnim = false;
+                yield break;
+            }
+
+            if (customEnrageAttackFrames != null && f < customEnrageAttackFrames.Length && customEnrageAttackFrames[f] != null)
+                sr.sprite = customEnrageAttackFrames[f];
+
+            float curve = Mathf.Sin((f / (float)Mathf.Max(1, totalFrames - 1)) * Mathf.PI);
+            transform.position = new Vector3(baseX + dirToKael * lungeMax * curve, baseGroundY, transform.position.z);
+
+            if (f == 2)
+            {
+                if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.80f);
+                if (inReach && PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(damage * 0.75f, this);
+                }
+                if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 5);
+                }
+            }
+            else if (f == 5)
+            {
+                if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.95f);
+                if (inReach && PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(damage * 0.85f, this);
+                }
+                if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 7);
+                    CombatVFXManager.Instance.ShakeCamera(0.22f, 0.14f);
+                }
+            }
+
+            yield return new WaitForSeconds(0.13f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + (0.75f / attackRate);
+        isPlayingAttackAnim = false;
+    }
+
+    private IEnumerator VortexOmegaRocketPunchLungeRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.1f,
+                "⚠ ¡EMBESTIDA PUÑO COHETE!",
+                new Color(1f, 0.40f, 0.12f),
+                22,
+                0.9f
+            );
+        }
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayBossAlert();
+
+        float elapsed = 0f;
+        while (elapsed < 0.45f)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (sr != null)
+                sr.color = (Mathf.FloorToInt(elapsed * 14f) % 2 == 0) ? new Color(1f, 0.45f, 0.15f) : originalColor;
+
+            if (customEnrageAttackFrames != null && customEnrageAttackFrames.Length > 1 && customEnrageAttackFrames[1] != null)
+                sr.sprite = customEnrageAttackFrames[1];
+
+            if (CombatVFXManager.Instance != null)
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 1.0f - Vector3.right * (dirToKael * 0.7f), new Color(0f, 0.95f, 1f));
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        if (sr != null) sr.color = originalColor;
+
+        float lungeDist = 2.25f;
+        float lungeDuration = 0.22f;
+        float lt = 0f;
+        Vector3 startPos = transform.position;
+        Vector3 targetPos = new Vector3(baseX + dirToKael * lungeDist, baseGroundY, transform.position.z);
+
+        if (customEnrageAttackFrames != null && customEnrageAttackFrames.Length > 3 && customEnrageAttackFrames[3] != null)
+            sr.sprite = customEnrageAttackFrames[3];
+
+        while (lt < lungeDuration)
+        {
+            if (isDead) { isPlayingAttackAnim = false; yield break; }
+            float p = lt / lungeDuration;
+            transform.position = Vector3.Lerp(startPos, targetPos, p);
+            lt += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = targetPos;
+
+        if (customEnrageAttackFrames != null && customEnrageAttackFrames.Length > 4 && customEnrageAttackFrames[4] != null)
+            sr.sprite = customEnrageAttackFrames[4];
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayEnemyAttack();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.ShakeCamera(0.42f, 0.26f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.8f, new Color(1f, 0.35f, 0.15f), 3.4f);
+        }
+
+        bool inImpactReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 1.25f);
+        if (inImpactReach && PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.TakeDamage(damage * 1.85f, this);
+            if (CombatVFXManager.Instance != null && kaelTarget != null)
+            {
+                CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+            }
+        }
+
+        yield return new WaitForSeconds(0.35f);
+
+        nextAttackTime = Time.time + (0.75f / attackRate);
+        nextRocketLungeTime = Time.time + 4.2f;
         isPlayingAttackAnim = false;
     }
 
@@ -464,6 +1211,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (isDead)
         {
+            if (isBoss) return;
             transform.localRotation = Quaternion.identity;
             dieAnimTimer += Time.deltaTime * 8.5f;
             if (customDieFrames != null && customDieFrames.Length > 0)
@@ -474,27 +1222,61 @@ public class EnemyDummy : MonoBehaviour
             return;
         }
 
-        if (isPlayingAttackAnim) return;
-
-        walkAnimTimer += Time.deltaTime * 10.5f;
-        if (customWalkFrames != null && customWalkFrames.Length > 0)
-        {
-            int frame = Mathf.FloorToInt(walkAnimTimer) % customWalkFrames.Length;
-            if (customWalkFrames[frame] != null) sr.sprite = customWalkFrames[frame];
-        }
+        if (isPlayingAttackAnim || isChargingHeavy) return;
 
         transform.localRotation = Quaternion.identity;
         float distToKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
+        bool isMoving = (distToKael > attackRange);
+
+        if (isMoving)
+        {
+            float animSpeed = 8.5f;
+            if (visualType == "VortexOmega")
+            {
+                animSpeed = hasEnteredRagePhase ? 6.5f : 5.0f;
+            }
+            else if (visualType == "BioHulk")
+            {
+                animSpeed = 5.8f;
+            }
+            else if (visualType == "HiveInquisitor")
+            {
+                animSpeed = 5.0f;
+            }
+            else if (visualType == "BioStalker")
+            {
+                animSpeed = 10.5f;
+            }
+            else if (visualType == "BioLasher")
+            {
+                animSpeed = 7.5f;
+            }
+
+            walkAnimTimer += Time.deltaTime * animSpeed;
+            if (customWalkFrames != null && customWalkFrames.Length > 0)
+            {
+                int frame = Mathf.FloorToInt(walkAnimTimer) % customWalkFrames.Length;
+                if (customWalkFrames[frame] != null) sr.sprite = customWalkFrames[frame];
+            }
+        }
+        else
+        {
+            // En rango de ataque esperando cooldown: postura firme de guardia sin correr en el sitio
+            if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
+            {
+                sr.sprite = customWalkFrames[0];
+            }
+        }
 
         // Levitación sinusoidal para Archon, BioLasher y HiveInquisitor
         bool isLevitator = (visualType == "Archon" || visualType == "BioLasher" || visualType == "HiveInquisitor");
-        if (!isChargingHeavy && isLevitator)
+        if (isLevitator)
         {
             float amp = (visualType == "BioLasher") ? 0.22f : 0.14f;
-            float hoverY = Mathf.Sin(walkAnimTimer * 0.6f) * amp + 0.14f;
+            float hoverY = Mathf.Sin(Time.time * 3.5f) * amp + amp;
             transform.position = new Vector3(transform.position.x, baseGroundY + hoverY, transform.position.z);
         }
-        else if (distToKael > attackRange && !isChargingHeavy)
+        else
         {
             transform.position = new Vector3(transform.position.x, baseGroundY, transform.position.z);
         }
@@ -503,6 +1285,7 @@ public class EnemyDummy : MonoBehaviour
     IEnumerator TelegraphedHeavyAttack()
     {
         isChargingHeavy = true;
+        isPlayingAttackAnim = true;
         transform.localRotation = Quaternion.identity;
 
         if (CombatVFXManager.Instance != null)
@@ -523,6 +1306,7 @@ public class EnemyDummy : MonoBehaviour
             {
                 if (sr != null) sr.color = originalColor;
                 isChargingHeavy = false;
+                isPlayingAttackAnim = false;
                 yield break;
             }
             if (sr != null)
@@ -576,20 +1360,24 @@ public class EnemyDummy : MonoBehaviour
 
         nextAttackTime = Time.time + (1.1f / attackRate);
         isChargingHeavy = false;
+        isPlayingAttackAnim = false;
     }
 
     public void TakeDamage(float dmg, bool isCrit = false, float knockback = 0f)
     {
-        if (isDead) return;
+        if (isDead || isInvulnerable) return;
+
+        // BLOQUE 5 (Issue #23 & Milestone M3): Transición de Fase 2 de VORTEX-OMEGA al 50% de HP
+        if (visualType == "VortexOmega" && !hasEnteredRagePhase && (currentHP - dmg) <= (maxHP * 0.50f))
+        {
+            currentHP = maxHP * 0.50f;
+            if (sr != null && !isChargingHeavy) StartCoroutine(HitFlash());
+            StartCoroutine(VortexOmegaPhaseTransitionRoutine());
+            return;
+        }
 
         currentHP = Mathf.Max(0f, currentHP - dmg);
         if (sr != null && !isChargingHeavy) StartCoroutine(HitFlash());
-
-        // BLOQUE 5: Fase de Furia Biológica de VORTEX-OMEGA al bajar del 45% de vida
-        if (visualType == "VortexOmega" && !hasEnteredRagePhase && currentHP > 0f && (currentHP / maxHP) <= 0.45f)
-        {
-            TriggerVortexOmegaRagePhase();
-        }
 
         if (knockback > 0f && !isPlayingAttackAnim)
         {
@@ -613,36 +1401,6 @@ public class EnemyDummy : MonoBehaviour
                 StartCoroutine(BossDramaticDeathRoutine());
             else
                 DieNormal();
-        }
-    }
-
-    private void TriggerVortexOmegaRagePhase()
-    {
-        hasEnteredRagePhase = true;
-        moveSpeed *= 1.25f;
-        attackRate *= 1.25f;
-        originalColor = new Color(1f, 0.65f, 0.85f, 1f);
-        if (sr != null) sr.color = originalColor;
-
-        if (CombatVFXManager.Instance != null)
-        {
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.15f, 0.45f), 0.45f);
-            CombatVFXManager.Instance.ShakeCamera(0.45f, 0.22f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 1.1f, new Color(1f, 0.15f, 0.45f), 3.5f);
-            CombatVFXManager.Instance.SpawnFloatingText(
-                transform.position + Vector3.up * 2.1f,
-                "🔥 ¡FURIA BIOLÓGICA OMEGA! +25% VELOCIDAD 🔥",
-                new Color(1f, 0.25f, 0.55f),
-                24,
-                1.6f
-            );
-        }
-
-        // Invocar 2 Acechadores Quimera (Bio-Stalkers) de escolta
-        WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
-        if (spawner != null)
-        {
-            spawner.SpawnVortexOmegaEscorts(transform.position);
         }
     }
 
@@ -688,12 +1446,123 @@ public class EnemyDummy : MonoBehaviour
     {
         isDead = true;
         dieAnimTimer = 0f;
+        isPlayingAttackAnim = true;
         transform.localRotation = Quaternion.identity;
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 
         if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", false);
 
+        if (visualType == "VortexOmega")
+        {
+            // Catastrophic Core Meltdown Routine for VortexOmega
+            Time.timeScale = 0.28f;
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.TriggerScreenFlash(Color.white, 0.85f);
+                CombatVFXManager.Instance.ShakeCamera(2.5f, 0.28f);
+                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.0f, "☠ ¡COLAPSO CATASTRÓFICO DE NÚCLEO! ☠", new Color(1f, 0.2f, 0.35f), 26, 2.2f);
+            }
+            if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+            Vector3 basePos = new Vector3(transform.position.x, baseGroundY, transform.position.z);
+            float facingDir = (sr != null && sr.flipX) ? 1f : -1f;
+
+            // 4 sequential localized detonations across right shoulder, left vent, core reactor blowout, and ground collapse mapped to customDieFrames[0..4]
+            // Burst 1: Right Shoulder / Upper Arm
+            if (customDieFrames != null && customDieFrames.Length > 1 && customDieFrames[1] != null)
+                sr.sprite = customDieFrames[1];
+            Vector3 burst1 = basePos + new Vector3(facingDir * 0.5f, 1.3f, 0f);
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnBossExplosionBurst(burst1);
+                CombatVFXManager.Instance.SpawnShockwaveRing(burst1, Color.cyan, 2.2f);
+                CombatVFXManager.Instance.ShakeCamera(0.35f, 0.16f);
+            }
+            yield return new WaitForSecondsRealtime(0.45f);
+
+            // Burst 2: Left Exhaust Flank
+            if (customDieFrames != null && customDieFrames.Length > 2 && customDieFrames[2] != null)
+                sr.sprite = customDieFrames[2];
+            Vector3 burst2 = basePos + new Vector3(-facingDir * 0.45f, 0.85f, 0f);
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnBossExplosionBurst(burst2);
+                CombatVFXManager.Instance.SpawnShockwaveRing(burst2, new Color(1f, 0.2f, 0.55f), 2.6f);
+                CombatVFXManager.Instance.SpawnElectricArc(burst2, new Color(0.2f, 0.95f, 1f));
+                CombatVFXManager.Instance.ShakeCamera(0.40f, 0.20f);
+            }
+            yield return new WaitForSecondsRealtime(0.45f);
+
+            // Burst 3: Central Torso Core Reactor Blowout
+            if (customDieFrames != null && customDieFrames.Length > 3 && customDieFrames[3] != null)
+                sr.sprite = customDieFrames[3];
+            Vector3 burst3 = basePos + new Vector3(0f, 1.05f, 0f);
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.35f, 0.1f), 0.60f);
+                CombatVFXManager.Instance.SpawnBossExplosionBurst(burst3);
+                CombatVFXManager.Instance.SpawnHitSparks(burst3, true, 18);
+                CombatVFXManager.Instance.ShakeCamera(0.50f, 0.25f);
+            }
+            yield return new WaitForSecondsRealtime(0.45f);
+
+            // Burst 4: Ground Impact & Full Chassis Collapse
+            if (customDieFrames != null && customDieFrames.Length > 4 && customDieFrames[4] != null)
+                sr.sprite = customDieFrames[4];
+            Vector3 burst4 = basePos + Vector3.up * 0.4f;
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.95f, 0.70f), 0.75f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(burst4, new Color(1f, 0.85f, 0.2f), 4.8f);
+                CombatVFXManager.Instance.SpawnEnergyPillar(basePos + Vector3.left * 1.8f, new Color(1f, 0.2f, 0.55f));
+                CombatVFXManager.Instance.SpawnEnergyPillar(basePos + Vector3.right * 1.8f, new Color(0f, 0.95f, 1f));
+                CombatVFXManager.Instance.SpawnHitSparks(burst4, true, 24);
+                CombatVFXManager.Instance.ShakeCamera(0.85f, 0.35f);
+            }
+            if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyDie();
+            yield return new WaitForSecondsRealtime(0.50f);
+
+            // Time restoration & permanent settle into customDieFrames[7] resting stably at floor baseline y = -2.95f
+            Time.timeScale = 1.0f;
+            if (customDieFrames != null && customDieFrames.Length > 7 && customDieFrames[7] != null)
+            {
+                sr.sprite = customDieFrames[7];
+            }
+            transform.position = basePos;
+            if (sr != null) sr.color = new Color(0.45f, 0.40f, 0.42f, 0.95f); // Charred metal tint
+
+            int finalGold = goldReward;
+            if (PlayerStats.Instance != null)
+            {
+                finalGold = Mathf.RoundToInt(goldReward * PlayerStats.Instance.goldMultiplier);
+                PlayerStats.Instance.AddRewards(goldReward, expReward);
+            }
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnLootDrop(transform.position, finalGold, expReward, true);
+                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, "★ VORTEX-OMEGA ANIQUILADO ★", new Color(1f, 0.85f, 0.2f), 26, 2.5f);
+            }
+
+            // Smoldering Wreckage Hold: subtle rising embers for 1.5 seconds
+            float holdTime = 0f;
+            while (holdTime < 1.5f)
+            {
+                if (CombatVFXManager.Instance != null && UnityEngine.Random.value > 0.4f)
+                {
+                    CombatVFXManager.Instance.SpawnElectricArc(basePos + new Vector3(UnityEngine.Random.Range(-0.6f, 0.6f), UnityEngine.Random.Range(0.2f, 0.6f), 0f), new Color(1f, 0.4f, 0.1f));
+                }
+                holdTime += 0.3f;
+                yield return new WaitForSeconds(0.3f);
+            }
+
+            // Trigger completion without destroying the smoldering chassis
+            OnEnemyDied?.Invoke();
+            this.enabled = false;
+            yield break;
+        }
+
+        // Generic boss death routine fallback (e.g. Level 2 Boss)
         if (LevelAudioManager.Instance != null)
             LevelAudioManager.Instance.PlayEnemyDie();
 
@@ -704,12 +1573,12 @@ public class EnemyDummy : MonoBehaviour
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.5f, $"¡{enemyTitle.ToUpper()} ABATIDO!", Color.cyan, 26, 1.5f);
         }
 
-        Vector3 basePos = new Vector3(transform.position.x, baseGroundY, transform.position.z);
+        Vector3 genericBasePos = new Vector3(transform.position.x, baseGroundY, transform.position.z);
 
         for (int i = 0; i < 4; i++)
         {
             if (sr != null) sr.color = (i % 2 == 0) ? Color.white : new Color(1f, 0.2f, 0.3f);
-            transform.position = basePos + (Vector3)UnityEngine.Random.insideUnitCircle * 0.25f;
+            transform.position = genericBasePos + (Vector3)UnityEngine.Random.insideUnitCircle * 0.25f;
 
             if (CombatVFXManager.Instance != null)
             {
@@ -719,19 +1588,19 @@ public class EnemyDummy : MonoBehaviour
         }
 
         Time.timeScale = 1f;
-        transform.position = basePos;
+        transform.position = genericBasePos;
         if (sr != null) sr.color = originalColor;
 
-        int finalGold = goldReward;
+        int genGold = goldReward;
         if (PlayerStats.Instance != null)
         {
-            finalGold = Mathf.RoundToInt(goldReward * PlayerStats.Instance.goldMultiplier);
+            genGold = Mathf.RoundToInt(goldReward * PlayerStats.Instance.goldMultiplier);
             PlayerStats.Instance.AddRewards(goldReward, expReward);
         }
 
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.SpawnLootDrop(transform.position, finalGold, expReward, true);
+            CombatVFXManager.Instance.SpawnLootDrop(transform.position, genGold, expReward, true);
         }
 
         if (anim != null && !useCustomSprites)

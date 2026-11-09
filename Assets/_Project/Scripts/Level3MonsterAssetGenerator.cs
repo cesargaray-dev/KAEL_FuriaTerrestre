@@ -18,10 +18,72 @@ public static class Level3MonsterAssetGenerator
     private static Sprite cachedEnergyBarrier;
 
     /// <summary>
+    /// Devuelve los Pixels Per Unit (PPU) calibrados para cada monstruo exclusivo del Nivel 3.
+    /// </summary>
+    public static float GetDefaultPPU(string prefix)
+    {
+        switch (prefix)
+        {
+            case "BioStalker": return 148f;
+            case "BioLasher": return 140f;
+            case "BioHulk": return 122f;
+            case "HiveInquisitor": return 122f;
+            case "VortexOmega": return 118f;
+            default: return 128f;
+        }
+    }
+
+    /// <summary>
+    /// Devuelve las dimensiones de BoxCollider2D proporcionales al marco visual de cada monstruo.
+    /// </summary>
+    public static Vector2 GetDefaultColliderSize(string prefix)
+    {
+        switch (prefix)
+        {
+            case "BioStalker": return new Vector2(1.50f, 1.05f);
+            case "BioLasher": return new Vector2(1.30f, 1.55f);
+            case "BioHulk": return new Vector2(1.75f, 1.70f);
+            case "HiveInquisitor": return new Vector2(1.20f, 1.72f);
+            case "VortexOmega": return new Vector2(2.00f, 1.35f);
+            default: return new Vector2(1.30f, 1.20f);
+        }
+    }
+
+    /// <summary>
+    /// Devuelve el offset de BoxCollider2D tal que su base descanse exactamente sobre la suela (y = 0 local, y = -2.95f global).
+    /// </summary>
+    public static Vector2 GetDefaultColliderOffset(string prefix)
+    {
+        Vector2 size = GetDefaultColliderSize(prefix);
+        return new Vector2(0f, size.y * 0.5f);
+    }
+
+    /// <summary>
+    /// Nombre narrativo oficial para cada enemigo neón del Nivel 3.
+    /// </summary>
+    public static string GetMonsterDisplayName(string prefix)
+    {
+        switch (prefix)
+        {
+            case "BioStalker": return "Pantera Biomecánica Neón";
+            case "BioLasher": return "Alienígena Neón Tentacular";
+            case "BioHulk": return "Coloso Blindado Neón";
+            case "HiveInquisitor": return "Inquisidor Psiónico Neón";
+            case "VortexOmega": return "Mecha Berserker VORTEX-OMEGA";
+            default: return "Monstruo Biomecánico";
+        }
+    }
+
+    /// <summary>
     /// Carga los 8 fotogramas de animación desde Resources/Level3/ o genera un fallback procedural nítido.
     /// </summary>
-    public static Sprite[] GetMonsterAnimationFrames(string prefix, string state, float pixelsPerUnit = 78f)
+    public static Sprite[] GetMonsterAnimationFrames(string prefix, string state, float pixelsPerUnit = 0f)
     {
+        if (pixelsPerUnit <= 0f || Mathf.Approximately(pixelsPerUnit, 78f))
+        {
+            pixelsPerUnit = GetDefaultPPU(prefix);
+        }
+
         string key = $"{prefix}_{state}_{pixelsPerUnit:F0}";
         if (spriteCache.TryGetValue(key, out Sprite[] cached) && cached != null && cached.Length > 0)
             return cached;
@@ -52,6 +114,15 @@ public static class Level3MonsterAssetGenerator
             for (int i = 0; i < 8; i++)
             {
                 list.Add(GenerateProceduralMonsterFrame(prefix, state, i, pixelsPerUnit));
+            }
+        }
+        else if (list.Count < 8)
+        {
+            // Completar hasta 8 cuadros reutilizando el último cuadro válido
+            Sprite last = list[list.Count - 1];
+            while (list.Count < 8)
+            {
+                list.Add(last);
             }
         }
 
