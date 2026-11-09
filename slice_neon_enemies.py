@@ -79,6 +79,12 @@ def map_frames_to_8(frames, state_name):
             indices = [0, 1, 2, 3, 4, 5, 5, 5]
         elif "phasetrans" in st:
             indices = [0, 1, 2, 3, 4, 5, 5, 4]
+        elif "laser" in st:
+            indices = [0, 1, 2, 3, 4, 4, 5, 0]
+        elif "enrageattack" in st:
+            indices = [0, 1, 2, 3, 4, 5, 4, 0]
+        elif "attack" in st:
+            indices = [0, 1, 2, 3, 4, 5, 5, 0]
         else:
             indices = [0, 1, 2, 3, 4, 5, 4, 3]
     elif n == 7:
@@ -147,13 +153,18 @@ def place_anchored_frame(cropped_flipped_img, canvas_w, target_right_x, target_f
 
 
 # ==============================================================================
-# 1. BOSS VORTEX-OMEGA (Solid Armor, Transparent Background, Exact Pivot Alignment)
+# 1. BOSS VORTEX-OMEGA (Dual High-Res Sheets, Solid Armor & Epic Effects)
 # ==============================================================================
 def process_boss():
-    print("\n--- [1/5] Extracting Boss VortexOmega (Solid Armor & Clean Sparks) ---")
-    source_path = glob.glob("*mecha*.png")[0]
-    img = Image.open(source_path).convert("RGB")
-    arr = np.array(img)
+    print("\n--- [1/5] Extracting Boss VortexOmega (Dual High-Res Sheets, Solid Armor & Epic Effects) ---")
+    source_energetico = "Hoja de sprites del mecha púrpura energético.png"
+    source_accion = "Hoja de sprites de mecha púrpura en acción.png"
+
+    if not os.path.exists(source_energetico) or not os.path.exists(source_accion):
+        raise FileNotFoundError(f"Missing high-res boss sheets: '{source_energetico}' or '{source_accion}'")
+
+    im_energetico = Image.open(source_energetico).convert("RGB")
+    im_accion = Image.open(source_accion).convert("RGB")
 
     # Pivot math: Unity pivot is texWidth - 128.
     # Boss body center is at texWidth - 128.
@@ -163,64 +174,87 @@ def process_boss():
     # - On 384 canvas (PhaseTrans, Die): target_right_x = 256 + 87 = 343.
     # - On 512 canvas (Attack, Laser, EnrageAttack): target_right_x = 384 + 87 = 471.
     row_defs = [
-        ("Walk", 35, 175, [0, 240, 475, 710, 960, 1190, 1451], 256, 215),
-        ("Attack", 178, 332, [0, 242, 484, 749, 937, 1235, 1451], 512, 471),
-        ("Laser", 332, 458, [0, 247, 488, 768, 1028, 1220, 1451], 512, 471),
-        ("PhaseTrans", 510, 670, [0, 249, 485, 700, 940, 1198, 1451], 384, 343),
-        ("EnrageAttack", 704, 852, [0, 242, 477, 716, 1000, 1226, 1451], 512, 471),
-        ("Die", 902, 1070, [0, 247, 476, 710, 955, 1202, 1451], 384, 343),
+        ("Walk", im_energetico, 45, 335, [0, 279, 541, 796, 1068, 1285, 1536], 256, 215, [True] * 6),
+        ("Attack", im_energetico, 355, 645, [0, 256, 523, 802, 1028, 1337, 1536], 512, 471, [True, False, True, True, False, True]),
+        ("Laser", im_energetico, 675, 975, [0, 257, 522, 796, 1056, 1336, 1536], 512, 471, [True, True, True, True, True, False]),
+        ("PhaseTrans", im_accion, 0, 265, [0, 361, 695, 1009, 1343, 1688, 2018], 384, 343, [True] * 6),
+        ("EnrageAttack", im_accion, 265, 503, [0, 365, 696, 1063, 1367, 1723, 2018], 512, 471, [True, True, True, False, True, True]),
+        ("Die", im_accion, 504, 779, [0, 356, 704, 987, 1357, 1706, 2018], 384, 343, [True] * 6),
     ]
 
-    BOSS_SCALE = 1.25
+    BOSS_SCALE = 180.0 / 267.0  # Standing height scaled to 180px on 256 canvas
 
-    for state_name, y1, y2, boundaries, canvas_w, target_right_x in row_defs:
-        row_arr = arr[y1:y2, :, :].copy()
-        R = row_arr[:, :, 0].astype(int)
-        G = row_arr[:, :, 1].astype(int)
-        B = row_arr[:, :, 2].astype(int)
-
-        if state_name == "Die":
-            is_muddy_bg = (R <= 65) & (G <= 25) & (B <= 25) & (B <= G + 10)
-            is_dark_bg = (R <= 26) & (G <= 26) & (B <= 32)
-        else:
-            is_muddy_bg = (R <= 105) & (G <= 45) & (B <= 45) & (B <= G + 12)
-            is_dark_bg = (R <= 38) & (G <= 38) & (B <= 45)
-
-        total_bg = is_muddy_bg | is_dark_bg
-
-        if state_name == "Walk":
-            top_glow = np.zeros_like(total_bg)
-            top_glow[:26, :] = (R[:26, :] < 52) & (G[:26, :] >= R[:26, :] - 4) & (B[:26, :] < 82)
-            total_bg = total_bg | top_glow
-
-        raw_fg = ~total_bg
-
+    for state_name, source_img, y1, y2, boundaries, canvas_w, target_right_x, flips in row_defs:
+        row_arr = np.array(source_img)[y1:y2, :, :].copy()
         raw_frames = []
+
         for c in range(len(boundaries) - 1):
             x1 = boundaries[c]
             x2 = boundaries[c + 1]
-            cell_raw = row_arr[:, x1:x2, :].copy()
-            cell_mask = raw_fg[:, x1:x2].copy()
+            raw_cell = row_arr[:, x1:x2, :].copy()
+            h, w, _ = raw_cell.shape
 
-            lbl, num = label(cell_mask)
-            if num == 0:
-                raw_frames.append(Image.new("RGBA", (canvas_w, CANVAS_H), (0, 0, 0, 0)))
-                continue
+            R = raw_cell[:, :, 0].astype(int)
+            G = raw_cell[:, :, 1].astype(int)
+            B = raw_cell[:, :, 2].astype(int)
+            diff = np.maximum(np.abs(R - G), np.maximum(np.abs(G - B), np.abs(R - B)))
+            mean_rgb = (R + G + B) / 3.0
 
-            sizes = np.bincount(lbl.ravel())
-            valid_labels = np.where((sizes >= 15) & (np.arange(len(sizes)) > 0))[0]
-            clean_mask = np.isin(lbl, valid_labels)
+            # 1. Neutral faux-transparency checkerboard
+            is_neutral_bg = (diff <= 16) & (mean_rgb >= 195)
+            # 2. Glow-tinted checkerboard near outer edges
+            is_glow_bg = (mean_rgb >= 180) & (R >= 130) & (G >= 150) & (diff <= 65)
+            # 3. Bright white background
+            is_white = (R >= 225) & (G >= 225) & (B >= 225)
 
-            # Fill crevices inside solid armor without enclosing open air between sparks/rays
-            full_filled = binary_fill_holes(clean_mask)
-            holes = full_filled & ~clean_mask
+            bg_candidate = is_neutral_bg | is_glow_bg | is_white
+
+            lbl, n = label(bg_candidate)
+            border = np.zeros((h, w), dtype=bool)
+            border[0, :] = True
+            border[-1, :] = True
+            border[:, 0] = True
+            border[:, -1] = True
+
+            border_lbls = set(lbl[border])
+            border_lbls.discard(0)
+
+            is_true_bg = np.isin(lbl, list(border_lbls))
+            fg_mask = ~is_true_bg
+
+            # Fill tiny internal holes in solid armor (size <= 70)
+            filled = binary_fill_holes(fg_mask)
+            holes = filled & ~fg_mask
             h_lbl, n_h = label(holes)
             h_sizes = np.bincount(h_lbl.ravel())
-            small_holes = np.isin(h_lbl, np.where((h_sizes <= 60) & (np.arange(len(h_sizes)) > 0))[0])
-            selective_filled = clean_mask | small_holes
+            small_holes = np.isin(h_lbl, np.where((h_sizes <= 70) & (np.arange(len(h_sizes)) > 0))[0])
+            fg_mask = fg_mask | small_holes
 
-            cell_rgba = np.dstack([cell_raw, np.where(selective_filled, 255, 0).astype(np.uint8)])
-            cell_rgba = clean_cell_slivers(cell_rgba, max_top_sliver_h=16, min_dust_size=20)
+            # Prune small detached border slivers from adjacent cells
+            fg_lbl, n_fg = label(fg_mask)
+            fg_sizes = np.bincount(fg_lbl.ravel())
+            main_body_size = fg_sizes[1:].max() if n_fg > 0 else 0
+
+            clean_fg = np.zeros_like(fg_mask)
+            for fid in range(1, n_fg + 1):
+                if fg_sizes[fid] < 40:
+                    continue
+                ys, xs = np.where(fg_lbl == fid)
+                touches_left = (xs.min() == 0)
+                touches_right = (xs.max() == w - 1)
+                touches_top = (ys.min() == 0)
+                touches_bottom = (ys.max() == h - 1)
+
+                if (touches_left and xs.max() < 30 and fg_sizes[fid] < main_body_size * 0.25):
+                    continue
+                if (touches_right and xs.min() > w - 35 and fg_sizes[fid] < main_body_size * 0.25):
+                    continue
+                if (touches_top and ys.max() < 18 and fg_sizes[fid] < main_body_size * 0.15):
+                    continue
+                clean_fg[fg_lbl == fid] = True
+
+            alpha = np.where(clean_fg, 255, 0).astype(np.uint8)
+            cell_rgba = np.dstack([raw_cell, alpha])
 
             ys, xs = np.where(cell_rgba[:, :, 3] > 0)
             if len(ys) == 0:
@@ -230,10 +264,7 @@ def process_boss():
             cropped_arr = cell_rgba[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1, :]
             cropped_img = Image.fromarray(cropped_arr)
 
-            # In the raw sheet, only Attack cell 4 is already facing LEFT. All others face RIGHT.
-            # We flip right-facing sprites so all frames uniformly face LEFT (toward Kael).
-            should_flip = not (state_name == "Attack" and c == 4)
-            if should_flip:
+            if flips[c]:
                 flipped = cropped_img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             else:
                 flipped = cropped_img

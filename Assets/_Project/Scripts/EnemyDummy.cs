@@ -284,7 +284,7 @@ public class EnemyDummy : MonoBehaviour
         else if (resourcePrefix == "BioHulk")
         {
             customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Laser", ppu);
-            attackRange = 2.85f;
+            attackRange = 3.35f;
             moveSpeed = 1.15f;
         }
         else if (resourcePrefix == "HiveInquisitor")
@@ -408,8 +408,8 @@ public class EnemyDummy : MonoBehaviour
                 SetupLevel3Visuals("BioHulk");
                 transform.localScale = Vector3.one * 1.28f;
                 moveSpeed = 1.15f; // Tanque imparable de marcha pesada
-                attackRange = 2.85f; // Rango suficiente para golpear sin colisionar con la caja de Kael
-                attackRate = 0.65f;
+                attackRange = 3.35f; // Rango amplio y calibrado para iniciar el impacto sin colisionar con Kael
+                attackRate = 0.70f;
                 maxHP = Mathf.RoundToInt(150f * Mathf.Pow(1.16f, Mathf.Max(0, wave - 1)));
                 damage = Mathf.RoundToInt(13f * Mathf.Pow(1.14f, Mathf.Max(0, wave - 1)));
                 break;
@@ -449,8 +449,15 @@ public class EnemyDummy : MonoBehaviour
     {
         isBoss = boss;
         isMiniBoss = miniBoss;
-        enemyTitle = Level3MonsterAssetGenerator.GetMonsterDisplayName(prefix);
-        SetupLevel3Visuals(prefix);
+        int arch = 0;
+        if (prefix == "BioStalker") arch = 0;
+        else if (prefix == "BioLasher") arch = 1;
+        else if (prefix == "BioHulk") arch = 2;
+        else if (prefix == "HiveInquisitor") arch = 3;
+        else if (prefix == "VortexOmega") { arch = 0; isBoss = true; }
+        WaveSpawner ws = FindAnyObjectByType<WaveSpawner>();
+        int wave = (ws != null) ? Mathf.Max(1, ws.currentWave) : 1;
+        SetupLevel3Monster(arch, wave, isBoss, isMiniBoss);
     }
 
     /// <summary>
@@ -983,7 +990,7 @@ public class EnemyDummy : MonoBehaviour
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(1.8f, 2.6f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(1.2f, 1.8f);
         isPlayingAttackAnim = false;
     }
 
@@ -1071,7 +1078,7 @@ public class EnemyDummy : MonoBehaviour
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(2.2f, 3.0f);
+        nextAttackTime = Time.time + 0.45f;
         isPlayingAttackAnim = false;
     }
 
@@ -1800,7 +1807,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (knockback > 0f && !isPlayingAttackAnim)
         {
-            float resist = (isBoss || isMiniBoss) ? 0.25f : 0.7f;
+            float resist = (isBoss || isMiniBoss) ? 0.25f : ((visualType == "BioHulk") ? 0.05f : 0.7f);
             float pushDir = (kaelTarget != null && transform.position.x < kaelTarget.position.x) ? -1f : 1f;
             transform.Translate(Vector2.right * (pushDir * knockback * resist), Space.World);
         }
