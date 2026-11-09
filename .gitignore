@@ -40,4 +40,8 @@ Thumbs.db
 .plastic/
 ignore.conf
 *.slnx
+*.log
+__pycache__/
+.agents/
+tests/
 

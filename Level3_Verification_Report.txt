@@ -1,5 +1,5 @@
 ================================================================================
-LEVEL 3 AUTOMATED VERIFICATION REPORT — 2026-11-09 18:18:56 UTC
+LEVEL 3 AUTOMATED VERIFICATION REPORT — 2026-11-09 21:35:23 UTC
 ================================================================================
 Total Tests Passed: 115
 Total Tests Failed: 0
@@ -25,15 +25,15 @@ Overall Status: PASSED (100%)
   [PASS] V2_PPU_HiveInquisitor: HiveInquisitor calibrated PPU=122f (got 122)
   [PASS] V2_PPU_VortexOmega: VortexOmega calibrated PPU=118f (got 118)
   [PASS] V2_WalkFrames_BioStalker: Walk frames exist for BioStalker
-  [PASS] V2_PivotNorm_BioStalker: Normalized pivot for BioStalker is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_PivotNorm_BioStalker: Normalized pivot for BioStalker is (0.500, 0.027) [Expected: (0.500, 0.025)]
   [PASS] V2_WalkFrames_BioLasher: Walk frames exist for BioLasher
-  [PASS] V2_PivotNorm_BioLasher: Normalized pivot for BioLasher is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_PivotNorm_BioLasher: Normalized pivot for BioLasher is (0.500, 0.027) [Expected: (0.500, 0.025)]
   [PASS] V2_WalkFrames_BioHulk: Walk frames exist for BioHulk
-  [PASS] V2_PivotNorm_BioHulk: Normalized pivot for BioHulk is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_PivotNorm_BioHulk: Normalized pivot for BioHulk is (0.500, 0.027) [Expected: (0.500, 0.025)]
   [PASS] V2_WalkFrames_HiveInquisitor: Walk frames exist for HiveInquisitor
-  [PASS] V2_PivotNorm_HiveInquisitor: Normalized pivot for HiveInquisitor is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_PivotNorm_HiveInquisitor: Normalized pivot for HiveInquisitor is (0.500, 0.027) [Expected: (0.500, 0.025)]
   [PASS] V2_WalkFrames_VortexOmega: Walk frames exist for VortexOmega
-  [PASS] V2_PivotNorm_VortexOmega: Normalized pivot for VortexOmega is (0.500, 0.025) [Expected: (0.500, 0.025)]
+  [PASS] V2_PivotNorm_VortexOmega: Normalized pivot for VortexOmega is (0.500, 0.027) [Expected: (0.500, 0.025)]
   [PASS] V2_EnemyBaseGroundY: EnemyDummy baseGroundY is set to -2.95 (Expected: -2.95f)
   [PASS] V2_FeetAtGroundBaseline: Entity transform rests at ground baseline y = -2.95f
   -> Category Summary: 17 Passed, 0 Failed

@@ -28,6 +28,7 @@ Enforces:
 
 import os
 import glob
+import uuid
 import numpy as np
 from PIL import Image
 from scipy.ndimage import label, binary_fill_holes, binary_closing
@@ -37,6 +38,126 @@ TARGET_FOOT_Y = 249
 
 OUTPUT_DIR = os.path.join("Assets", "_Project", "Resources", "Level3")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def generate_meta_file(png_path):
+    """Generates standard Unity Sprite TextureImporter .meta file if missing."""
+    meta_path = png_path + ".meta"
+    if os.path.exists(meta_path):
+        return
+    asset_name = os.path.splitext(os.path.basename(png_path))[0]
+    guid = uuid.uuid4().hex
+    sprite_id = uuid.uuid4().hex
+    meta_content = f"""fileFormatVersion: 2
+guid: {guid}
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2800000
+    second: {asset_name}
+  externalObjects: {{}}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 512
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapModeU: 1
+    wrapModeV: 1
+    wrapModeW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 100
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {{x: 0.5, y: 0.5}}
+  spritePixelsToUnits: 160
+  spriteBorder: {{x: 0, y: 0, z: 0, w: 0}}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 512
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 0
+    compressionQuality: 100
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: {sprite_id}
+    internalID: 2800000
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      {asset_name}: 2800000
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+"""
+    with open(meta_path, "w", encoding="utf-8") as f:
+        f.write(meta_content)
+
 
 
 def clean_perimeter_border(img_rgba):
@@ -57,12 +178,22 @@ def map_frames_to_8(frames, state_name):
     st = state_name.lower()
     n = len(frames)
     if n == 4:
-        if "walk" in st or "run" in st or "idle" in st:
-            indices = [0, 1, 2, 3, 2, 1, 0, 1]
-        elif "attack" in st or "laser" in st or "missile" in st or "vortex" in st:
+        if "laser" in st:
+            indices = [0, 1, 2, 2, 2, 2, 3, 0]
+        elif "enrageattack" in st or "attack" in st or "slash" in st:
+            indices = [0, 1, 2, 2, 3, 3, 2, 0]
+        elif "takeoff" in st:
             indices = [0, 1, 2, 3, 3, 2, 1, 0]
+        elif "apex" in st or "dive" in st:
+            indices = [0, 1, 2, 3, 3, 3, 3, 3]
+        elif "impact" in st or "land" in st:
+            indices = [0, 1, 2, 3, 3, 3, 3, 3]
         elif "die" in st or "death" in st:
             indices = [0, 1, 2, 3, 3, 3, 3, 3]
+        elif "walk" in st or "run" in st or "idle" in st or "chest" in st or "phase" in st:
+            indices = [0, 1, 2, 3, 2, 1, 0, 1]
+        elif "missile" in st or "vortex" in st:
+            indices = [0, 1, 2, 3, 3, 2, 1, 0]
         else:
             indices = [0, 1, 2, 3, 2, 1, 0, 1]
     elif n == 5:
@@ -98,24 +229,33 @@ def map_frames_to_8(frames, state_name):
     return [frames[idx] for idx in indices]
 
 
-def clean_cell_slivers(cell_rgba, max_top_sliver_h=20, min_dust_size=35):
-    """Removes stray pixels touching top/bottom borders from adjacent rows."""
-    h = cell_rgba.shape[0]
+def clean_cell_slivers(cell_rgba, max_top_sliver_h=20, min_dust_size=35, max_side_sliver_w=0):
+    """Removes stray pixels touching top/bottom/side borders from adjacent rows/columns and dust."""
+    h, w, _ = cell_rgba.shape
     lbl, n_feat = label(cell_rgba[:, :, 3] > 0)
     if n_feat == 0:
         return cell_rgba
 
     sizes = np.bincount(lbl.ravel())
+    main_size = sizes[1:].max() if n_feat > 0 else 0
+
     for feat_id in range(1, n_feat + 1):
-        if sizes[feat_id] < min_dust_size:
+        sz = sizes[feat_id]
+        if sz < min_dust_size:
             cell_rgba[lbl == feat_id, 3] = 0
             continue
-        ys, _ = np.where(lbl == feat_id)
+        ys, xs = np.where(lbl == feat_id)
         y_min, y_max = ys.min(), ys.max()
-        if y_min == 0 and y_max <= max_top_sliver_h:
-            cell_rgba[lbl == feat_id, 3] = 0
-        elif y_max == h - 1 and (h - 1 - y_min) <= 16:
-            cell_rgba[lbl == feat_id, 3] = 0
+        x_min, x_max = xs.min(), xs.max()
+        if sz < main_size * 0.12:
+            if y_min == 0 and y_max <= max_top_sliver_h:
+                cell_rgba[lbl == feat_id, 3] = 0
+            elif y_max == h - 1 and (h - 1 - y_min) <= 16:
+                cell_rgba[lbl == feat_id, 3] = 0
+            elif max_side_sliver_w > 0 and x_min == 0 and x_max <= max_side_sliver_w:
+                cell_rgba[lbl == feat_id, 3] = 0
+            elif max_side_sliver_w > 0 and x_max == w - 1 and (w - 1 - x_min) <= max_side_sliver_w:
+                cell_rgba[lbl == feat_id, 3] = 0
 
     return cell_rgba
 
@@ -153,130 +293,105 @@ def place_anchored_frame(cropped_flipped_img, canvas_w, target_right_x, target_f
 
 
 # ==============================================================================
-# 1. BOSS VORTEX-OMEGA (Dual High-Res Sheets, Solid Armor & Epic Effects)
+# 1. BOSS VORTEX-OMEGA (3 High-Res Sheets: 2400x1792, Clean Alpha, Exact Alignment)
 # ==============================================================================
 def process_boss():
-    print("\n--- [1/5] Extracting Boss VortexOmega (Dual High-Res Sheets, Solid Armor & Epic Effects) ---")
-    source_energetico = "Hoja de sprites del mecha púrpura energético.png"
-    source_accion = "Hoja de sprites de mecha púrpura en acción.png"
+    print("\n--- [1/5] Extracting Boss VortexOmega (3 High-Res Sheets: 2400x1792, Clean Alpha, Exact Alignment) ---")
+    sheet_core = "Gemini_Generated_Image_vp2rqkvp2rqkvp2r-Photoroom.png"
+    sheet_jump = "Gemini_Generated_Image_317jlc317jlc317j-Photoroom.png"
+    sheet_combat = "Gemini_Generated_Image_mriniumriniumrin-Photoroom.png"
 
-    if not os.path.exists(source_energetico) or not os.path.exists(source_accion):
-        raise FileNotFoundError(f"Missing high-res boss sheets: '{source_energetico}' or '{source_accion}'")
+    for s in [sheet_core, sheet_jump, sheet_combat]:
+        if not os.path.exists(s):
+            raise FileNotFoundError(f"Missing master boss sheet: '{s}'")
 
-    im_energetico = Image.open(source_energetico).convert("RGB")
-    im_accion = Image.open(source_accion).convert("RGB")
+    im_core = np.array(Image.open(sheet_core).convert("RGBA"))
+    im_jump = np.array(Image.open(sheet_jump).convert("RGBA"))
+    im_combat = np.array(Image.open(sheet_combat).convert("RGBA"))
 
-    # Pivot math: Unity pivot is texWidth - 128.
-    # Boss body center is at texWidth - 128.
-    # Boss back is 87px to the right of body center.
-    # Therefore, target_right_x = (canvas_w - 128) + 87:
-    # - On 256 canvas (Walk): target_right_x = 128 + 87 = 215.
-    # - On 384 canvas (PhaseTrans, Die): target_right_x = 256 + 87 = 343.
-    # - On 512 canvas (Attack, Laser, EnrageAttack): target_right_x = 384 + 87 = 471.
+    # Apply alpha threshold (alpha < 16 -> 0) to eliminate PhotoRoom background haze
+    im_core[im_core[:, :, 3] < 16, 3] = 0
+    im_jump[im_jump[:, :, 3] < 16, 3] = 0
+    im_combat[im_combat[:, :, 3] < 16, 3] = 0
+
+    BOSS_SCALE = 180.0 / 495.0  # Scales 495px raw height to 180px visual standing height
+
+    # Pivot math: Unity pivot is (texWidth - 128) / texWidth.
+    # Boss body back is anchored at target_right_x = (canvas_w - 128) + 87:
+    # - On 256 canvas (Idle, Walk): target_right_x = 128 + 87 = 215.
+    # - On 384 canvas (Die, Takeoff, ChestOpen, PhaseTrans): target_right_x = 256 + 87 = 343.
+    # - On 512 canvas (Apex, Impact, Laser, Attack, EnrageAttack): target_right_x = 384 + 87 = 471.
     row_defs = [
-        ("Walk", im_energetico, 45, 335, [0, 279, 541, 796, 1068, 1285, 1536], 256, 215, [True] * 6),
-        ("Attack", im_energetico, 355, 645, [0, 256, 523, 802, 1028, 1337, 1536], 512, 471, [True, False, True, True, False, True]),
-        ("Laser", im_energetico, 675, 975, [0, 257, 522, 796, 1056, 1336, 1536], 512, 471, [True, True, True, True, True, False]),
-        ("PhaseTrans", im_accion, 0, 265, [0, 361, 695, 1009, 1343, 1688, 2018], 384, 343, [True] * 6),
-        ("EnrageAttack", im_accion, 265, 503, [0, 365, 696, 1063, 1367, 1723, 2018], 512, 471, [True, True, True, False, True, True]),
-        ("Die", im_accion, 504, 779, [0, 356, 704, 987, 1357, 1706, 2018], 384, 343, [True] * 6),
+        ("Idle", im_core, 0, 580, 256, 215),
+        ("Walk", im_core, 580, 1230, 256, 215),
+        ("Die", im_core, 1230, 1792, 384, 343),
+        ("MeteorTakeoff", im_jump, 0, 556, 384, 343),
+        ("MeteorApex", im_jump, 556, 1220, 512, 471),
+        ("MeteorImpact", im_jump, 1220, 1792, 512, 471),
+        ("ChestOpen", im_combat, 0, 550, 384, 343),
+        ("Laser", im_combat, 550, 1220, 512, 471),
+        ("Attack", im_combat, 1220, 1792, 512, 471),
     ]
 
-    BOSS_SCALE = 180.0 / 267.0  # Standing height scaled to 180px on 256 canvas
+    generated_states = {}
 
-    for state_name, source_img, y1, y2, boundaries, canvas_w, target_right_x, flips in row_defs:
-        row_arr = np.array(source_img)[y1:y2, :, :].copy()
+    for state_name, source_arr, y1, y2, canvas_w, target_right_x in row_defs:
+        row_arr = source_arr[y1:y2, :, :].copy()
         raw_frames = []
 
-        for c in range(len(boundaries) - 1):
-            x1 = boundaries[c]
-            x2 = boundaries[c + 1]
-            raw_cell = row_arr[:, x1:x2, :].copy()
-            h, w, _ = raw_cell.shape
-
-            R = raw_cell[:, :, 0].astype(int)
-            G = raw_cell[:, :, 1].astype(int)
-            B = raw_cell[:, :, 2].astype(int)
-            diff = np.maximum(np.abs(R - G), np.maximum(np.abs(G - B), np.abs(R - B)))
-            mean_rgb = (R + G + B) / 3.0
-
-            # 1. Neutral faux-transparency checkerboard
-            is_neutral_bg = (diff <= 16) & (mean_rgb >= 195)
-            # 2. Glow-tinted checkerboard near outer edges
-            is_glow_bg = (mean_rgb >= 180) & (R >= 130) & (G >= 150) & (diff <= 65)
-            # 3. Bright white background
-            is_white = (R >= 225) & (G >= 225) & (B >= 225)
-
-            bg_candidate = is_neutral_bg | is_glow_bg | is_white
-
-            lbl, n = label(bg_candidate)
-            border = np.zeros((h, w), dtype=bool)
-            border[0, :] = True
-            border[-1, :] = True
-            border[:, 0] = True
-            border[:, -1] = True
-
-            border_lbls = set(lbl[border])
-            border_lbls.discard(0)
-
-            is_true_bg = np.isin(lbl, list(border_lbls))
-            fg_mask = ~is_true_bg
-
-            # Fill tiny internal holes in solid armor (size <= 70)
-            filled = binary_fill_holes(fg_mask)
-            holes = filled & ~fg_mask
-            h_lbl, n_h = label(holes)
-            h_sizes = np.bincount(h_lbl.ravel())
-            small_holes = np.isin(h_lbl, np.where((h_sizes <= 70) & (np.arange(len(h_sizes)) > 0))[0])
-            fg_mask = fg_mask | small_holes
-
-            # Prune small detached border slivers from adjacent cells
-            fg_lbl, n_fg = label(fg_mask)
-            fg_sizes = np.bincount(fg_lbl.ravel())
-            main_body_size = fg_sizes[1:].max() if n_fg > 0 else 0
-
-            clean_fg = np.zeros_like(fg_mask)
-            for fid in range(1, n_fg + 1):
-                if fg_sizes[fid] < 40:
-                    continue
-                ys, xs = np.where(fg_lbl == fid)
-                touches_left = (xs.min() == 0)
-                touches_right = (xs.max() == w - 1)
-                touches_top = (ys.min() == 0)
-                touches_bottom = (ys.max() == h - 1)
-
-                if (touches_left and xs.max() < 30 and fg_sizes[fid] < main_body_size * 0.25):
-                    continue
-                if (touches_right and xs.min() > w - 35 and fg_sizes[fid] < main_body_size * 0.25):
-                    continue
-                if (touches_top and ys.max() < 18 and fg_sizes[fid] < main_body_size * 0.15):
-                    continue
-                clean_fg[fg_lbl == fid] = True
-
-            alpha = np.where(clean_fg, 255, 0).astype(np.uint8)
-            cell_rgba = np.dstack([raw_cell, alpha])
-
-            ys, xs = np.where(cell_rgba[:, :, 3] > 0)
+        for col in range(4):
+            x1 = col * 600
+            x2 = (col + 1) * 600
+            cell = row_arr[:, x1:x2, :].copy()
+            cell = clean_cell_slivers(cell, max_top_sliver_h=20, min_dust_size=35, max_side_sliver_w=25)
+            ys, xs = np.where(cell[:, :, 3] > 0)
             if len(ys) == 0:
                 raw_frames.append(Image.new("RGBA", (canvas_w, CANVAS_H), (0, 0, 0, 0)))
                 continue
 
-            cropped_arr = cell_rgba[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1, :]
-            cropped_img = Image.fromarray(cropped_arr)
-
-            if flips[c]:
-                flipped = cropped_img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-            else:
-                flipped = cropped_img
-
+            cropped = Image.fromarray(cell[ys.min():ys.max()+1, xs.min():xs.max()+1, :])
+            flipped = cropped.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             canvas = place_anchored_frame(flipped, canvas_w, target_right_x, TARGET_FOOT_Y, BOSS_SCALE)
             raw_frames.append(canvas)
 
         final_8 = map_frames_to_8(raw_frames, state_name)
+        generated_states[state_name] = final_8
+
         for i, frame in enumerate(final_8):
             out_path = os.path.join(OUTPUT_DIR, f"VortexOmega_{state_name}_{i}.png")
             frame.save(out_path, format="PNG")
+            generate_meta_file(out_path)
         print(f"  -> Generated 8 frames for VortexOmega_{state_name} ({canvas_w}x{CANVAS_H}, anchored at right={target_right_x})")
+
+    # Generate aliases for 100% test & runtime compatibility:
+    # 1. PhaseTrans (ChestOpen alias)
+    final_phase = generated_states["ChestOpen"]
+    for i, frame in enumerate(final_phase):
+        out_path = os.path.join(OUTPUT_DIR, f"VortexOmega_PhaseTrans_{i}.png")
+        frame.save(out_path, format="PNG")
+        generate_meta_file(out_path)
+    print("  -> Generated 8 frames for VortexOmega_PhaseTrans (alias from ChestOpen, 384x256)")
+
+    # 2. EnrageAttack (Attack / Cross Claw Slash alias)
+    final_enrage = generated_states["Attack"]
+    for i, frame in enumerate(final_enrage):
+        out_path = os.path.join(OUTPUT_DIR, f"VortexOmega_EnrageAttack_{i}.png")
+        frame.save(out_path, format="PNG")
+        generate_meta_file(out_path)
+    print("  -> Generated 8 frames for VortexOmega_EnrageAttack (alias from Attack, 512x256)")
+
+    # 3. Jump aliases (JumpTakeoff, JumpDive, JumpLand)
+    alias_mappings = [
+        ("JumpTakeoff", generated_states["MeteorTakeoff"]),
+        ("JumpDive", generated_states["MeteorApex"]),
+        ("JumpLand", generated_states["MeteorImpact"]),
+    ]
+    for alias_name, frames in alias_mappings:
+        for i, frame in enumerate(frames):
+            out_path = os.path.join(OUTPUT_DIR, f"VortexOmega_{alias_name}_{i}.png")
+            frame.save(out_path, format="PNG")
+            generate_meta_file(out_path)
+        print(f"  -> Generated 8 frames for VortexOmega_{alias_name} (alias)")
 
 
 # ==============================================================================

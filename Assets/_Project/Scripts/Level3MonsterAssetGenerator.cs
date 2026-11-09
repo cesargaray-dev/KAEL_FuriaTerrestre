@@ -84,7 +84,7 @@ public static class Level3MonsterAssetGenerator
     public static Vector2 GetMonsterPivot(string prefix, string state, int texWidth, int texHeight)
     {
         float footY = 7.0f / 256.0f; // 0.02734375f - suela exactamente calibrada a ras de suelo (y = -2.95f)
-        if (state == "Walk" || texWidth <= 256)
+        if (state == "Walk" || state == "Idle" || texWidth <= 256)
         {
             return new Vector2(0.5f, footY);
         }

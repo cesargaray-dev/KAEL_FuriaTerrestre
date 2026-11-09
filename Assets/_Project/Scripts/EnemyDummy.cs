@@ -66,11 +66,19 @@ public class EnemyDummy : MonoBehaviour
     private Sprite[] customMissileFrames;
     private Sprite[] customVortexFlameFrames;
     private Sprite[] customTornadoFrames;
+    // Nuevos fotogramas biomecánicos para VORTEX-OMEGA (Milestone 2)
+    private Sprite[] customIdleFrames;
+    private Sprite[] customJumpTakeoffFrames;
+    private Sprite[] customJumpDiveFrames;
+    private Sprite[] customJumpLandFrames;
+    private Sprite[] customChestOpenFrames;
     public bool isInvulnerable = false;
     private float nextLaserTime = 0f;
     private float nextRocketLungeTime = 0f;
+    private float nextMeteorJumpTime = 0f;
     private bool useCustomSprites = false;
     private float walkAnimTimer = 0f;
+    private float idleAnimTimer = 0f;
     private float dieAnimTimer = 0f;
     private float baseGroundY = -2.95f;
 
@@ -115,6 +123,14 @@ public class EnemyDummy : MonoBehaviour
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "PhaseTrans", 118f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "EnrageAttack", 118f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Die", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Idle", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "JumpTakeoff", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "JumpDive", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "JumpLand", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorTakeoff", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorApex", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorImpact", 118f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "ChestOpen", 118f);
     }
 
     private static void PreloadSet(string prefix, float ppu)
@@ -297,6 +313,17 @@ public class EnemyDummy : MonoBehaviour
             customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Laser", ppu);
             customPhaseTransFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "PhaseTrans", ppu);
             customEnrageAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "EnrageAttack", ppu);
+            customIdleFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Idle", ppu);
+            customJumpTakeoffFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "JumpTakeoff", ppu);
+            if (customJumpTakeoffFrames == null || customJumpTakeoffFrames.Length == 0)
+                customJumpTakeoffFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorTakeoff", ppu);
+            customJumpDiveFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "JumpDive", ppu);
+            if (customJumpDiveFrames == null || customJumpDiveFrames.Length == 0)
+                customJumpDiveFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorApex", ppu);
+            customJumpLandFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "JumpLand", ppu);
+            if (customJumpLandFrames == null || customJumpLandFrames.Length == 0)
+                customJumpLandFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorImpact", ppu);
+            customChestOpenFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "ChestOpen", ppu);
         }
 
         if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
@@ -356,6 +383,7 @@ public class EnemyDummy : MonoBehaviour
             isInvulnerable = false;
             nextLaserTime = Time.time + 4.0f;
             nextRocketLungeTime = Time.time + 6.5f;
+            nextMeteorJumpTime = Time.time + 5.0f;
             return;
         }
 
@@ -1213,9 +1241,13 @@ public class EnemyDummy : MonoBehaviour
             // FASE 2: COMBATE DE FURIA BIOMECÁNICA (50% -> 0% HP)
             if (distToKael > attackRange)
             {
-                if (distToKael <= 5.5f && Time.time >= nextRocketLungeTime)
+                if (distToKael > 7.5f)
                 {
-                    StartCoroutine(VortexOmegaRocketPunchLungeRoutine());
+                    transform.Translate(new Vector2(dirToKael, 0f) * (moveSpeed * Time.deltaTime), Space.World);
+                }
+                else if (distToKael <= 6.5f && Time.time >= nextMeteorJumpTime)
+                {
+                    StartCoroutine(VortexOmegaMeteorJumpRoutine());
                 }
                 else if (distToKael <= 7.5f && Time.time >= nextLaserTime)
                 {
@@ -1233,11 +1265,11 @@ public class EnemyDummy : MonoBehaviour
                     attackCounter++;
                     if (attackCounter % 3 == 0)
                     {
-                        StartCoroutine(VortexOmegaRocketPunchLungeRoutine());
+                        StartCoroutine(VortexOmegaMeteorJumpRoutine());
                     }
                     else
                     {
-                        StartCoroutine(VortexOmegaEnragedDoubleSlashRoutine());
+                        StartCoroutine(VortexOmegaCrossClawSlashRoutine());
                     }
                 }
             }
@@ -1247,7 +1279,11 @@ public class EnemyDummy : MonoBehaviour
             // FASE 1: COMBATE TÁCTICO MECHA (100% -> 50% HP)
             if (distToKael > attackRange)
             {
-                if (distToKael <= 7.5f && Time.time >= nextLaserTime)
+                if (distToKael > 7.5f)
+                {
+                    transform.Translate(new Vector2(dirToKael, 0f) * (moveSpeed * Time.deltaTime), Space.World);
+                }
+                else if (distToKael <= 7.5f && Time.time >= nextLaserTime)
                 {
                     StartCoroutine(VortexOmegaChestLaserRoutine(false));
                 }
@@ -1263,15 +1299,20 @@ public class EnemyDummy : MonoBehaviour
                     attackCounter++;
                     if (attackCounter % 3 == 0)
                     {
-                        StartCoroutine(TelegraphedHeavyAttack());
+                        StartCoroutine(VortexOmegaMeteorJumpRoutine());
                     }
                     else
                     {
-                        StartCoroutine(PlayVisibleAttackRoutine());
+                        StartCoroutine(VortexOmegaCrossClawSlashRoutine());
                     }
                 }
             }
         }
+    }
+
+    private IEnumerator VortexOmegaChestLaserRoutine()
+    {
+        return VortexOmegaChestLaserRoutine(hasEnteredRagePhase);
     }
 
     private IEnumerator VortexOmegaChestLaserRoutine(bool isEnraged)
@@ -1286,7 +1327,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            string txt = isEnraged ? "⚠ ¡CAÑÓN LÁSER PESADO OVERCLOCK!" : "⚠ ¡CAÑÓN LÁSER DE PECHO OMEGA!";
+            string txt = isEnraged ? "⚠ ¡CAÑÓN LÁSER PESADO OVERCLOCK!" : "⚠ ¡DESCARGA DEL REACTOR PECTORAL!";
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.1f, txt, new Color(1f, 0.15f, 0.45f), 22, 1.1f);
         }
         if (LevelAudioManager.Instance != null)
@@ -1294,27 +1335,48 @@ public class EnemyDummy : MonoBehaviour
             LevelAudioManager.Instance.PlayBossAlert();
         }
 
-        int totalFrames = (customLaserFrames != null && customLaserFrames.Length >= 8) ? 8 : (customLaserFrames != null ? customLaserFrames.Length : 0);
-        float chargeDelay = isEnraged ? 0.14f : 0.18f;
-        for (int f = 0; f < 3; f++)
+        // ETAPA 1: APERTURA MECÁNICA DE PLACAS PECTORALES (Sheet 3, Fila 1)
+        int openCount = (customChestOpenFrames != null && customChestOpenFrames.Length > 0) ? customChestOpenFrames.Length : 0;
+        if (openCount > 0)
         {
-            if (isDead || isInvulnerable) { isPlayingAttackAnim = false; yield break; }
-            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
-                sr.sprite = customLaserFrames[f];
+            for (int f = 0; f < openCount; f++)
+            {
+                if (isDead || isInvulnerable) { isPlayingAttackAnim = false; yield break; }
+                if (customChestOpenFrames[f] != null) sr.sprite = customChestOpenFrames[f];
 
-            if (CombatVFXManager.Instance != null)
-                CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(1f, 0.20f, 0.55f));
+                if (CombatVFXManager.Instance != null && f >= 2)
+                {
+                    CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(0.2f, 0.95f, 1f));
+                    CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(1f, 0.20f, 0.55f));
+                }
+                yield return new WaitForSeconds(0.08f);
+            }
+        }
+        else
+        {
+            for (int f = 0; f < 3; f++)
+            {
+                if (isDead || isInvulnerable) { isPlayingAttackAnim = false; yield break; }
+                if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                    sr.sprite = customLaserFrames[f];
 
-            yield return new WaitForSeconds(chargeDelay);
+                if (CombatVFXManager.Instance != null)
+                    CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(1f, 0.20f, 0.55f));
+
+                yield return new WaitForSeconds(isEnraged ? 0.14f : 0.18f);
+            }
         }
 
-        float beamDuration = isEnraged ? 0.60f : 0.50f;
-        float beamLength = 8.5f;
+        // ETAPA 2: DISPARO DEL RAYO DE BIO-PLASMA DE 3 CAPAS
+        float beamDuration = isEnraged ? 0.65f : 0.52f;
+        float beamLength = 8.8f;
+        float recoilDist = 0.42f;
+
         if (CombatVFXManager.Instance != null)
         {
             CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, beamDuration);
-            CombatVFXManager.Instance.ShakeCamera(0.38f, 0.22f);
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.15f, 0.45f), 0.42f);
+            CombatVFXManager.Instance.ShakeCamera(0.42f, 0.25f);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.20f, 0.55f), 0.45f);
         }
         if (LevelAudioManager.Instance != null)
         {
@@ -1327,9 +1389,9 @@ public class EnemyDummy : MonoBehaviour
         {
             float kx = kaelTarget.position.x;
             float ky = kaelTarget.position.y;
-            if (kx >= minX && kx <= maxX && ky >= chestPos.y - 1.6f && ky <= chestPos.y + 0.8f)
+            if (kx >= minX && kx <= maxX && ky >= chestPos.y - 1.6f && ky <= chestPos.y + 0.9f)
             {
-                float laserDmg = damage * (isEnraged ? 1.45f : 1.20f);
+                float laserDmg = damage * (isEnraged ? 1.50f : 1.25f);
                 if (PlayerStats.Instance != null)
                 {
                     PlayerStats.Instance.TakeDamage(laserDmg, this);
@@ -1341,25 +1403,273 @@ public class EnemyDummy : MonoBehaviour
             }
         }
 
-        for (int f = 3; f <= 5; f++)
+        // ETAPA 3: FOTOGRAMAS DE DESCARGA Y RETROCESO FÍSICO (RECOIL)
+        int laserCount = (customLaserFrames != null) ? customLaserFrames.Length : 8;
+        for (int f = 0; f < laserCount; f++)
         {
             if (isDead) { isPlayingAttackAnim = false; yield break; }
             if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
                 sr.sprite = customLaserFrames[f];
-            yield return new WaitForSeconds(0.14f);
-        }
 
-        for (int f = 6; f < totalFrames; f++)
-        {
-            if (isDead) { isPlayingAttackAnim = false; yield break; }
-            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
-                sr.sprite = customLaserFrames[f];
-            yield return new WaitForSeconds(0.12f);
+            if (f >= 1 && f <= 4)
+            {
+                float recoilP = (f - 1) / 3f;
+                transform.position = new Vector3(baseX - dirToKael * recoilDist * Mathf.Sin(recoilP * Mathf.PI), baseGroundY, transform.position.z);
+            }
+            if (f >= 5 && CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnHitSparks(chestPos, false, 4);
+            }
+
+            yield return new WaitForSeconds(0.10f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextLaserTime = Time.time + (isEnraged ? 3.2f : 4.6f);
+        nextLaserTime = Time.time + (isEnraged ? 3.4f : 5.0f);
         nextAttackTime = Time.time + (0.55f / attackRate);
+        isPlayingAttackAnim = false;
+    }
+
+    private IEnumerator VortexOmegaMeteorJumpRoutine()
+    {
+        // Se mantiene isPlayingAttackAnim = true durante todo el salto
+        // para impedir que LateUpdate() fuerce transform.position.y = baseGroundY
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+
+        float startX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > startX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        // Muestreo del objetivo delimitado dentro del nivel
+        float targetX = (kaelTarget != null)
+            ? Mathf.Clamp(kaelTarget.position.x, -10.5f, 10.5f)
+            : Mathf.Clamp(startX + dirToKael * 4.5f, -10.5f, 10.5f);
+
+        // --- FASE 1: PREPARACIÓN Y DESPEGUE (Sheet 2, Fila 1) ---
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.1f,
+                "⚠ ¡SALTO METEORITO SÍSMICO!",
+                new Color(1f, 0.35f, 0.15f), 22, 1.1f
+            );
+            CombatVFXManager.Instance.ShakeCamera(0.25f, 0.12f);
+        }
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        int takeoffCount = (customJumpTakeoffFrames != null && customJumpTakeoffFrames.Length > 0) ? customJumpTakeoffFrames.Length : 4;
+        for (int f = 0; f < takeoffCount; f++)
+        {
+            if (isDead) { isPlayingAttackAnim = false; yield break; }
+            if (customJumpTakeoffFrames != null && f < customJumpTakeoffFrames.Length && customJumpTakeoffFrames[f] != null)
+                sr.sprite = customJumpTakeoffFrames[f];
+
+            if (sr != null)
+                sr.color = (f % 2 == 0) ? new Color(1f, 0.45f, 0.15f) : originalColor;
+
+            // Ignición de propulsores dorsales
+            if (CombatVFXManager.Instance != null && f >= 1)
+            {
+                Vector3 thrusterPos = transform.position + Vector3.up * 1.0f - Vector3.right * (dirToKael * 0.5f);
+                CombatVFXManager.Instance.SpawnElectricArc(thrusterPos, Color.cyan);
+                CombatVFXManager.Instance.SpawnHitSparks(thrusterPos, false, 4);
+            }
+            yield return new WaitForSeconds(0.08f);
+        }
+        if (sr != null) sr.color = originalColor;
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.2f, Color.cyan, 2.5f);
+        }
+
+        // --- FASE 2: VUELO PARABÓLICO CINEMÁTICO (Ápice y Picada) ---
+        // Trayectoria parabólica paramétrica real:
+        // x(u) = (1 - u) * x0 + u * xtarget
+        // y(u) = y0 + 4 * h_apex * u * (1 - u)
+        float flightDuration = 0.75f;
+        float apexHeight = 5.2f;
+        float elapsed = 0f;
+        float ghostTimer = 0f;
+
+        while (elapsed < flightDuration)
+        {
+            if (isDead) { isPlayingAttackAnim = false; yield break; }
+
+            float u = Mathf.Clamp01(elapsed / flightDuration);
+            float curX = (1f - u) * startX + u * targetX;
+            float curY = baseGroundY + 4f * apexHeight * u * (1f - u);
+            transform.position = new Vector3(curX, curY, transform.position.z);
+
+            if (u < 0.5f)
+            {
+                // Ascenso hacia el ápice
+                if (customJumpDiveFrames != null && customJumpDiveFrames.Length > 0)
+                {
+                    int diveFrame = Mathf.Clamp(Mathf.FloorToInt(u * 2f * (customJumpDiveFrames.Length * 0.5f)), 0, customJumpDiveFrames.Length - 1);
+                    if (customJumpDiveFrames[diveFrame] != null) sr.sprite = customJumpDiveFrames[diveFrame];
+                }
+            }
+            else
+            {
+                // Picada en meteorito
+                if (customJumpDiveFrames != null && customJumpDiveFrames.Length > 0)
+                {
+                    int diveFrame = Mathf.Clamp(Mathf.FloorToInt(u * customJumpDiveFrames.Length), 0, customJumpDiveFrames.Length - 1);
+                    if (customJumpDiveFrames[diveFrame] != null) sr.sprite = customJumpDiveFrames[diveFrame];
+                }
+
+                if (CombatVFXManager.Instance != null && UnityEngine.Random.value < 0.25f)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(transform.position + Vector3.up * 0.8f, false, 2);
+                }
+            }
+
+            // Estelas holográficas del salto
+            ghostTimer += Time.deltaTime;
+            if (ghostTimer >= 0.08f)
+            {
+                ghostTimer = 0f;
+                if (CombatVFXManager.Instance != null && sr != null && sr.sprite != null)
+                {
+                    CombatVFXManager.Instance.SpawnAfterimageGhost(
+                        sr.sprite,
+                        transform.position,
+                        transform.localScale,
+                        sr.flipX,
+                        new Color(0.2f, 0.85f, 1f, 0.55f)
+                    );
+                }
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // --- FASE 3: IMPACTO SÍSMICO Y RECUPERACIÓN (Sheet 2, Fila 3) ---
+        Vector3 landPos = new Vector3(targetX, baseGroundY, transform.position.z);
+        transform.position = landPos;
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.25f, 0.15f), 0.65f);
+            CombatVFXManager.Instance.ShakeCamera(0.65f, 0.38f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(landPos + Vector3.up * 0.4f, Color.cyan, 4.8f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(landPos + Vector3.up * 0.4f, new Color(1f, 0.15f, 0.45f), 3.4f);
+            CombatVFXManager.Instance.SpawnEnergyPillar(landPos + Vector3.left * 2.2f, Color.cyan);
+            CombatVFXManager.Instance.SpawnEnergyPillar(landPos + Vector3.right * 2.2f, new Color(1f, 0.20f, 0.55f));
+            CombatVFXManager.Instance.SpawnHitSparks(landPos + Vector3.up * 0.5f, true, 20);
+        }
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+
+        // Daño de impacto radial
+        if (kaelTarget != null && Mathf.Abs(kaelTarget.position.x - landPos.x) <= 3.8f)
+        {
+            if (PlayerStats.Instance != null)
+                PlayerStats.Instance.TakeDamage(damage * 1.85f, this);
+            if (CombatVFXManager.Instance != null)
+                CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 12);
+        }
+
+        int landCount = (customJumpLandFrames != null && customJumpLandFrames.Length > 0) ? customJumpLandFrames.Length : 4;
+        for (int f = 0; f < landCount; f++)
+        {
+            if (isDead) { isPlayingAttackAnim = false; yield break; }
+            if (customJumpLandFrames != null && f < customJumpLandFrames.Length && customJumpLandFrames[f] != null)
+                sr.sprite = customJumpLandFrames[f];
+            yield return new WaitForSeconds(0.09f);
+        }
+
+        transform.position = new Vector3(transform.position.x, baseGroundY, transform.position.z);
+        nextMeteorJumpTime = Time.time + (hasEnteredRagePhase ? 4.8f : 7.0f);
+        nextRocketLungeTime = nextMeteorJumpTime;
+        nextAttackTime = Time.time + (0.6f / attackRate);
+        isPlayingAttackAnim = false;
+    }
+
+    private IEnumerator VortexOmegaCrossClawSlashRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        // Telegrafiado de advertencia en garras
+        if (sr != null) sr.color = new Color(1f, 0.65f, 0.35f);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.1f,
+                "⚠ ¡TAJO CRUZADO EN X!",
+                new Color(1f, 0.50f, 0.12f),
+                20,
+                0.8f
+            );
+        }
+        yield return new WaitForSeconds(0.16f);
+        if (sr != null) sr.color = originalColor;
+
+        Sprite[] slashFrames = (customAttackFrames != null && customAttackFrames.Length > 0)
+            ? customAttackFrames
+            : customEnrageAttackFrames;
+        int totalFrames = (slashFrames != null && slashFrames.Length > 0) ? slashFrames.Length : 8;
+        float lungeDist = 1.15f;
+
+        for (int f = 0; f < totalFrames; f++)
+        {
+            if (isDead || isStunned)
+            {
+                isPlayingAttackAnim = false;
+                yield break;
+            }
+
+            if (slashFrames != null && f < slashFrames.Length && slashFrames[f] != null)
+                sr.sprite = slashFrames[f];
+
+            float stepCurve = Mathf.Sin((f / (float)Mathf.Max(1, totalFrames - 1)) * Mathf.PI);
+            transform.position = new Vector3(baseX + dirToKael * lungeDist * stepCurve, baseGroundY, transform.position.z);
+
+            // Primer corte diagonal
+            if (f == 2)
+            {
+                if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.85f);
+                if (inReach && PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(damage * 0.80f, this);
+                }
+                if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
+                }
+            }
+            // Segundo corte en X con estelas carmesí
+            else if (f == 5)
+            {
+                if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.ShakeCamera(0.28f, 0.16f);
+                    CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(1f, 0.15f, 0.40f), 2.2f);
+                }
+                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 1.05f);
+                if (inReach && PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(damage * 0.95f, this);
+                }
+                if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
+                {
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
+                }
+            }
+
+            yield return new WaitForSeconds(0.11f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + (0.65f / attackRate);
         isPlayingAttackAnim = false;
     }
 
@@ -1480,150 +1790,12 @@ public class EnemyDummy : MonoBehaviour
 
     private IEnumerator VortexOmegaEnragedDoubleSlashRoutine()
     {
-        isPlayingAttackAnim = true;
-        transform.localRotation = Quaternion.identity;
-        float baseX = transform.position.x;
-        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
-        if (sr != null) sr.flipX = (dirToKael > 0f);
-
-        int totalFrames = (customEnrageAttackFrames != null && customEnrageAttackFrames.Length >= 8) ? 8 : (customEnrageAttackFrames != null ? customEnrageAttackFrames.Length : 0);
-        float lungeMax = 0.58f;
-
-        for (int f = 0; f < totalFrames; f++)
-        {
-            if (isDead || isStunned)
-            {
-                isPlayingAttackAnim = false;
-                yield break;
-            }
-
-            if (customEnrageAttackFrames != null && f < customEnrageAttackFrames.Length && customEnrageAttackFrames[f] != null)
-                sr.sprite = customEnrageAttackFrames[f];
-
-            float curve = Mathf.Sin((f / (float)Mathf.Max(1, totalFrames - 1)) * Mathf.PI);
-            transform.position = new Vector3(baseX + dirToKael * lungeMax * curve, baseGroundY, transform.position.z);
-
-            if (f == 2)
-            {
-                if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
-                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.80f);
-                if (inReach && PlayerStats.Instance != null)
-                {
-                    PlayerStats.Instance.TakeDamage(damage * 0.75f, this);
-                }
-                if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
-                {
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 5);
-                }
-            }
-            else if (f == 5)
-            {
-                if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
-                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.95f);
-                if (inReach && PlayerStats.Instance != null)
-                {
-                    PlayerStats.Instance.TakeDamage(damage * 0.85f, this);
-                }
-                if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
-                {
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 7);
-                    CombatVFXManager.Instance.ShakeCamera(0.22f, 0.14f);
-                }
-            }
-
-            yield return new WaitForSeconds(0.13f);
-        }
-
-        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + (0.75f / attackRate);
-        isPlayingAttackAnim = false;
+        return VortexOmegaCrossClawSlashRoutine();
     }
 
     private IEnumerator VortexOmegaRocketPunchLungeRoutine()
     {
-        isPlayingAttackAnim = true;
-        transform.localRotation = Quaternion.identity;
-        float baseX = transform.position.x;
-        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
-        if (sr != null) sr.flipX = (dirToKael > 0f);
-
-        if (CombatVFXManager.Instance != null)
-        {
-            CombatVFXManager.Instance.SpawnFloatingText(
-                transform.position + Vector3.up * 2.1f,
-                "⚠ ¡EMBESTIDA PUÑO COHETE!",
-                new Color(1f, 0.40f, 0.12f),
-                22,
-                0.9f
-            );
-        }
-        if (LevelAudioManager.Instance != null)
-            LevelAudioManager.Instance.PlayBossAlert();
-
-        float elapsed = 0f;
-        while (elapsed < 0.45f)
-        {
-            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
-            if (sr != null)
-                sr.color = (Mathf.FloorToInt(elapsed * 14f) % 2 == 0) ? new Color(1f, 0.45f, 0.15f) : originalColor;
-
-            if (customEnrageAttackFrames != null && customEnrageAttackFrames.Length > 1 && customEnrageAttackFrames[1] != null)
-                sr.sprite = customEnrageAttackFrames[1];
-
-            if (CombatVFXManager.Instance != null)
-                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 1.0f - Vector3.right * (dirToKael * 0.7f), new Color(0f, 0.95f, 1f));
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        if (sr != null) sr.color = originalColor;
-
-        float lungeDist = 2.25f;
-        float lungeDuration = 0.22f;
-        float lt = 0f;
-        Vector3 startPos = transform.position;
-        Vector3 targetPos = new Vector3(baseX + dirToKael * lungeDist, baseGroundY, transform.position.z);
-
-        if (customEnrageAttackFrames != null && customEnrageAttackFrames.Length > 3 && customEnrageAttackFrames[3] != null)
-            sr.sprite = customEnrageAttackFrames[3];
-
-        while (lt < lungeDuration)
-        {
-            if (isDead) { isPlayingAttackAnim = false; yield break; }
-            float p = lt / lungeDuration;
-            transform.position = Vector3.Lerp(startPos, targetPos, p);
-            lt += Time.deltaTime;
-            yield return null;
-        }
-        transform.position = targetPos;
-
-        if (customEnrageAttackFrames != null && customEnrageAttackFrames.Length > 4 && customEnrageAttackFrames[4] != null)
-            sr.sprite = customEnrageAttackFrames[4];
-
-        if (LevelAudioManager.Instance != null)
-            LevelAudioManager.Instance.PlayEnemyAttack();
-
-        if (CombatVFXManager.Instance != null)
-        {
-            CombatVFXManager.Instance.ShakeCamera(0.42f, 0.26f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.8f, new Color(1f, 0.35f, 0.15f), 3.4f);
-        }
-
-        bool inImpactReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 1.25f);
-        if (inImpactReach && PlayerStats.Instance != null)
-        {
-            PlayerStats.Instance.TakeDamage(damage * 1.85f, this);
-            if (CombatVFXManager.Instance != null && kaelTarget != null)
-            {
-                CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
-            }
-        }
-
-        yield return new WaitForSeconds(0.35f);
-
-        nextAttackTime = Time.time + (0.75f / attackRate);
-        nextRocketLungeTime = Time.time + 4.2f;
-        isPlayingAttackAnim = false;
+        return VortexOmegaMeteorJumpRoutine();
     }
 
     void LateUpdate()
@@ -1652,6 +1824,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (isMoving)
         {
+            idleAnimTimer = 0f;
             float animSpeed = 8.5f;
             if (visualType == "VortexOmega")
             {
@@ -1686,9 +1859,16 @@ public class EnemyDummy : MonoBehaviour
         }
         else
         {
-            // En rango de ataque esperando cooldown: postura firme de guardia sin correr en el sitio
+            // En rango de ataque esperando cooldown:
             walkAnimTimer = 0f;
-            if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
+            if (visualType == "VortexOmega" && customIdleFrames != null && customIdleFrames.Length > 0)
+            {
+                // Reposo pesado con respiración mecha, pulsación de núcleo y ventilación de vapor
+                idleAnimTimer += Time.deltaTime * 4.5f;
+                int idleFrame = Mathf.FloorToInt(idleAnimTimer) % customIdleFrames.Length;
+                if (customIdleFrames[idleFrame] != null) sr.sprite = customIdleFrames[idleFrame];
+            }
+            else if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
             {
                 sr.sprite = customWalkFrames[0];
             }
