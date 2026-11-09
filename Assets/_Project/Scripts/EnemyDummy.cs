@@ -1441,10 +1441,9 @@ public class EnemyDummy : MonoBehaviour
         float dirToKael = (kaelTarget != null && kaelTarget.position.x > startX) ? 1f : -1f;
         if (sr != null) sr.flipX = (dirToKael > 0f);
 
-        // Muestreo del objetivo delimitado dentro del nivel
-        float targetX = (kaelTarget != null)
-            ? Mathf.Clamp(kaelTarget.position.x, -10.5f, 10.5f)
-            : Mathf.Clamp(startX + dirToKael * 4.5f, -10.5f, 10.5f);
+        // Objetivo: la posición ACTUAL de Kael en coordenadas del mundo (el nivel hace scroll,
+        // por lo que NO se debe limitar a coordenadas absolutas). Se re-apunta durante el vuelo.
+        float targetX = (kaelTarget != null) ? kaelTarget.position.x : startX + dirToKael * 4.5f;
 
         // --- FASE 1: PREPARACIÓN Y DESPEGUE (Sheet 2, Fila 1) ---
         if (CombatVFXManager.Instance != null)
@@ -1488,8 +1487,20 @@ public class EnemyDummy : MonoBehaviour
         // Trayectoria parabólica paramétrica real:
         // x(u) = (1 - u) * x0 + u * xtarget
         // y(u) = y0 + 4 * h_apex * u * (1 - u)
-        float flightDuration = 0.75f;
+        float flightDuration = 0.95f;
         float apexHeight = 5.2f;
+
+        // Mantener el jefe SIEMPRE dentro del encuadre: limitar la altura del ápice
+        // según el borde superior de la cámara y la altura visual del sprite.
+        Camera cam = Camera.main;
+        if (cam != null && cam.orthographic)
+        {
+            float camTop = cam.transform.position.y + cam.orthographicSize;
+            float spriteH = (sr != null && sr.sprite != null) ? sr.bounds.size.y : 2.5f;
+            float maxApex = camTop - 0.25f - spriteH - baseGroundY;
+            apexHeight = Mathf.Clamp(maxApex, 1.8f, 5.2f);
+        }
+
         float elapsed = 0f;
         float ghostTimer = 0f;
 
@@ -1498,7 +1509,15 @@ public class EnemyDummy : MonoBehaviour
             if (isDead) { isPlayingAttackAnim = false; yield break; }
 
             float u = Mathf.Clamp01(elapsed / flightDuration);
-            float curX = (1f - u) * startX + u * targetX;
+
+            // Re-apuntado: hasta el 80% del vuelo sigue a Kael para caer encima de él
+            if (kaelTarget != null && u < 0.8f)
+            {
+                targetX = Mathf.Lerp(targetX, kaelTarget.position.x, 10f * Time.deltaTime);
+            }
+            if (sr != null && Mathf.Abs(targetX - startX) > 0.3f) sr.flipX = (targetX > startX);
+
+            float curX = Mathf.Lerp(startX, targetX, u);
             float curY = baseGroundY + 4f * apexHeight * u * (1f - u);
             transform.position = new Vector3(curX, curY, transform.position.z);
 
