@@ -451,6 +451,12 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
+        // ISSUE #19: Si el Protocolo Baluarte del Dron N.E.X.A. está activo, absorbe hasta 3 impactos
+        if (NexaDroneCompanion.Instance != null && NexaDroneCompanion.Instance.TryAbsorbDamage(dmg))
+        {
+            return;
+        }
+
         bool guarded = (KaelAutoController.Instance != null && KaelAutoController.Instance.isGuarding);
 
         float finalDmg = dmg * (1f - armorDamageReduction);
@@ -473,7 +479,17 @@ public class PlayerStats : MonoBehaviour
         }
 
         finalDmg = Mathf.Max(1f, finalDmg);
-        currentHP = Mathf.Max(0f, currentHP - finalDmg);
+
+        bool baluarteReady = (NexaDroneCompanion.Instance != null && !NexaDroneCompanion.Instance.IsShieldActive && !NexaDroneCompanion.Instance.IsOverheated);
+        if (baluarteReady && currentHP > maxHP * 0.25f && (currentHP - finalDmg) <= 0f)
+        {
+            currentHP = Mathf.Max(1f, maxHP * 0.12f);
+        }
+        else
+        {
+            currentHP = Mathf.Max(0f, currentHP - finalDmg);
+        }
+
         OnStatsChanged?.Invoke();
 
         if (CombatVFXManager.Instance != null && kaelTransform != null)
@@ -485,6 +501,12 @@ public class PlayerStats : MonoBehaviour
                 popTxt,
                 popCol, guarded ? 16 : 15, 0.65f
             );
+        }
+
+        // ISSUE #19: Si la vida de Kael cae por debajo del 25%, el Dron despliega el Protocolo Baluarte
+        if (currentHP > 0f && NexaDroneCompanion.Instance != null)
+        {
+            NexaDroneCompanion.Instance.CheckEmergencyShieldTrigger();
         }
 
         if (currentHP <= 0f)
@@ -508,6 +530,11 @@ public class PlayerStats : MonoBehaviour
         RecalculateStats();
         currentHP = maxHP;
         Time.timeScale = 1f;
+
+        if (NexaDroneCompanion.Instance != null)
+        {
+            NexaDroneCompanion.Instance.ResetCompanion();
+        }
 
         WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
         if (spawner != null)

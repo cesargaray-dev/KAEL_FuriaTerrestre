@@ -75,6 +75,17 @@ public class StoryAssetProcessor
             Debug.LogError("No se encontró Dialogue_Portraits.png en Sprites/UI");
         }
 
+        // 4. Procesar Sprite del Dron N.E.X.A.
+        string droneSrc = Path.Combine(uiDir, "NexaDrone.png");
+        if (File.Exists(droneSrc))
+        {
+            string droneDst = Path.Combine(resDir, "NexaDrone.png");
+            File.Copy(droneSrc, droneDst, true);
+            AssetDatabase.ImportAsset(droneDst, ImportAssetOptions.ForceUpdate);
+            ConfigureSprite(droneDst);
+            successCount++;
+        }
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
