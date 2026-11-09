@@ -33,9 +33,9 @@ public class Level3VerificationSuite : AssetPostprocessor
     private static readonly Dictionary<string, string[]> ArchetypeStates = new Dictionary<string, string[]>()
     {
         { "BioStalker", new string[] { "Walk", "Attack", "Die" } },
-        { "BioLasher", new string[] { "Walk", "Attack", "Die" } },
-        { "BioHulk", new string[] { "Walk", "Attack", "Die" } },
-        { "HiveInquisitor", new string[] { "Walk", "Attack", "Die" } },
+        { "BioLasher", new string[] { "Walk", "Attack", "Tornado", "Die" } },
+        { "BioHulk", new string[] { "Walk", "Attack", "Laser", "Die" } },
+        { "HiveInquisitor", new string[] { "Walk", "Attack", "Missiles", "VortexFlame", "Die" } },
         { "VortexOmega", new string[] { "Walk", "Attack", "Laser", "PhaseTrans", "EnrageAttack", "Die" } }
     };
 
@@ -198,7 +198,7 @@ public class Level3VerificationSuite : AssetPostprocessor
     // =========================================================================
     private static void Verify1_SlicedSpriteInventory()
     {
-        int totalFramesExpected = 144;
+        int totalFramesExpected = 176;
         int framesFoundOnDisk = 0;
         int framesLoadableInResources = 0;
         int generatorFramesValid = 0;
@@ -256,9 +256,9 @@ public class Level3VerificationSuite : AssetPostprocessor
 
         // Archetype specific breakdowns
         Assert(ArchetypeStates["BioStalker"].Length * 8 == 24, "V1_BioStalker_FrameCount", "BioStalker has 24 frames (Walk, Attack, Die x 8)");
-        Assert(ArchetypeStates["BioLasher"].Length * 8 == 24, "V1_BioLasher_FrameCount", "BioLasher has 24 frames (Walk, Attack, Die x 8)");
-        Assert(ArchetypeStates["BioHulk"].Length * 8 == 24, "V1_BioHulk_FrameCount", "BioHulk has 24 frames (Walk, Attack, Die x 8)");
-        Assert(ArchetypeStates["HiveInquisitor"].Length * 8 == 24, "V1_HiveInquisitor_FrameCount", "HiveInquisitor has 24 frames (Walk, Attack, Die x 8)");
+        Assert(ArchetypeStates["BioLasher"].Length * 8 == 32, "V1_BioLasher_FrameCount", "BioLasher has 32 frames (Walk, Attack, Tornado, Die x 8)");
+        Assert(ArchetypeStates["BioHulk"].Length * 8 == 32, "V1_BioHulk_FrameCount", "BioHulk has 32 frames (Walk, Attack, Laser, Die x 8)");
+        Assert(ArchetypeStates["HiveInquisitor"].Length * 8 == 40, "V1_HiveInquisitor_FrameCount", "HiveInquisitor has 40 frames (Walk, Attack, Missiles, VortexFlame, Die x 8)");
         Assert(ArchetypeStates["VortexOmega"].Length * 8 == 48, "V1_VortexOmega_FrameCount", "VortexOmega has 48 frames (Walk, Attack, Laser, PhaseTrans, EnrageAttack, Die x 8)");
     }
 

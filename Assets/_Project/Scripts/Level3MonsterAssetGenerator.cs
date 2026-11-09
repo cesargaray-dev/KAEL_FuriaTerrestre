@@ -75,6 +75,24 @@ public static class Level3MonsterAssetGenerator
     }
 
     /// <summary>
+    /// Devuelve el pivote normalizado adecuado para el fotograma del monstruo según el ancho de textura.
+    /// Para anchos estándar (<= 256) o estado Walk se mantiene exactamente (0.500f, 0.025f).
+    /// Para estados con ataques extensos hacia la izquierda (Láser, Torbellino, Fuego Terrestre),
+    /// ancla el cuerpo a (texWidth - 128) para que la espina dorsal coincida exactamente con transform.position.x
+    /// y el rayo/efecto se proyecte hacia Kael sin desplazar al monstruo.
+    /// </summary>
+    public static Vector2 GetMonsterPivot(string prefix, string state, int texWidth, int texHeight)
+    {
+        float footY = 0.025f;
+        if (state == "Walk" || texWidth <= 256)
+        {
+            return new Vector2(0.5f, footY);
+        }
+        float spineX = texWidth - 128f;
+        return new Vector2(spineX / texWidth, footY);
+    }
+
+    /// <summary>
     /// Carga los 8 fotogramas de animación desde Resources/Level3/ o genera un fallback procedural nítido.
     /// </summary>
     public static Sprite[] GetMonsterAnimationFrames(string prefix, string state, float pixelsPerUnit = 0f)
@@ -97,10 +115,11 @@ public static class Level3MonsterAssetGenerator
             {
                 tex.filterMode = FilterMode.Point;
                 tex.wrapMode = TextureWrapMode.Clamp;
+                Vector2 pivot = GetMonsterPivot(prefix, state, tex.width, tex.height);
                 Sprite sp = Sprite.Create(
                     tex,
                     new Rect(0f, 0f, tex.width, tex.height),
-                    new Vector2(0.5f, 0.025f),
+                    pivot,
                     pixelsPerUnit,
                     0,
                     SpriteMeshType.FullRect

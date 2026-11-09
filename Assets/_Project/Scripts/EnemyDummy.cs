@@ -62,6 +62,9 @@ public class EnemyDummy : MonoBehaviour
     private Sprite[] customLaserFrames;
     private Sprite[] customPhaseTransFrames;
     private Sprite[] customEnrageAttackFrames;
+    private Sprite[] customMissileFrames;
+    private Sprite[] customVortexFlameFrames;
+    private Sprite[] customTornadoFrames;
     public bool isInvulnerable = false;
     private float nextLaserTime = 0f;
     private float nextRocketLungeTime = 0f;
@@ -91,14 +94,18 @@ public class EnemyDummy : MonoBehaviour
 
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Walk", 140f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Attack", 140f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Tornado", 140f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Die", 140f);
 
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Walk", 122f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Attack", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Laser", 122f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Die", 122f);
 
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Walk", 122f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Attack", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Missiles", 122f);
+        Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "VortexFlame", 122f);
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Die", 122f);
 
         Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Walk", 118f);
@@ -269,7 +276,20 @@ public class EnemyDummy : MonoBehaviour
         customAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Attack", ppu);
         customDieFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames(resourcePrefix, "Die", ppu);
 
-        if (resourcePrefix == "VortexOmega")
+        if (resourcePrefix == "BioLasher")
+        {
+            customTornadoFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioLasher", "Tornado", ppu);
+        }
+        else if (resourcePrefix == "BioHulk")
+        {
+            customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("BioHulk", "Laser", ppu);
+        }
+        else if (resourcePrefix == "HiveInquisitor")
+        {
+            customMissileFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "Missiles", ppu);
+            customVortexFlameFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("HiveInquisitor", "VortexFlame", ppu);
+        }
+        else if (resourcePrefix == "VortexOmega")
         {
             customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "Laser", ppu);
             customPhaseTransFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "PhaseTrans", ppu);
@@ -553,15 +573,33 @@ public class EnemyDummy : MonoBehaviour
             {
                 if (visualType == "HiveInquisitor")
                 {
-                    StartCoroutine(HiveInquisitorPsionicAttackRoutine());
+                    attackCounter++;
+                    int mode = attackCounter % 3;
+                    if (mode == 0)
+                        StartCoroutine(HiveInquisitorPsionicAttackRoutine());
+                    else if (mode == 1)
+                        StartCoroutine(HiveInquisitorMissileBarrageRoutine());
+                    else
+                        StartCoroutine(HiveInquisitorVortexFlameRoutine());
                 }
                 else if (visualType == "BioHulk")
                 {
                     attackCounter++;
-                    if (attackCounter % 2 == 0)
-                        StartCoroutine(TelegraphedHeavyAttack());
-                    else
+                    int mode = attackCounter % 3;
+                    if (mode == 0)
                         StartCoroutine(BioHulkGroundSmashRoutine());
+                    else if (mode == 1)
+                        StartCoroutine(BioHulkChestLaserRoutine());
+                    else
+                        StartCoroutine(TelegraphedHeavyAttack());
+                }
+                else if (visualType == "BioLasher")
+                {
+                    attackCounter++;
+                    if (attackCounter % 2 == 0)
+                        StartCoroutine(BioLasherTornadoRoutine());
+                    else
+                        StartCoroutine(PlayVisibleAttackRoutine());
                 }
                 else
                 {
@@ -696,6 +734,186 @@ public class EnemyDummy : MonoBehaviour
     }
 
     /// <summary>
+    /// Ataque de Bombardeo de Proyectiles Psiónicos del Inquisidor Vorst (Fila 0):
+    /// Carga orbes de plasma oscuro en ambas manos y dispara 5 dardos psiónicos en abanico telegrafiado.
+    /// </summary>
+    private IEnumerator HiveInquisitorMissileBarrageRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            string txt = isMiniBoss ? "⚠ ¡MISILES PSIÓNICOS DEL ARCONTE!" : "⚠ ¡DESCARGA DE DARDOS VORST!";
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, txt, new Color(0.90f, 0.20f, 1f), 19, 0.9f);
+        }
+
+        Vector3 handPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.45f);
+        int totalFrames = (customMissileFrames != null && customMissileFrames.Length >= 8) ? 8 : (customMissileFrames != null ? customMissileFrames.Length : 0);
+
+        // Cuadros 0, 1, 2: Concentración de energía en esferas gemelas
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customMissileFrames != null && f < customMissileFrames.Length && customMissileFrames[f] != null)
+                sr.sprite = customMissileFrames[f];
+
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(handPos, new Color(0.85f, 0.20f, 1f));
+                CombatVFXManager.Instance.SpawnHitSparks(handPos, false, 2);
+            }
+            yield return new WaitForSeconds(0.14f);
+        }
+
+        // Cuadro 3 y 4: Lanzamiento en abanico de 5 misiles psiónicos con estela
+        if (customMissileFrames != null && customMissileFrames.Length > 3 && customMissileFrames[3] != null)
+            sr.sprite = customMissileFrames[3];
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayEnemyAttack();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.ShakeCamera(0.24f, 0.16f);
+            for (int m = 1; m <= 5; m++)
+            {
+                Vector3 dartPos = handPos + Vector3.right * (dirToKael * m * 1.25f) + Vector3.up * (Mathf.Sin(m * 0.8f) * 0.35f);
+                CombatVFXManager.Instance.SpawnElectricArc(dartPos, new Color(0.85f, 0.25f, 1f));
+                CombatVFXManager.Instance.SpawnShockwaveRing(dartPos, new Color(0.95f, 0.25f, 0.85f), 1.2f + m * 0.2f);
+            }
+        }
+
+        yield return new WaitForSeconds(0.22f);
+
+        if (customMissileFrames != null && customMissileFrames.Length > 4 && customMissileFrames[4] != null)
+            sr.sprite = customMissileFrames[4];
+
+        // Impacto frontal a Kael
+        if (kaelTarget != null)
+        {
+            float diffX = kaelTarget.position.x - transform.position.x;
+            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+            float dist = Mathf.Abs(diffX);
+            if (isInFront && dist <= 7.2f && PlayerStats.Instance != null)
+            {
+                float hitDmg = isMiniBoss ? damage * 1.30f : damage * 1.10f;
+                PlayerStats.Instance.TakeDamage(hitDmg, this);
+                if (CombatVFXManager.Instance != null)
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
+            }
+        }
+
+        yield return new WaitForSeconds(0.20f);
+
+        // Cuadros 5..7: Recuperación suave de la postura
+        for (int f = 5; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customMissileFrames != null && f < customMissileFrames.Length && customMissileFrames[f] != null)
+                sr.sprite = customMissileFrames[f];
+            yield return new WaitForSeconds(0.12f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.2f, 3.0f);
+        isPlayingAttackAnim = false;
+    }
+
+    /// <summary>
+    /// Ataque de Torbellino Psiónico y Muro de Fuego Terrestre del Inquisidor Vorst (Fila 1):
+    /// Alza sus brazos canalizando un torbellino púrpura bajo sus pies y luego libera una ola de fuego
+    /// y relámpagos oscuros que avanza reptando por el piso hacia Kael.
+    /// </summary>
+    private IEnumerator HiveInquisitorVortexFlameRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            string txt = isMiniBoss ? "⚠ ¡TORBELLINO Y OLA DE PLASMA TERRESTRE!" : "⚠ ¡LLAMA OSCURA TERRESTRE VORST!";
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.9f, txt, new Color(0.95f, 0.15f, 0.70f), 20, 1.0f);
+        }
+
+        int totalFrames = (customVortexFlameFrames != null && customVortexFlameFrames.Length >= 8) ? 8 : (customVortexFlameFrames != null ? customVortexFlameFrames.Length : 0);
+
+        // Cuadros 0, 1, 2: Torbellino giratorio en los pies
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customVortexFlameFrames != null && f < customVortexFlameFrames.Length && customVortexFlameFrames[f] != null)
+                sr.sprite = customVortexFlameFrames[f];
+
+            if (CombatVFXManager.Instance != null)
+            {
+                Vector3 feetPos = transform.position + Vector3.up * 0.25f;
+                CombatVFXManager.Instance.SpawnShockwaveRing(feetPos, new Color(0.85f, 0.15f, 0.95f), 1.6f + f * 0.5f);
+                CombatVFXManager.Instance.SpawnElectricArc(feetPos, new Color(0.90f, 0.20f, 1f));
+            }
+            yield return new WaitForSeconds(0.18f);
+        }
+
+        // Cuadro 3: DESPLIEGUE MASIVO DE LLAMA Y RELÁMPAGOS TERRESTRES
+        if (customVortexFlameFrames != null && customVortexFlameFrames.Length > 3 && customVortexFlameFrames[3] != null)
+            sr.sprite = customVortexFlameFrames[3];
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayBossAlert();
+
+        float waveLength = 8.0f;
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.ShakeCamera(0.36f, 0.24f);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.70f, 0.10f, 0.85f), 0.40f);
+
+            // Muro de fuego reptante por el suelo hacia Kael
+            for (int p = 1; p <= 4; p++)
+            {
+                Vector3 pillarPos = new Vector3(baseX + dirToKael * (p * 1.85f), baseGroundY, 0f);
+                CombatVFXManager.Instance.SpawnEnergyPillar(pillarPos, (p % 2 == 0) ? new Color(0.85f, 0.15f, 1f) : new Color(0.45f, 0.10f, 0.95f));
+                CombatVFXManager.Instance.SpawnElectricArc(pillarPos + Vector3.up * 0.5f, new Color(1f, 0.35f, 0.90f));
+            }
+        }
+
+        // Impacto a Kael si se encuentra en el suelo en el rango de la ola
+        if (kaelTarget != null)
+        {
+            float diffX = kaelTarget.position.x - transform.position.x;
+            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+            float dist = Mathf.Abs(diffX);
+            if (isInFront && dist <= waveLength && kaelTarget.position.y <= baseGroundY + 1.2f && PlayerStats.Instance != null)
+            {
+                float hitDmg = isMiniBoss ? damage * 1.45f : damage * 1.20f;
+                PlayerStats.Instance.TakeDamage(hitDmg, this);
+                if (CombatVFXManager.Instance != null)
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.5f, true, 10);
+            }
+        }
+
+        yield return new WaitForSeconds(0.32f);
+
+        // Cuadros 4..7: Recuperación de la postura
+        for (int f = 4; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customVortexFlameFrames != null && f < customVortexFlameFrames.Length && customVortexFlameFrames[f] != null)
+                sr.sprite = customVortexFlameFrames[f];
+            yield return new WaitForSeconds(0.14f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.4f, 3.2f);
+        isPlayingAttackAnim = false;
+    }
+
+    /// <summary>
     /// Ataque de Impacto Sísmico del Coloso de Crisálida (BioHulk): alza ambos puños, sobrecarga
     /// sus tanques dorsales y estampa el suelo levantando ondas sísmicas púrpuras y verdes.
     /// </summary>
@@ -763,6 +981,156 @@ public class EnemyDummy : MonoBehaviour
         isPlayingAttackAnim = false;
     }
 
+    /// <summary>
+    /// Ataque de Cañón Láser de Pecho del Coloso de Crisálida (BioHulk - Fila 2):
+    /// Los tanques dorsales brillan verde neón, la placa pectoral se abre y dispara un potente
+    /// haz de plasma pesado hacia el jugador.
+    /// </summary>
+    private IEnumerator BioHulkChestLaserRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.0f,
+                "⚠ ¡CAÑÓN LÁSER DE CRISÁLIDA!",
+                new Color(0.20f, 0.95f, 0.40f),
+                21,
+                1.0f
+            );
+        }
+
+        Vector3 chestPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.5f);
+        int totalFrames = (customLaserFrames != null && customLaserFrames.Length >= 8) ? 8 : (customLaserFrames != null ? customLaserFrames.Length : 0);
+
+        // Cuadros 0, 1, 2: Sobrecarga de tanques dorsales y apertura de compuerta de pecho
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
+
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(0.20f, 0.95f, 0.35f));
+                CombatVFXManager.Instance.SpawnHitSparks(chestPos, false, 3);
+            }
+            yield return new WaitForSeconds(0.16f);
+        }
+
+        // Cuadro 3: DISPARO MASIVO DEL RAYO LÁSER VERDE
+        if (customLaserFrames != null && customLaserFrames.Length > 3 && customLaserFrames[3] != null)
+            sr.sprite = customLaserFrames[3];
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayUltimateLaser();
+
+        float beamLength = 7.5f;
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, 0.45f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, new Color(0.20f, 0.95f, 0.40f), 3.0f);
+            CombatVFXManager.Instance.ShakeCamera(0.36f, 0.22f);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.15f, 0.95f, 0.35f), 0.35f);
+        }
+
+        // Impacto a Kael si se encuentra en la trayectoria del haz
+        if (kaelTarget != null)
+        {
+            float diffX = kaelTarget.position.x - transform.position.x;
+            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+            float dist = Mathf.Abs(diffX);
+            if (isInFront && dist <= beamLength && PlayerStats.Instance != null)
+            {
+                PlayerStats.Instance.TakeDamage(damage * 1.50f, this);
+                if (CombatVFXManager.Instance != null)
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+            }
+        }
+
+        yield return new WaitForSeconds(0.30f);
+
+        // Cuadros 4..7: Enfriamiento de ventilación de vapor
+        for (int f = 4; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
+            yield return new WaitForSeconds(0.12f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.2f, 3.0f);
+        isPlayingAttackAnim = false;
+    }
+
+    /// <summary>
+    /// Ataque de Ciclón de Tentáculos de la Alienígena Neón Tentacular (BioLasher - Fila 2):
+    /// Hace girar violentamente sus tentáculos en un vórtice cortante con chispas de energía psiónica.
+    /// </summary>
+    private IEnumerator BioLasherTornadoRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 1.7f,
+                "⚠ ¡CICLÓN DE TENTÁCULOS!",
+                new Color(0.20f, 0.90f, 1f),
+                19,
+                0.9f
+            );
+        }
+
+        if (LevelAudioManager.Instance != null)
+            LevelAudioManager.Instance.PlayEnemyAttack();
+
+        int totalFrames = (customTornadoFrames != null && customTornadoFrames.Length >= 8) ? 8 : (customTornadoFrames != null ? customTornadoFrames.Length : 0);
+        float cycloneReach = 2.80f;
+
+        for (int f = 0; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customTornadoFrames != null && f < customTornadoFrames.Length && customTornadoFrames[f] != null)
+                sr.sprite = customTornadoFrames[f];
+
+            if (CombatVFXManager.Instance != null && (f == 2 || f == 4))
+            {
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.15f, 0.95f, 1f), 2.4f);
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 0.9f, new Color(0.85f, 0.20f, 1f));
+                CombatVFXManager.Instance.ShakeCamera(0.18f, 0.12f);
+            }
+
+            // Impactos en fotogramas de máxima expansión
+            if (f == 3 || f == 5)
+            {
+                bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= cycloneReach);
+                if (inReach && PlayerStats.Instance != null)
+                {
+                    PlayerStats.Instance.TakeDamage(damage * 0.75f, this);
+                    if (CombatVFXManager.Instance != null && kaelTarget != null)
+                        CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 6);
+                }
+            }
+
+            yield return new WaitForSeconds(0.12f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(1.8f, 2.5f);
+        isPlayingAttackAnim = false;
+    }
+
     // Secuencia de ataque fluida en 8 cuadros (incluye salto parabólico en BioStalker y latigazo en BioLasher)
     IEnumerator PlayVisibleAttackRoutine()
     {
@@ -808,7 +1176,7 @@ public class EnemyDummy : MonoBehaviour
                     CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
             }
 
-            float frameWait = (visualType == "VortexOmega") ? 0.13f : 0.088f;
+            float frameWait = (visualType == "VortexOmega") ? 0.13f : ((visualType == "BioLasher") ? 0.12f : 0.088f);
             yield return new WaitForSeconds(frameWait);
         }
 
@@ -1000,40 +1368,69 @@ public class EnemyDummy : MonoBehaviour
         {
             CombatVFXManager.Instance.TriggerBossWarning(
                 "⚠ ¡SOBRECARGA DEL NÚCLEO: FASE 2 MECHA BERSERKER! ⚠",
-                "VORTEX-OMEGA ENTRA EN ESTADO DE FURIA CRÍTICA (+25% VELOCIDAD)",
-                2.2f
+                "VORTEX-OMEGA DESATA SU PROTOCOLO DE EXTERMINIO OVERCLOCK",
+                3.2f
             );
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.15f, 0.45f), 0.75f);
-            CombatVFXManager.Instance.ShakeCamera(0.65f, 0.30f);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.15f, 0.45f), 0.85f);
+            CombatVFXManager.Instance.ShakeCamera(0.45f, 0.35f);
         }
 
         int totalFrames = (customPhaseTransFrames != null && customPhaseTransFrames.Length >= 8) ? 8 : (customPhaseTransFrames != null ? customPhaseTransFrames.Length : 0);
-        for (int f = 0; f < totalFrames; f++)
+
+        // ETAPA 1: COMPRESIÓN Y SOBRECARGA DEL REACTOR (Cuadros 0..2, ~0.9s)
+        for (int f = 0; f < 3; f++)
         {
             if (isDead) yield break;
-
             if (customPhaseTransFrames != null && f < customPhaseTransFrames.Length && customPhaseTransFrames[f] != null)
                 sr.sprite = customPhaseTransFrames[f];
 
             if (sr != null)
-                sr.color = (f % 2 == 0) ? Color.white : new Color(1f, 0.35f, 0.65f);
+                sr.color = (f % 2 == 0) ? new Color(1f, 0.5f, 0.2f) : new Color(0.2f, 0.95f, 1f);
 
             if (CombatVFXManager.Instance != null)
-                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * UnityEngine.Random.Range(0.4f, 1.8f), new Color(1f, 0.2f, 0.5f));
-
-            if (f == 4 && CombatVFXManager.Instance != null)
             {
-                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(1.00f, 0.15f, 0.45f), 4.5f);
-                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.15f, 0.95f, 1.00f), 3.2f);
-                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(1.00f, 0.85f, 0.20f), 2.0f);
-                CombatVFXManager.Instance.SpawnEnergyPillar(transform.position + Vector3.left * 1.8f, new Color(1f, 0.20f, 0.55f));
-                CombatVFXManager.Instance.SpawnEnergyPillar(transform.position + Vector3.right * 1.8f, new Color(0f, 0.95f, 1f));
-                CombatVFXManager.Instance.SpawnHitSparks(transform.position + Vector3.up * 1.1f, true, 16);
-                CombatVFXManager.Instance.ShakeCamera(0.55f, 0.25f);
-                CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.2f, 0.5f), 0.60f);
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * UnityEngine.Random.Range(0.6f, 1.8f), new Color(1f, 0.3f, 0.1f));
+                CombatVFXManager.Instance.ShakeCamera(0.15f, 0.10f);
             }
+            yield return new WaitForSeconds(0.30f);
+        }
 
-            yield return new WaitForSeconds(0.18f);
+        // ETAPA 2: ESTALLIDO RADIAL Y APERTURA DE VÁLVULAS (Cuadro 3..5, ~1.2s)
+        for (int f = 3; f < 6; f++)
+        {
+            if (isDead) yield break;
+            if (customPhaseTransFrames != null && f < customPhaseTransFrames.Length && customPhaseTransFrames[f] != null)
+                sr.sprite = customPhaseTransFrames[f];
+
+            if (sr != null)
+                sr.color = (f == 4) ? Color.white : new Color(1f, 0.2f, 0.5f);
+
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 1.0f, new Color(1.00f, 0.15f, 0.45f), 5.2f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 1.0f, new Color(0.15f, 0.95f, 1.00f), 3.6f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 1.0f, new Color(1.00f, 0.85f, 0.20f), 2.2f);
+                CombatVFXManager.Instance.SpawnEnergyPillar(transform.position + Vector3.left * 2.2f, new Color(1f, 0.20f, 0.55f));
+                CombatVFXManager.Instance.SpawnEnergyPillar(transform.position + Vector3.right * 2.2f, new Color(0f, 0.95f, 1f));
+                CombatVFXManager.Instance.SpawnHitSparks(transform.position + Vector3.up * 1.2f, true, 20);
+                CombatVFXManager.Instance.ShakeCamera(0.65f, 0.35f);
+                CombatVFXManager.Instance.TriggerScreenFlash(new Color(1f, 0.2f, 0.5f), 0.70f);
+            }
+            yield return new WaitForSeconds(0.40f);
+        }
+
+        // ETAPA 3: RUGIDO BERSERKER Y ACTIVACIÓN DE POSTQUEMADORES (Cuadro 6..7, ~0.8s)
+        for (int f = 6; f < totalFrames; f++)
+        {
+            if (isDead) yield break;
+            if (customPhaseTransFrames != null && f < customPhaseTransFrames.Length && customPhaseTransFrames[f] != null)
+                sr.sprite = customPhaseTransFrames[f];
+
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 1.4f, new Color(1f, 0.1f, 0.4f));
+            }
+            yield return new WaitForSeconds(0.35f);
         }
 
         WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
@@ -1048,7 +1445,18 @@ public class EnemyDummy : MonoBehaviour
         originalColor = new Color(1f, 0.70f, 0.85f, 1f);
         if (sr != null) sr.color = originalColor;
 
-        yield return new WaitForSeconds(0.20f);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.2f,
+                "¡PROTOCOLO OVERCLOCK INICIADO!",
+                new Color(1f, 0.2f, 0.4f),
+                22,
+                1.2f
+            );
+        }
+
+        yield return new WaitForSeconds(0.40f);
 
         isInvulnerable = false;
         isPlayingAttackAnim = false;
@@ -1262,6 +1670,7 @@ public class EnemyDummy : MonoBehaviour
         else
         {
             // En rango de ataque esperando cooldown: postura firme de guardia sin correr en el sitio
+            walkAnimTimer = 0f;
             if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
             {
                 sr.sprite = customWalkFrames[0];
