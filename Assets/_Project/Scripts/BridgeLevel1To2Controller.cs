@@ -147,6 +147,7 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             PlayerStats.Instance.isChoosingDilemma = false;
             PlayerStats.Instance.isPaused = false;
             PlayerStats.Instance.isUpgradeTreeOpen = false;
+            PlayerStats.Instance.isArsenalShopOpen = false;
         }
 
         WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();

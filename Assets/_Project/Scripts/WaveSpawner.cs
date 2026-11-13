@@ -62,13 +62,7 @@ public class WaveSpawner : MonoBehaviour
 
     void Update()
     {
-        if (PlayerStats.Instance != null &&
-            (PlayerStats.Instance.isPaused ||
-             PlayerStats.Instance.isUpgradeTreeOpen ||
-             PlayerStats.Instance.isChoosingSkill ||
-             PlayerStats.Instance.isGameOver ||
-             PlayerStats.Instance.isLevelCompleted ||
-             PlayerStats.Instance.isChoosingDilemma))
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
         if (BridgeLevel1To2Controller.Instance != null && BridgeLevel1To2Controller.Instance.isBridgeActive)

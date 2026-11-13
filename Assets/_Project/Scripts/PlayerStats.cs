@@ -2,9 +2,146 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 
+/// <summary>
+/// Variantes tácticas desbloqueables del Guantelete Nexo en el Arsenal de Vanguardia (Issue #21).
+/// </summary>
+public enum GauntletVariant
+{
+    PrototypeCyan = 0,
+    PyroReactor = 1,
+    IgneousPlasma = 2,
+    VorstVoid = 3
+}
+
+/// <summary>
+/// Especificación técnica, visual y económica de cada variante de Guantelete Nexo.
+/// </summary>
+public readonly struct GauntletSpec
+{
+    public readonly GauntletVariant Variant;
+    public readonly string CodeName;
+    public readonly string DisplayName;
+    public readonly string ElementTag;
+    public readonly int GoldCost;
+    public readonly string PassiveTitle;
+    public readonly string PassiveSummary;
+    public readonly string CombatSpecsLine;
+    public readonly Color PrimaryColor;
+    public readonly Color SecondaryColor;
+    public readonly Color CoreColor;
+    public readonly string AccentHex;
+    public readonly string TextureResourcePath;
+
+    public GauntletSpec(
+        GauntletVariant variant,
+        string codeName,
+        string displayName,
+        string elementTag,
+        int goldCost,
+        string passiveTitle,
+        string passiveSummary,
+        string combatSpecsLine,
+        Color primaryColor,
+        Color secondaryColor,
+        Color coreColor,
+        string accentHex,
+        string textureResourcePath)
+    {
+        Variant = variant;
+        CodeName = codeName;
+        DisplayName = displayName;
+        ElementTag = elementTag;
+        GoldCost = goldCost;
+        PassiveTitle = passiveTitle;
+        PassiveSummary = passiveSummary;
+        CombatSpecsLine = combatSpecsLine;
+        PrimaryColor = primaryColor;
+        SecondaryColor = secondaryColor;
+        CoreColor = coreColor;
+        AccentHex = accentHex;
+        TextureResourcePath = textureResourcePath;
+    }
+}
+
 public class PlayerStats : MonoBehaviour
 {
     public static PlayerStats Instance { get; private set; }
+
+    public const int NEXA_DRONE_COST = 120;
+    public const float IGNEOUS_CRIT_BONUS = 0.15f;
+    public const float VORST_LIFESTEAL_RATIO = 0.05f;
+    public const float PYRO_BURN_DURATION = 3.5f;
+    public const float PYRO_BURN_TICK_INTERVAL = 0.5f;
+
+    public static readonly GauntletSpec[] GauntletCatalog = new GauntletSpec[]
+    {
+        new GauntletSpec(
+            GauntletVariant.PrototypeCyan,
+            "MK-I PROTOTIPO",
+            "Guantelete Prototipo (Cian)",
+            "ELÉCTRICO NEXO",
+            0,
+            "Estabilidad Táctica Nexo",
+            "Balance energético estándar de fábrica con descargas eléctricas cian originales de Kael.",
+            "CRIT +0%  |  QUEMADURA: NO  |  ROBO VIDA: 0%  |  VFX: CIAN",
+            new Color(0.20f, 0.94f, 1.00f),
+            new Color(0.08f, 0.50f, 1.00f),
+            Color.white,
+            "#33F0FF",
+            "StoryUI/Gauntlets/Gauntlet_Prototype_Cyan"
+        ),
+        new GauntletSpec(
+            GauntletVariant.PyroReactor,
+            "MK-II PIRO-REACTOR",
+            "Guantelete Piro-Reactor (Carmesí)",
+            "TÉRMICO / FUEGO",
+            80,
+            "Combustión Continua (DoT)",
+            "Inyecta plasma térmico en cada golpe y Ultimate: inflige quemadura continua por tick de fuego durante 3.5s.",
+            "QUEMADURA: 7 TICKS (3.5s)  |  DAÑO FUEGO CONTINUO  |  VFX: CARMESÍ",
+            new Color(1.00f, 0.22f, 0.14f),
+            new Color(1.00f, 0.56f, 0.06f),
+            new Color(1.00f, 0.90f, 0.55f),
+            "#FF4733",
+            "StoryUI/Gauntlets/Gauntlet_Pyro_Crimson"
+        ),
+        new GauntletSpec(
+            GauntletVariant.IgneousPlasma,
+            "MK-III PLASMA ÍGNEO",
+            "Guantelete de Plasma Ígneo (Dorado)",
+            "SOBRECARGA SOLAR",
+            140,
+            "Calibración Letal (+15% Crítico)",
+            "Sobrecarga los nudillos con filamentos de plasma dorado que elevan la probabilidad crítica en +15%.",
+            "CRIT +15% PERMANENTE  |  CHISPAS SOLARES  |  VFX: DORADO",
+            new Color(1.00f, 0.84f, 0.16f),
+            new Color(1.00f, 0.48f, 0.04f),
+            new Color(1.00f, 0.98f, 0.78f),
+            "#FFD629",
+            "StoryUI/Gauntlets/Gauntlet_Plasma_Gold"
+        ),
+        new GauntletSpec(
+            GauntletVariant.VorstVoid,
+            "MK-IV VACÍO VORST",
+            "Guantelete de Vacío Vorst (Púrpura)",
+            "SINGULARIDAD VORST",
+            200,
+            "Sifón Biotecnológico (5% Robo de Vida)",
+            "Canaliza energía de núcleo Vorst en el impacto: absorbe el 5% del daño infligido como recuperación de HP.",
+            "ROBO DE VIDA: 5% DEL DAÑO  |  IMPACTO ABISAL  |  VFX: PÚRPURA",
+            new Color(0.76f, 0.22f, 1.00f),
+            new Color(0.98f, 0.16f, 0.68f),
+            new Color(0.95f, 0.82f, 1.00f),
+            "#C947FF",
+            "StoryUI/Gauntlets/Gauntlet_Void_Purple"
+        )
+    };
+
+    public static GauntletSpec GetGauntletSpec(GauntletVariant variant)
+    {
+        int idx = Mathf.Clamp((int)variant, 0, GauntletCatalog.Length - 1);
+        return GauntletCatalog[idx];
+    }
 
     [Header("Ajuste Visual de Barra sobre Kael")]
     [Tooltip("Altura de la barra de vida sobre los pies de Kael (1.95 queda arriba del cabello)")]
@@ -21,7 +158,16 @@ public class PlayerStats : MonoBehaviour
     public bool isChoosingDilemma = false;
     public bool isChoosingSkill = false;
     public bool isUpgradeTreeOpen = false;
+    public bool isArsenalShopOpen = false;
     public bool isLevelCompleted = false;
+
+    [Header("Arsenal de Vanguardia (Issue #21): Guanteletes y Dron N.E.X.A.")]
+    public GauntletVariant equippedGauntlet = GauntletVariant.PrototypeCyan;
+    public int unlockedGauntletsMask = 1; // Bit 0 (Prototipo Cian) desbloqueado por defecto
+    public bool hasPurchasedNexaDrone = false;
+
+    public bool IsAnyBlockingModalOpen =>
+        isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen || isArsenalShopOpen;
 
     [Header("Economía, Nivel y Moral (Compasión vs Rigor)")]
     public int gold = 0;
@@ -102,6 +248,15 @@ public class PlayerStats : MonoBehaviour
     private Texture2D texPanelCrimson;
     private Texture2D texPanelGold;
 
+    public Texture2D TexBtnCyan => texBtnCyan;
+    public Texture2D TexBtnCrimson => texBtnCrimson;
+    public Texture2D TexBtnGold => texBtnGold;
+    public Texture2D TexBtnEmerald => texBtnEmerald;
+    public Texture2D TexBtnPurple => texBtnPurple;
+    public Texture2D TexPanelCyan => texPanelCyan;
+    public Texture2D TexPanelCrimson => texPanelCrimson;
+    public Texture2D TexPanelGold => texPanelGold;
+
     [Header("Catálogo de Iconos Pixel-Art HD del Árbol de Habilidades (Issue #20)")]
     private Texture2D iconFuerzaNexo;
     private Texture2D iconVigorVital;
@@ -125,6 +280,13 @@ public class PlayerStats : MonoBehaviour
     private readonly Color colGoldYel  = new Color(1.00f, 0.82f, 0.22f, 1.00f);
     private readonly Color colCyanNexo = new Color(0.22f, 0.90f, 1.00f, 1.00f);
 
+    public Color ColBgDark => colBgDark;
+    public Color ColBorder => colBorder;
+    public Color ColHpGreen => colHpGreen;
+    public Color ColExpPurp => colExpPurp;
+    public Color ColGoldYel => colGoldYel;
+    public Color ColCyanNexo => colCyanNexo;
+
     // Colores diferenciados por atributo
     private readonly Color colAttrFuerza    = new Color(1.00f, 0.36f, 0.28f, 1.00f);
     private readonly Color colAttrVigor     = new Color(0.18f, 0.94f, 0.52f, 1.00f);
@@ -143,6 +305,7 @@ public class PlayerStats : MonoBehaviour
         Time.timeScale = 1f;
 
         LoadCyberUITextures();
+        ArsenalShopUI.EnsureExists();
 
         string activeScene = SceneManager.GetActiveScene().name;
         if (activeScene == "03_Nivel3_Colmena")
@@ -164,6 +327,7 @@ public class PlayerStats : MonoBehaviour
 
         RecalculateStats();
         currentHP = maxHP;
+        SyncEquippedGauntletVisuals();
     }
 
     void LoadCyberUITextures()
@@ -229,6 +393,9 @@ public class PlayerStats : MonoBehaviour
         levelOvercharge = 0;
         levelSeismicEdge = 0;
         currentUltCharge = 0f;
+        equippedGauntlet = GauntletVariant.PrototypeCyan;
+        unlockedGauntletsMask = 1;
+        hasPurchasedNexaDrone = false;
     }
 
     public void SaveProgressForNextLevel()
@@ -254,6 +421,9 @@ public class PlayerStats : MonoBehaviour
         PlayerPrefs.SetInt("KAEL_LvThrusters", levelThrusters);
         PlayerPrefs.SetInt("KAEL_LvOvercharge", levelOvercharge);
         PlayerPrefs.SetInt("KAEL_LvSeismic", levelSeismicEdge);
+        PlayerPrefs.SetInt("KAEL_EquippedGauntlet", (int)equippedGauntlet);
+        PlayerPrefs.SetInt("KAEL_UnlockedGauntlets", unlockedGauntletsMask | 1);
+        PlayerPrefs.SetInt("KAEL_NexaDroneBought", hasPurchasedNexaDrone ? 1 : 0);
         PlayerPrefs.Save();
     }
 
@@ -282,6 +452,10 @@ public class PlayerStats : MonoBehaviour
                 levelThrusters = PlayerPrefs.GetInt("KAEL_LvThrusters", levelThrusters);
                 levelOvercharge = PlayerPrefs.GetInt("KAEL_LvOvercharge", levelOvercharge);
                 levelSeismicEdge = PlayerPrefs.GetInt("KAEL_LvSeismic", levelSeismicEdge);
+                unlockedGauntletsMask = PlayerPrefs.GetInt("KAEL_UnlockedGauntlets", 1) | 1;
+                int eqIdx = Mathf.Clamp(PlayerPrefs.GetInt("KAEL_EquippedGauntlet", 0), 0, GauntletCatalog.Length - 1);
+                equippedGauntlet = IsGauntletUnlocked((GauntletVariant)eqIdx) ? (GauntletVariant)eqIdx : GauntletVariant.PrototypeCyan;
+                hasPurchasedNexaDrone = PlayerPrefs.GetInt("KAEL_NexaDroneBought", 0) == 1;
             }
             else if (playerLevel == 1 && levelAtk == 1)
             {
@@ -298,11 +472,12 @@ public class PlayerStats : MonoBehaviour
     {
         KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
         if (kael != null) kaelTransform = kael.transform;
+        SyncEquippedGauntletVisuals();
     }
 
     void Update()
     {
-        if (!isPaused && !isGameOver && !isLevelCompleted && !isChoosingDilemma && !isChoosingSkill && !isUpgradeTreeOpen)
+        if (!IsAnyBlockingModalOpen)
         {
             levelTimer += Time.deltaTime;
 
@@ -377,7 +552,10 @@ public class PlayerStats : MonoBehaviour
         hpRegenPerSec = 1.0f + (branchGuardian * 3.5f) + (levelArmor * 0.6f);
         attackDamage = Mathf.RoundToInt((12f + ((levelAtk - 1) * 6f) * Mathf.Pow(1.08f, levelAtk - 1) + ((playerLevel - 1) * 4f)) * atkBonus);
         attackRate = (1.2f + ((levelSpd - 1) * 0.14f)) * (1f + levelThrusters * 0.06f);
-        critChance = Mathf.Clamp(0.05f + ((levelCrit - 1) * 0.04f) + (branchFuria * 0.05f) + (levelSeismicEdge * 0.03f), 0.05f, 0.85f);
+        critChance = Mathf.Clamp(
+            0.05f + ((levelCrit - 1) * 0.04f) + (branchFuria * 0.05f) + (levelSeismicEdge * 0.03f)
+            + (equippedGauntlet == GauntletVariant.IgneousPlasma ? IGNEOUS_CRIT_BONUS : 0f),
+            0.05f, 0.95f);
         goldMultiplier = 1.0f + ((levelGold - 1) * 0.20f);
 
         armorDamageReduction = Mathf.Clamp(levelArmor * 0.06f, 0f, 0.35f);
@@ -471,7 +649,7 @@ public class PlayerStats : MonoBehaviour
 
     public void TakeDamage(float dmg, EnemyDummy attacker = null)
     {
-        if (isLevelCompleted || isGameOver || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen) return;
+        if (isLevelCompleted || isGameOver || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen || isArsenalShopOpen) return;
 
         // BLOQUE 1 (Issue #16): Verificar Ventana de Bloqueo Perfecto (Parry Nexo <= 0.35s)
         if (KaelAutoController.Instance != null && KaelAutoController.Instance.IsWithinPerfectParryWindow())
@@ -481,8 +659,8 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
-        // ISSUE #19: Si el Protocolo Baluarte del Dron N.E.X.A. está activo, absorbe hasta 3 impactos
-        if (NexaDroneCompanion.Instance != null && NexaDroneCompanion.Instance.TryAbsorbDamage(dmg))
+        // ISSUE #19 & #21: Solo si el Dron N.E.X.A. fue adquirido en el Arsenal, absorbe impactos con Protocolo Baluarte
+        if (hasPurchasedNexaDrone && NexaDroneCompanion.Instance != null && NexaDroneCompanion.Instance.TryAbsorbDamage(dmg))
         {
             return;
         }
@@ -510,7 +688,7 @@ public class PlayerStats : MonoBehaviour
 
         finalDmg = Mathf.Max(1f, finalDmg);
 
-        bool baluarteReady = (NexaDroneCompanion.Instance != null && !NexaDroneCompanion.Instance.IsShieldActive && !NexaDroneCompanion.Instance.IsOverheated);
+        bool baluarteReady = (hasPurchasedNexaDrone && NexaDroneCompanion.Instance != null && !NexaDroneCompanion.Instance.IsShieldActive && !NexaDroneCompanion.Instance.IsOverheated);
         if (baluarteReady && currentHP > maxHP * 0.25f && (currentHP - finalDmg) <= 0f)
         {
             currentHP = Mathf.Max(1f, maxHP * 0.12f);
@@ -533,8 +711,8 @@ public class PlayerStats : MonoBehaviour
             );
         }
 
-        // ISSUE #19: Si la vida de Kael cae por debajo del 25%, el Dron despliega el Protocolo Baluarte
-        if (currentHP > 0f && NexaDroneCompanion.Instance != null)
+        // ISSUE #19: Si la vida de Kael cae por debajo del 25% y el Dron fue comprado, despliega el Protocolo Baluarte
+        if (hasPurchasedNexaDrone && currentHP > 0f && NexaDroneCompanion.Instance != null)
         {
             NexaDroneCompanion.Instance.CheckEmergencyShieldTrigger();
         }
@@ -576,6 +754,7 @@ public class PlayerStats : MonoBehaviour
     public void TriggerEndOfZoneDilemma()
     {
         isUpgradeTreeOpen = false;
+        isArsenalShopOpen = false;
         isChoosingSkill = false;
         isChoosingDilemma = true;
         Time.timeScale = 0f;
@@ -589,7 +768,7 @@ public class PlayerStats : MonoBehaviour
     public void TogglePause()
     {
         if (isLevelCompleted || isGameOver || isChoosingDilemma) return;
-        if (isUpgradeTreeOpen || isChoosingSkill)
+        if (isUpgradeTreeOpen || isChoosingSkill || isArsenalShopOpen)
         {
             CloseAllUpgradeModals();
             return;
@@ -605,6 +784,7 @@ public class PlayerStats : MonoBehaviour
         if (isLevelCompleted || isGameOver || isChoosingDilemma || isPaused) return;
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
 
+        isArsenalShopOpen = false;
         isUpgradeTreeOpen = !isUpgradeTreeOpen;
         isChoosingSkill = isUpgradeTreeOpen;
         if (isUpgradeTreeOpen && skillPoints > 0)
@@ -619,9 +799,40 @@ public class PlayerStats : MonoBehaviour
         if (isLevelCompleted || isGameOver || isChoosingDilemma || isPaused) return;
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
 
+        isArsenalShopOpen = false;
         selectedTreeTab = Mathf.Clamp(tabIndex, 0, 2);
         isUpgradeTreeOpen = true;
         isChoosingSkill = true;
+        Time.timeScale = 0f;
+    }
+
+    public void ToggleArsenalShopModal()
+    {
+        if (isLevelCompleted || isGameOver || isChoosingDilemma || isPaused) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+
+        isUpgradeTreeOpen = false;
+        isChoosingSkill = false;
+        isArsenalShopOpen = !isArsenalShopOpen;
+        if (isArsenalShopOpen && ArsenalShopUI.Instance != null)
+        {
+            ArsenalShopUI.Instance.OnShopOpened(equippedGauntlet);
+        }
+        Time.timeScale = isArsenalShopOpen ? 0f : 1f;
+    }
+
+    public void OpenArsenalShopModal()
+    {
+        if (isLevelCompleted || isGameOver || isChoosingDilemma || isPaused) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+
+        isUpgradeTreeOpen = false;
+        isChoosingSkill = false;
+        isArsenalShopOpen = true;
+        if (ArsenalShopUI.Instance != null)
+        {
+            ArsenalShopUI.Instance.OnShopOpened(equippedGauntlet);
+        }
         Time.timeScale = 0f;
     }
 
@@ -629,8 +840,106 @@ public class PlayerStats : MonoBehaviour
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
         isUpgradeTreeOpen = false;
+        isArsenalShopOpen = false;
         isChoosingSkill = false;
         Time.timeScale = 1f;
+    }
+
+    // =========================================================================
+    // ARSENAL DE VANGUARDIA (Issue #21): API DE COMPRA, EQUIPO Y PASIVAS
+    // =========================================================================
+
+    public bool IsGauntletUnlocked(GauntletVariant variant)
+    {
+        if (variant == GauntletVariant.PrototypeCyan) return true;
+        int bit = 1 << (int)variant;
+        return (unlockedGauntletsMask & bit) != 0;
+    }
+
+    public bool PurchaseOrEquipGauntlet(GauntletVariant variant)
+    {
+        GauntletSpec spec = GetGauntletSpec(variant);
+        bool unlocked = IsGauntletUnlocked(variant);
+
+        if (!unlocked)
+        {
+            if (gold < spec.GoldCost) return false;
+            gold -= spec.GoldCost;
+            unlockedGauntletsMask |= (1 << (int)variant);
+        }
+
+        equippedGauntlet = variant;
+        RecalculateStats();
+        SyncEquippedGauntletVisuals();
+        return true;
+    }
+
+    public bool PurchaseNexaDrone()
+    {
+        if (hasPurchasedNexaDrone || gold < NEXA_DRONE_COST) return false;
+
+        gold -= NEXA_DRONE_COST;
+        hasPurchasedNexaDrone = true;
+
+        Transform kaelT = kaelTransform;
+        if (kaelT == null && KaelAutoController.Instance != null)
+        {
+            kaelT = KaelAutoController.Instance.transform;
+            kaelTransform = kaelT;
+        }
+
+        NexaDroneCompanion drone = NexaDroneCompanion.EnsureExists(kaelT);
+        if (drone != null)
+        {
+            drone.ActivateFromPurchase(kaelT);
+        }
+
+        OnStatsChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>
+    /// Calcula el daño por tick de quemadura continua del Guantelete Piro-Reactor.
+    /// </summary>
+    public float GetPyroBurnDamagePerTick()
+    {
+        return Mathf.Round(6f + (playerLevel * 2f) + (branchFuria * 2f) + (attackDamage * 0.14f));
+    }
+
+    /// <summary>
+    /// Aplica el 5% de robo de vida del Guantelete de Vacío Vorst sobre el daño real infligido.
+    /// </summary>
+    public float ApplyGauntletLifeSteal(float actualDamageDealt)
+    {
+        if (equippedGauntlet != GauntletVariant.VorstVoid || actualDamageDealt <= 0f || currentHP <= 0f)
+            return 0f;
+
+        float stealAmt = actualDamageDealt * VORST_LIFESTEAL_RATIO;
+        currentHP = Mathf.Min(maxHP, currentHP + stealAmt);
+        OnStatsChanged?.Invoke();
+        return stealAmt;
+    }
+
+    public void SyncEquippedGauntletVisuals()
+    {
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SetGauntletVariant(equippedGauntlet);
+        }
+    }
+
+    public int CountAffordableArsenalItems()
+    {
+        int count = 0;
+        for (int i = 0; i < GauntletCatalog.Length; i++)
+        {
+            GauntletSpec spec = GauntletCatalog[i];
+            if (!IsGauntletUnlocked(spec.Variant) && gold >= spec.GoldCost)
+                count++;
+        }
+        if (!hasPurchasedNexaDrone && gold >= NEXA_DRONE_COST)
+            count++;
+        return count;
     }
 
     // --- FUNCIONES AUXILIARES DE ESCALADO NATIVO (1920x1080 -> Píxeles Reales) ---
@@ -653,7 +962,7 @@ public class PlayerStats : MonoBehaviour
     }
 
     // Dibuja un botón biselado con textura cyberpunk profesional + animación de iluminación en hover
-    bool DrawSkinnedCyberButton(Rect baseRect, Texture2D skinTex, string mainText, string subText, int mainFontSize, int subFontSize, Color mainTextCol, Color subTextCol, Color fallbackAccent, bool enabled = true)
+    public bool DrawSkinnedCyberButton(Rect baseRect, Texture2D skinTex, string mainText, string subText, int mainFontSize, int subFontSize, Color mainTextCol, Color subTextCol, Color fallbackAccent, bool enabled = true)
     {
         Rect r = ScaleRect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
         bool hovered = enabled && r.Contains(Event.current.mousePosition);
@@ -693,7 +1002,7 @@ public class PlayerStats : MonoBehaviour
         return enabled && GUI.Button(r, GUIContent.none, GUIStyle.none);
     }
 
-    void DrawSkinnedCyberPanel(Rect r, Texture2D panelTex, Color fallbackBorder)
+    public void DrawSkinnedCyberPanel(Rect r, Texture2D panelTex, Color fallbackBorder)
     {
         if (panelTex != null)
         {
@@ -723,7 +1032,10 @@ public class PlayerStats : MonoBehaviour
 
         GUI.matrix = Matrix4x4.identity;
 
-        DrawKaelWorldHealthBar();
+        if (!isUpgradeTreeOpen && !isArsenalShopOpen)
+        {
+            DrawKaelWorldHealthBar();
+        }
 
         // --- A) BARRA SUPERIOR COMPACTA: PERFIL DE KAEL ---
         Rect profileBox = ScaleRect(18, 12, 512, 98);
@@ -739,7 +1051,7 @@ public class PlayerStats : MonoBehaviour
         DrawProgressBar(ScaleRect(36, 75, 476, 18), expRatio, new Color(0.10f, 0.05f, 0.20f), colExpPurp, $"EXP: {currentExp} / {expToNextLevel}", 12);
 
         // Botón parpadeante cuando tienes Puntos de Habilidad disponibles
-        if (skillPoints > 0 && !isPaused && !isGameOver && !isLevelCompleted && !isChoosingDilemma && !isUpgradeTreeOpen)
+        if (skillPoints > 0 && !IsAnyBlockingModalOpen)
         {
             if (DrawSkinnedCyberButton(
                 new Rect(538f, 12f, 228f, 68f),
@@ -778,7 +1090,7 @@ public class PlayerStats : MonoBehaviour
             isPaused ? texBtnEmerald : texBtnCyan,
             isPaused ? "▶ REANUDAR" : "❚❚ PAUSA",
             "[ESC]",
-            15, 11, Color.white, colCyanNexo, colBorder, true))
+            15, 11, Color.white, colCyanNexo, colBorder, !isGameOver && !isLevelCompleted && !isChoosingDilemma))
         {
             TogglePause();
         }
@@ -787,10 +1099,14 @@ public class PlayerStats : MonoBehaviour
         DrawComboAndOverdriveHUD();
 
         // --- D) BARRA INFERIOR COMPACTA ESTILO ACTION RPG ---
-        DrawActionRpgBottomBar();
+        if (!isUpgradeTreeOpen && !isArsenalShopOpen)
+        {
+            DrawActionRpgBottomBar();
+        }
 
         // --- E) VENTANAS MODALES EMERGENTES ---
         if (isUpgradeTreeOpen || isChoosingSkill) DrawUpgradeTreeModal();
+        if (isArsenalShopOpen && ArsenalShopUI.Instance != null) ArsenalShopUI.Instance.DrawShopModal();
         if (isPaused) DrawPauseModal();
         if (isGameOver) DrawGameOverModal(spawner);
         if (isChoosingDilemma) DrawNarrativeDilemmaModal();
@@ -802,7 +1118,7 @@ public class PlayerStats : MonoBehaviour
     // =========================================================================
     void DrawComboAndOverdriveHUD()
     {
-        if (isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isUpgradeTreeOpen)
+        if (IsAnyBlockingModalOpen)
             return;
 
         // 1. Indicador de Transformación Moral Dinámica bajo el perfil de Kael (Bloque 4)
@@ -892,39 +1208,42 @@ public class PlayerStats : MonoBehaviour
         }
 
         // 1. SECCIÓN IZQUIERDA: Controles Rápidos + Botones Táctiles/Mouse Opcionales (A / S / D)
-        Rect ctrlBox = ScaleRect(16f, 1002f, 678f, 68f);
+        Rect ctrlBox = ScaleRect(16f, 1002f, 610f, 68f);
         DrawSkinnedCyberPanel(ctrlBox, texPanelCyan, colBorder);
 
-        DrawHoldControlPill(new Rect(28f, 1011f, 76f, 50f), "◀ [A]", "IZQ", kael != null && (KaelAutoController.IsLeftHeld() || kael.hudMoveLeftHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveLeftHeld = true; });
-        DrawHoldControlPill(new Rect(110f, 1011f, 94f, 50f), "🛡 [S]", "GUARDIA", kael != null && kael.isGuarding, new Color(0.35f, 0.95f, 1f), () => { if (kael != null) kael.hudGuardHeld = true; });
-        DrawHoldControlPill(new Rect(210f, 1011f, 76f, 50f), "▶ [D]", "DER", kael != null && (KaelAutoController.IsRightHeld() || kael.hudMoveRightHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveRightHeld = true; });
+        DrawHoldControlPill(new Rect(26f, 1011f, 72f, 50f), "◀ [A]", "IZQ", kael != null && (KaelAutoController.IsLeftHeld() || kael.hudMoveLeftHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveLeftHeld = true; });
+        DrawHoldControlPill(new Rect(104f, 1011f, 88f, 50f), "🛡 [S]", "GUARDIA", kael != null && kael.isGuarding, new Color(0.35f, 0.95f, 1f), () => { if (kael != null) kael.hudGuardHeld = true; });
+        DrawHoldControlPill(new Rect(198f, 1011f, 72f, 50f), "▶ [D]", "DER", kael != null && (KaelAutoController.IsRightHeld() || kael.hudMoveRightHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveRightHeld = true; });
 
-        DrawStyledText(ScaleRect(298f, 1010f, 385f, 26f),
-            "<color=#38e1ff>[A / D]</color> Mover    <color=#38e1ff>[S]</color> Guardia (-40% Daño)",
-            14, TextAnchor.MiddleLeft, Color.white);
-        DrawStyledText(ScaleRect(298f, 1036f, 385f, 26f),
-            "<color=#ffd35c>[J / Espacio]</color> Atacar    <color=#2ee678>[K / Q]</color> Ultimate",
-            14, TextAnchor.MiddleLeft, new Color(0.85f, 0.92f, 1f));
+        DrawStyledText(ScaleRect(280f, 1010f, 336f, 26f),
+            "<color=#38e1ff>[A/D]</color> Mover   <color=#38e1ff>[S]</color> Guardia (-45%)",
+            13, TextAnchor.MiddleLeft, Color.white);
+        DrawStyledText(ScaleRect(280f, 1036f, 336f, 26f),
+            "<color=#ffd35c>[J]</color> Atacar   <color=#2ee678>[K]</color> Ult   <color=#ffd35c>[B]</color> Tienda",
+            13, TextAnchor.MiddleLeft, new Color(0.85f, 0.92f, 1f));
 
         // 2. BOTÓN DE ACCIÓN BISELADO: ATACAR [J / ESPACIO]
         int comboStep = (kael != null) ? kael.currentCombo : 0;
-        string comboLabel = (comboStep > 0) ? $"⚔ ATACAR [J] • COMBO {comboStep}/3" : "⚔ ATACAR [J / ESPACIO]";
-        string comboSub = (comboStep == 2) ? "¡SIGUIENTE GOLPE: SÍSMICO EN ÁREA!" : $"GOLPE MANUAL • CADENCIA {attackRate:F1}/s";
+        string comboLabel = (comboStep > 0) ? $"⚔ ATACAR [J] • {comboStep}/3" : "⚔ ATACAR [J / ESP]";
+        string comboSub = (comboStep == 2) ? "¡SIGUIENTE: SÍSMICO!" : $"CADENCIA {attackRate:F1}/s";
 
         if (DrawSkinnedCyberButton(
-            new Rect(706f, 1002f, 320f, 68f),
+            new Rect(636f, 1002f, 274f, 68f),
             (comboStep == 3) ? texBtnGold : texBtnCrimson,
             comboLabel, comboSub,
-            17, 12, Color.white, (comboStep == 2) ? colGoldYel : new Color(1f, 0.85f, 0.80f), colAttrFuerza, true))
+            16, 11, Color.white, (comboStep == 2) ? colGoldYel : new Color(1f, 0.85f, 0.80f), colAttrFuerza, !IsAnyBlockingModalOpen))
         {
             if (kael != null) kael.TriggerManualAttack();
         }
 
         // 3. BOTÓN DE ACCIÓN BISELADO: SOBRECARGA ULTIMATE [K / Q]
-        DrawCompactUltimateButton(new Rect(1038f, 1002f, 386f, 68f));
+        DrawCompactUltimateButton(new Rect(920f, 1002f, 314f, 68f));
 
-        // 4. BOTÓN DESTACADO BISELADO: 🧬 ÁRBOL DE MEJORAS [TAB / M]
-        DrawUpgradeTreeDockButton(new Rect(1436f, 1002f, 468f, 68f));
+        // 4. BOTÓN TIENDA TÁCTICA: ARSENAL DE VANGUARDIA [B / T]
+        DrawArsenalShopDockButton(new Rect(1246f, 1002f, 320f, 68f));
+
+        // 5. BOTÓN DESTACADO BISELADO: 🧬 ÁRBOL DE MEJORAS [TAB / M]
+        DrawUpgradeTreeDockButton(new Rect(1578f, 1002f, 326f, 68f));
     }
 
     void DrawHoldControlPill(Rect baseRect, string topTxt, string subTxt, bool isActive, Color accentCol, Action onHold)
@@ -952,7 +1271,7 @@ public class PlayerStats : MonoBehaviour
 
     void DrawCompactUltimateButton(Rect baseRect)
     {
-        bool ready = IsUltReady && !isPaused && !isGameOver && !isLevelCompleted && !isChoosingDilemma && !isUpgradeTreeOpen;
+        bool ready = IsUltReady && !IsAnyBlockingModalOpen;
         float pulse = ready ? (0.82f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 6f)) * 0.25f) : 1f;
 
         Rect r = ScaleRect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
@@ -976,11 +1295,11 @@ public class PlayerStats : MonoBehaviour
         GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        string mainTitle = ready ? "⚡ ¡SOBRECARGA LISTA! [K / Q]" : $"⚡ SOBRECARGA [K] ({Mathf.FloorToInt(currentUltCharge)}%)";
-        string subTitle = ready ? "CLIC O [K] PARA DISPARAR CAÑÓN NEXO" : "GOLPEA CON [J] PARA CARGAR ENERGÍA";
+        string mainTitle = ready ? "⚡ ¡SOBRECARGA! [K/Q]" : $"⚡ SOBRECARGA [K] ({Mathf.FloorToInt(currentUltCharge)}%)";
+        string subTitle = ready ? "CLIC O [K] PARA CAÑÓN NEXO" : "GOLPEA CON [J] PARA CARGAR";
 
-        DrawStyledText(ScaleRect(baseRect.x + 12f, baseRect.y + 7f, baseRect.width - 24f, 28f), mainTitle, 16, TextAnchor.MiddleCenter, ready ? Color.white : colCyanNexo);
-        DrawStyledText(ScaleRect(baseRect.x + 12f, baseRect.y + 34f, baseRect.width - 24f, 24f), subTitle, 12, TextAnchor.MiddleCenter, ready ? colGoldYel : new Color(0.78f, 0.90f, 1f));
+        DrawStyledText(ScaleRect(baseRect.x + 10f, baseRect.y + 7f, baseRect.width - 20f, 28f), mainTitle, 15, TextAnchor.MiddleCenter, ready ? Color.white : colCyanNexo);
+        DrawStyledText(ScaleRect(baseRect.x + 10f, baseRect.y + 34f, baseRect.width - 20f, 24f), subTitle, 11, TextAnchor.MiddleCenter, ready ? colGoldYel : new Color(0.78f, 0.90f, 1f));
 
         if (ready && isHovered)
         {
@@ -996,30 +1315,68 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
+    void DrawArsenalShopDockButton(Rect baseRect)
+    {
+        int affordableArsenal = CountAffordableArsenalItems();
+        GauntletSpec eqSpec = GetGauntletSpec(equippedGauntlet);
+        Texture2D btnSkin = equippedGauntlet switch
+        {
+            GauntletVariant.PyroReactor => texBtnCrimson,
+            GauntletVariant.IgneousPlasma => texBtnGold,
+            GauntletVariant.VorstVoid => texBtnPurple,
+            _ => texBtnCyan
+        };
+
+        string subTxt = (affordableArsenal > 0)
+            ? $"¡{affordableArsenal} NUEVO(S) DESBLOQUEABLE(S)!"
+            : $"ACTIVO: {eqSpec.CodeName}" + (hasPurchasedNexaDrone ? " • DRON ON" : " • DRON OFF");
+
+        if (DrawSkinnedCyberButton(
+            baseRect,
+            btnSkin,
+            "⚙ ARSENAL DE VANGUARDIA [B]",
+            subTxt,
+            15, 11,
+            Color.white,
+            affordableArsenal > 0 ? colGoldYel : eqSpec.PrimaryColor,
+            eqSpec.PrimaryColor, !IsAnyBlockingModalOpen))
+        {
+            ToggleArsenalShopModal();
+        }
+
+        if (affordableArsenal > 0 && !IsAnyBlockingModalOpen)
+        {
+            float bounce = Mathf.Sin(Time.unscaledTime * 6.5f) * 3f;
+            Rect badgeRect = ScaleRect(baseRect.x + baseRect.width - 134f, baseRect.y - 18f + bounce, 126f, 24f);
+            DrawCyberBox(badgeRect, new Color(0.18f, 0.92f, 0.98f, 1f), Color.white, 1.5f);
+            DrawStyledText(badgeRect, $"🛒 {affordableArsenal} EN TIENDA", 12, TextAnchor.MiddleCenter, new Color(0.02f, 0.06f, 0.10f));
+        }
+    }
+
     void DrawUpgradeTreeDockButton(Rect baseRect)
     {
         int affordableCount = CountAvailableUpgrades();
         bool hasNotification = (affordableCount > 0 || skillPoints > 0);
 
         string subStatus = (skillPoints > 0)
-            ? $"★ ¡{skillPoints} PTO(S) EVOLUCIÓN + {affordableCount} MEJORAS!"
-            : (affordableCount > 0 ? $"● ¡{affordableCount} MEJORA(S) DISPONIBLE(S) CON TU ORO!" : "MATRIZ DE ATRIBUTOS, EVOLUCIÓN Y ARSENAL");
+            ? $"★ ¡{skillPoints} PTO EVOLUCIÓN + {affordableCount} MEJ.!"
+            : (affordableCount > 0 ? $"● ¡{affordableCount} MEJORA(S) CON ORO!" : "ATRIBUTOS Y EVOLUCIÓN [TAB]");
 
         if (DrawSkinnedCyberButton(
             baseRect,
             hasNotification ? texBtnGold : texBtnPurple,
-            "🧬 ÁRBOL DE MEJORAS [TAB / M]",
+            "🧬 ÁRBOL DE MEJORAS [TAB]",
             subStatus,
-            18, 12,
+            16, 11,
             hasNotification ? colGoldYel : Color.white,
             hasNotification ? Color.white : new Color(0.84f, 0.88f, 1f),
-            colGoldYel, true))
+            colGoldYel, !IsAnyBlockingModalOpen))
         {
             ToggleUpgradeTreeModal();
         }
 
         // Globo / insignia dorada flotante cuando alcanza el oro
-        if (hasNotification)
+        if (hasNotification && !IsAnyBlockingModalOpen)
         {
             float bounce = Mathf.Sin(Time.unscaledTime * 7f) * 3f;
             Rect badgeRect = ScaleRect(baseRect.x + baseRect.width - 144f, baseRect.y - 18f + bounce, 136f, 24f);
@@ -1047,19 +1404,30 @@ public class PlayerStats : MonoBehaviour
             15, TextAnchor.MiddleLeft, new Color(0.84f, 0.93f, 1f));
 
         // Indicadores de Oro y Puntos de Evolución en la cabecera
-        DrawSkinnedCyberPanel(ScaleRect(956f, 48f, 242f, 58f), texPanelGold, colGoldYel);
-        DrawStyledText(ScaleRect(956f, 48f, 242f, 58f), $"● {gold} ORO", 22, TextAnchor.MiddleCenter, colGoldYel);
+        DrawSkinnedCyberPanel(ScaleRect(880f, 48f, 210f, 58f), texPanelGold, colGoldYel);
+        DrawStyledText(ScaleRect(880f, 48f, 210f, 58f), $"● {gold} ORO", 21, TextAnchor.MiddleCenter, colGoldYel);
 
-        DrawSkinnedCyberPanel(ScaleRect(1212f, 48f, 274f, 58f), texPanelCyan, colExpPurp);
-        DrawStyledText(ScaleRect(1212f, 48f, 274f, 58f), $"✦ {skillPoints} PTOS EVOLUCIÓN", 18, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
+        DrawSkinnedCyberPanel(ScaleRect(1102f, 48f, 232f, 58f), texPanelCyan, colExpPurp);
+        DrawStyledText(ScaleRect(1102f, 48f, 232f, 58f), $"✦ {skillPoints} PTOS EVOLUCIÓN", 16, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
+
+        if (DrawSkinnedCyberButton(
+            new Rect(1346f, 48f, 234f, 58f),
+            texBtnGold,
+            "⚙ TIENDA ARSENAL [B]",
+            "GUANTELETES & N.E.X.A.",
+            15, 10, Color.white, colGoldYel, colGoldYel, true))
+        {
+            OpenArsenalShopModal();
+            return;
+        }
 
         // Botón biselado ✖ CERRAR ÁRBOL [TAB / ESC]
         if (DrawSkinnedCyberButton(
-            new Rect(1502f, 48f, 338f, 58f),
+            new Rect(1592f, 48f, 250f, 58f),
             texBtnCrimson,
-            "✖ CERRAR ÁRBOL [TAB / ESC]",
+            "✖ CERRAR [TAB / ESC]",
             "REANUDAR COMBATE",
-            17, 11, Color.white, new Color(1f, 0.82f, 0.82f), new Color(1f, 0.35f, 0.45f), true))
+            15, 10, Color.white, new Color(1f, 0.82f, 0.82f), new Color(1f, 0.35f, 0.45f), true))
         {
             CloseAllUpgradeModals();
             return;
@@ -1785,38 +2153,44 @@ public class PlayerStats : MonoBehaviour
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        Rect box = ScaleRect(630, 210, 660, 620);
+        Rect box = ScaleRect(630, 175, 660, 690);
         DrawSkinnedCyberPanel(box, texPanelCyan, colCyanNexo);
 
-        DrawStyledText(ScaleRect(630, 236, 660, 48), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
-        DrawStyledText(ScaleRect(630, 282, 660, 30), zoneName, 17, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 0.98f));
+        DrawStyledText(ScaleRect(630, 200, 660, 48), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(ScaleRect(630, 246, 660, 30), zoneName, 17, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 0.98f));
 
-        if (DrawSkinnedCyberButton(new Rect(750, 332, 420, 66), texBtnEmerald, "▶ CONTINUAR COMBATE", "REANUDAR MISIÓN [ESC]", 19, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 294, 420, 64), texBtnEmerald, "▶ CONTINUAR COMBATE", "REANUDAR MISIÓN [ESC]", 19, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
         {
             TogglePause();
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 412, 420, 66), texBtnGold, "🧬 ABRIR ÁRBOL DE MEJORAS", "GESTIONAR ATRIBUTOS Y ARSENAL [TAB]", 18, 12, Color.white, colGoldYel, colGoldYel, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 370, 420, 64), texBtnCyan, "⚙ ARSENAL DE VANGUARDIA [B]", "VARIANTES DEL GUANTELETE Y DRON N.E.X.A.", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
+        {
+            isPaused = false;
+            OpenArsenalShopModal();
+        }
+
+        if (DrawSkinnedCyberButton(new Rect(750, 446, 420, 64), texBtnGold, "🧬 ABRIR ÁRBOL DE MEJORAS", "GESTIONAR ATRIBUTOS Y EVOLUCIÓN [TAB]", 17, 11, Color.white, colGoldYel, colGoldYel, true))
         {
             isPaused = false;
             OpenUpgradeTreeAtTab(0);
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 492, 420, 62), texBtnCrimson, "↻ REINICIAR NIVEL", "COMENZAR DESDE LA OLEADA 1", 17, 11, Color.white, new Color(1f, 0.80f, 0.82f), colAttrFuerza, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 522, 420, 60), texBtnCrimson, "↻ REINICIAR NIVEL", "COMENZAR DESDE LA OLEADA 1", 17, 11, Color.white, new Color(1f, 0.80f, 0.82f), colAttrFuerza, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 566, 420, 62), texBtnCyan, "⌂ SALIR AL MENÚ PRINCIPAL", "VOLVER A LA PANTALLA DE TÍTULO", 17, 11, Color.white, colCyanNexo, colCyanNexo, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 594, 420, 60), texBtnPurple, "⌂ SALIR AL MENÚ PRINCIPAL", "VOLVER A LA PANTALLA DE TÍTULO", 17, 11, Color.white, colCyanNexo, colCyanNexo, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             Time.timeScale = 1f;
             SceneManager.LoadScene(0);
         }
 
-        DrawTopRightAudioWidget(809f, 646f, 302f, 68f);
+        DrawTopRightAudioWidget(809f, 668f, 302f, 68f);
     }
 
     void DrawNarrativeDilemmaModal()
@@ -2024,7 +2398,7 @@ public class PlayerStats : MonoBehaviour
         GUI.color = Color.white;
     }
 
-    void DrawCyberBox(Rect r, Color bg, Color border, float borderThickness)
+    public void DrawCyberBox(Rect r, Color bg, Color border, float borderThickness)
     {
         float t = Mathf.Max(1f, Mathf.Round(borderThickness * Mathf.Min(Screen.width / 1920f, Screen.height / 1080f)));
         GUI.color = border;
@@ -2034,7 +2408,7 @@ public class PlayerStats : MonoBehaviour
         GUI.color = Color.white;
     }
 
-    void DrawProgressBar(Rect r, float ratio, Color bgCol, Color fillCol, string label, int baseFontSize)
+    public void DrawProgressBar(Rect r, float ratio, Color bgCol, Color fillCol, string label, int baseFontSize)
     {
         // Marco exterior oscuro y pista interior
         GUI.color = new Color(0f, 0f, 0f, 0.85f);
@@ -2061,7 +2435,7 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    void DrawStyledText(Rect r, string txt, int baseSize, TextAnchor align, Color col, bool wordWrap = false)
+    public void DrawStyledText(Rect r, string txt, int baseSize, TextAnchor align, Color col, bool wordWrap = false)
     {
         GUIStyle st = new GUIStyle(GUI.skin.label);
         st.richText = true;

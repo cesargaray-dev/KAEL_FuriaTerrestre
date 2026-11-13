@@ -8,9 +8,15 @@ public class CombatVFXManager : MonoBehaviour
     private Sprite coinSprite;
     private Sprite expOrbSprite;
     private Sprite sparkSprite;
+    private Sprite neutralOrbSprite;
     private Sprite whitePixelSprite;
     private Sprite ringSprite;
     private Transform kaelTarget;
+
+    // Gradientes dinámicos de partículas y Ultimate según el Guantelete Nexo equipado (Issue #21)
+    public GauntletVariant ActiveGauntletVariant { get; private set; } = GauntletVariant.PrototypeCyan;
+    public Gradient activeAttackGradient { get; private set; }
+    public Gradient activeUltimateGradient { get; private set; }
 
     // Variables de Alerta de Jefe
     private bool showWarning = false;
@@ -38,16 +44,68 @@ public class CombatVFXManager : MonoBehaviour
 
         coinSprite = CreatePixelCircleSprite(10, new Color(1f, 0.84f, 0.15f), new Color(0.9f, 0.55f, 0f));
         expOrbSprite = CreatePixelCircleSprite(9, new Color(0.22f, 0.88f, 1f), new Color(0.1f, 0.45f, 0.9f));
-        sparkSprite = CreatePixelCircleSprite(6, Color.white, new Color(0.22f, 0.88f, 1f));
+        // Sprites base neutros para que Gradient.Evaluate() tiña los golpes y Ultimate con fidelidad cromática
+        sparkSprite = CreatePixelCircleSprite(7, Color.white, new Color(0.88f, 0.88f, 0.88f));
+        neutralOrbSprite = CreatePixelCircleSprite(10, Color.white, new Color(0.84f, 0.84f, 0.84f));
         whitePixelSprite = CreateSolidPixelSprite();
         ringSprite = CreateRingSprite(64);
+
+        SetGauntletVariant(GauntletVariant.PrototypeCyan);
     }
 
     void Start()
     {
         KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
         if (kael != null) kaelTarget = kael.transform;
+
+        if (PlayerStats.Instance != null)
+        {
+            SetGauntletVariant(PlayerStats.Instance.equippedGauntlet);
+        }
     }
+
+    /// <summary>
+    /// Ajusta dinámicamente los gradientes de ataque, chispas y Ultimate al equipar una variante del Guantelete (Issue #21).
+    /// </summary>
+    public void SetGauntletVariant(GauntletVariant variant)
+    {
+        ActiveGauntletVariant = variant;
+        activeAttackGradient = BuildGradientForVariant(variant, isUltimate: false);
+        activeUltimateGradient = BuildGradientForVariant(variant, isUltimate: true);
+    }
+
+    public Gradient BuildGradientForVariant(GauntletVariant variant, bool isUltimate = false)
+    {
+        GauntletSpec spec = PlayerStats.GetGauntletSpec(variant);
+        Gradient g = new Gradient();
+
+        Color core = isUltimate ? Color.Lerp(spec.CoreColor, Color.white, 0.35f) : spec.CoreColor;
+        Color primary = spec.PrimaryColor;
+        Color secondary = spec.SecondaryColor;
+        Color fade = Color.Lerp(secondary, Color.black, 0.2f);
+
+        g.SetKeys(
+            new GradientColorKey[]
+            {
+                new GradientColorKey(core, 0.00f),
+                new GradientColorKey(primary, 0.32f),
+                new GradientColorKey(secondary, 0.78f),
+                new GradientColorKey(fade, 1.00f)
+            },
+            new GradientAlphaKey[]
+            {
+                new GradientAlphaKey(1.00f, 0.00f),
+                new GradientAlphaKey(1.00f, 0.45f),
+                new GradientAlphaKey(0.70f, 0.82f),
+                new GradientAlphaKey(0.00f, 1.00f)
+            }
+        );
+        return g;
+    }
+
+    public Color GetGauntletPrimaryColor() => PlayerStats.GetGauntletSpec(ActiveGauntletVariant).PrimaryColor;
+    public Color GetGauntletSecondaryColor() => PlayerStats.GetGauntletSpec(ActiveGauntletVariant).SecondaryColor;
+    public Color GetGauntletCoreColor() => PlayerStats.GetGauntletSpec(ActiveGauntletVariant).CoreColor;
 
     void Update()
     {
@@ -85,13 +143,22 @@ public class CombatVFXManager : MonoBehaviour
         ultCinematicActive = active;
         if (triggerFlash)
         {
-            bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-            bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
-            customFlashColor = isCorrupt
-                ? new Color(1f, 0.18f, 0.48f)
-                : (isPureza ? new Color(1f, 0.92f, 0.45f) : new Color(0.55f, 0.95f, 1f));
+            customFlashColor = GetActiveUltAccentFlashColor();
             ultFlashAlpha = 0.65f;
         }
+    }
+
+    Color GetActiveUltAccentFlashColor()
+    {
+        if (ActiveGauntletVariant != GauntletVariant.PrototypeCyan)
+        {
+            return GetGauntletPrimaryColor();
+        }
+        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        return isCorrupt
+            ? new Color(1f, 0.18f, 0.48f)
+            : (isPureza ? new Color(1f, 0.92f, 0.45f) : GetGauntletPrimaryColor());
     }
 
     // Fase 1 de la Ulti: Partículas de energía absorbidas hacia el Guantelete Nexo
@@ -102,8 +169,7 @@ public class CombatVFXManager : MonoBehaviour
 
     IEnumerator ChargeInwardRoutine(Vector3 centerPos, float duration)
     {
-        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        Gradient ultGrad = activeUltimateGradient ?? BuildGradientForVariant(ActiveGauntletVariant, true);
 
         float elapsed = 0f;
         while (elapsed < duration)
@@ -116,11 +182,8 @@ public class CombatVFXManager : MonoBehaviour
                 GameObject orb = new GameObject("UltChargeOrb");
                 orb.transform.position = startPos;
                 SpriteRenderer sr = orb.AddComponent<SpriteRenderer>();
-                sr.sprite = (i % 2 == 0) ? expOrbSprite : coinSprite;
-                if (isCorrupt)
-                    sr.color = (i % 2 == 0) ? new Color(1f, 0.18f, 0.45f) : new Color(0.68f, 0.15f, 1f);
-                else if (isPureza)
-                    sr.color = (i % 2 == 0) ? new Color(0.35f, 0.98f, 1f) : new Color(1f, 0.90f, 0.35f);
+                sr.sprite = neutralOrbSprite;
+                sr.color = ultGrad.Evaluate((i % 2 == 0) ? 0.28f : 0.72f);
                 sr.sortingOrder = 25;
 
                 ChargeParticle cp = orb.AddComponent<ChargeParticle>();
@@ -131,34 +194,44 @@ public class CombatVFXManager : MonoBehaviour
         }
     }
 
-    // Fase 2 de la Ulti: Rayo Láser Gigante de Triple Capa que cambia según Compasión / Rigor (Bloque 4)
+    // Fase 2 de la Ulti: Rayo Láser Gigante de Triple Capa adaptado dinámicamente al Guantelete equipado (Issue #21)
     public void SpawnUltimateMegaBeam(Vector3 originPos, float length, float duration)
     {
-        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
-        customFlashColor = isCorrupt
-            ? new Color(1f, 0.15f, 0.42f)
-            : (isPureza ? new Color(0.45f, 0.98f, 1f) : new Color(0.55f, 0.95f, 1f));
+        customFlashColor = GetActiveUltAccentFlashColor();
         ultFlashAlpha = 0.78f;
-        StartCoroutine(MegaBeamRoutine(originPos, length, duration, isPureza, isCorrupt));
+        StartCoroutine(MegaBeamRoutine(originPos, length, duration));
     }
 
-    IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration, bool isPureza, bool isCorrupt)
+    IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration)
     {
         GameObject beamRoot = new GameObject("NexoMegaBeam");
         beamRoot.transform.position = originPos;
 
-        Color outerCol = isCorrupt
-            ? new Color(0.55f, 0.06f, 0.88f, 0.65f)
-            : (isPureza ? new Color(1f, 0.84f, 0.22f, 0.62f) : new Color(0.1f, 0.65f, 1f, 0.55f));
+        Gradient g = activeUltimateGradient ?? BuildGradientForVariant(ActiveGauntletVariant, true);
+        Color outerCol = g.Evaluate(0.76f);
+        outerCol.a = 0.62f;
+        Color midCol = g.Evaluate(0.34f);
+        midCol.a = 0.92f;
+        Color coreCol = g.Evaluate(0.02f);
+        coreCol.a = 1.0f;
 
-        Color midCol = isCorrupt
-            ? new Color(1f, 0.14f, 0.38f, 0.92f)
-            : (isPureza ? new Color(0.25f, 0.98f, 1f, 0.92f) : new Color(0.22f, 0.95f, 1f, 0.90f));
-
-        Color coreCol = isCorrupt
-            ? new Color(1f, 0.78f, 0.92f, 1f)
-            : new Color(1f, 1f, 1f, 1f);
+        if (ActiveGauntletVariant == GauntletVariant.PrototypeCyan && PlayerStats.Instance != null)
+        {
+            bool isCorrupt = (PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+            bool isPureza = (PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+            if (isCorrupt)
+            {
+                outerCol = new Color(0.55f, 0.06f, 0.88f, 0.65f);
+                midCol = new Color(1f, 0.14f, 0.38f, 0.92f);
+                coreCol = new Color(1f, 0.78f, 0.92f, 1f);
+            }
+            else if (isPureza)
+            {
+                outerCol = new Color(1f, 0.84f, 0.22f, 0.62f);
+                midCol = new Color(0.25f, 0.98f, 1f, 0.92f);
+                coreCol = Color.white;
+            }
+        }
 
         SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "OuterGlow", outerCol, 20);
         SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidBeam", midCol, 21);
@@ -403,17 +476,9 @@ public class CombatVFXManager : MonoBehaviour
         SpawnShockwaveRing(pos, isBoss ? new Color(1f, 0.25f, 0.55f) : new Color(0.22f, 0.92f, 1f), isBoss ? 3.2f : 1.7f);
     }
 
-    public void SpawnHitSparks(Vector3 pos, bool isHeavy, int count = 6)
+    public void SpawnHitSparks(Vector3 pos, bool isHeavy, int count = 6, Gradient overrideGradient = null)
     {
-        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
-
-        Color c1 = isCorrupt
-            ? new Color(1f, 0.18f, 0.45f)
-            : (isPureza ? new Color(0.28f, 0.98f, 1f) : new Color(0.22f, 0.92f, 1f));
-        Color c2 = isCorrupt
-            ? new Color(0.68f, 0.15f, 1f)
-            : (isPureza ? new Color(1f, 0.90f, 0.32f) : new Color(1f, 0.85f, 0.2f));
+        Gradient grad = overrideGradient ?? activeAttackGradient ?? BuildGradientForVariant(ActiveGauntletVariant, false);
 
         for (int i = 0; i < count; i++)
         {
@@ -421,11 +486,40 @@ public class CombatVFXManager : MonoBehaviour
             sp.transform.position = pos;
             SpriteRenderer sr = sp.AddComponent<SpriteRenderer>();
             sr.sprite = sparkSprite;
-            sr.color = (i % 2 == 0) ? c1 : c2;
+            sr.color = grad.Evaluate(i % 2 == 0 ? 0.25f : 0.65f);
             sr.sortingOrder = 23;
 
             SparkParticle p = sp.AddComponent<SparkParticle>();
-            p.Init(isHeavy);
+            p.Init(isHeavy, grad);
+        }
+    }
+
+    /// <summary>
+    /// Efecto visual de combustión continua sobre enemigos quemados por el Guantelete Piro-Reactor.
+    /// </summary>
+    public void SpawnFireBurnTickVFX(Vector3 pos)
+    {
+        Gradient fireGrad = BuildGradientForVariant(GauntletVariant.PyroReactor, false);
+        SpawnHitSparks(pos, false, 4, fireGrad);
+    }
+
+    /// <summary>
+    /// Efecto de orbe abisal de robo de vida volando del enemigo hacia Kael (Guantelete de Vacío Vorst).
+    /// </summary>
+    public void SpawnVoidLifestealVFX(Vector3 enemyPos, Vector3 kaelPos)
+    {
+        Gradient voidGrad = BuildGradientForVariant(GauntletVariant.VorstVoid, false);
+        for (int i = 0; i < 2; i++)
+        {
+            GameObject orb = new GameObject("VoidSiphonOrb");
+            orb.transform.position = enemyPos + new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(0.2f, 0.8f), 0f);
+            SpriteRenderer sr = orb.AddComponent<SpriteRenderer>();
+            sr.sprite = neutralOrbSprite;
+            sr.color = voidGrad.Evaluate(i == 0 ? 0.30f : 0.72f);
+            sr.sortingOrder = 24;
+
+            ChargeParticle cp = orb.AddComponent<ChargeParticle>();
+            cp.Init(kaelPos + Vector3.up * 0.75f, 0.28f);
         }
     }
 
@@ -782,21 +876,36 @@ public class SparkParticle : MonoBehaviour
     private Vector2 velocity;
     private float lifetime = 0.28f;
     private float elapsed = 0f;
+    private Vector3 initialScale = Vector3.one;
+    private Gradient colorGradient;
+    private SpriteRenderer cachedSr;
 
-    public void Init(bool isHeavy)
+    public void Init(bool isHeavy, Gradient grad = null)
     {
         float speed = isHeavy ? Random.Range(3.5f, 7.5f) : Random.Range(2.0f, 4.5f);
         velocity = Random.insideUnitCircle.normalized * speed;
         if (velocity.y < 0f) velocity.y = -velocity.y * 0.8f;
-        transform.localScale = Vector3.one * (isHeavy ? 1.35f : 0.9f);
+        initialScale = Vector3.one * (isHeavy ? 1.35f : 0.9f);
+        transform.localScale = initialScale;
+        colorGradient = grad;
+        cachedSr = GetComponent<SpriteRenderer>();
+        if (cachedSr != null && colorGradient != null)
+        {
+            cachedSr.color = colorGradient.Evaluate(0f);
+        }
     }
 
     void Update()
     {
         elapsed += Time.unscaledDeltaTime;
+        float t = Mathf.Clamp01(elapsed / lifetime);
         velocity.y -= 12f * Time.unscaledDeltaTime;
         transform.position += (Vector3)(velocity * Time.unscaledDeltaTime);
-        transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, elapsed / lifetime);
+        transform.localScale = Vector3.Lerp(initialScale, Vector3.zero, t);
+        if (cachedSr != null && colorGradient != null)
+        {
+            cachedSr.color = colorGradient.Evaluate(t);
+        }
         if (elapsed >= lifetime) Destroy(gameObject);
     }
 }
