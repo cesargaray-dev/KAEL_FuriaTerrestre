@@ -35,6 +35,40 @@ public class KaelAutoController : MonoBehaviour
     private float riposteSpriteTimer = 0f;
     private Sprite[] kaelBlockSprites = new Sprite[4];
     private Sprite[] kaelRiposteSprites = new Sprite[4];
+    private bool extraSpritesLoaded = false;
+
+    private struct GauntletSpriteSet
+    {
+        public Dictionary<string, Sprite> ByBaseName;
+    }
+
+    private readonly Dictionary<GauntletVariant, GauntletSpriteSet> gauntletSpriteSets =
+        new Dictionary<GauntletVariant, GauntletSpriteSet>();
+    private readonly Dictionary<Sprite, Sprite> variantSpriteToBase =
+        new Dictionary<Sprite, Sprite>();
+    private readonly HashSet<Sprite> knownVariantSprites =
+        new HashSet<Sprite>();
+
+    private static readonly string[] KAEL_ATLAS_FRAME_NAMES =
+    {
+        "Kael_Atlas_Pro_0", "Kael_Atlas_Pro_1", "Kael_Atlas_Pro_2", "Kael_Atlas_Pro_3",
+        "Kael_Atlas_Pro_4", "Kael_Atlas_Pro_5", "Kael_Atlas_Pro_6", "Kael_Atlas_Pro_7", "Kael_Atlas_Pro_8", "Kael_Atlas_Pro_9",
+        "Kael_Atlas_Pro_10", "Kael_Atlas_Pro_11", "Kael_Atlas_Pro_12", "Kael_Atlas_Pro_13",
+        "Kael_Atlas_Pro_14", "Kael_Atlas_Pro_15", "Kael_Atlas_Pro_16", "Kael_Atlas_Pro_17",
+        "Kael_Atlas_Pro_18", "Kael_Atlas_Pro_19", "Kael_Atlas_Pro_21", "Kael_Atlas_Pro_22", "Kael_Atlas_Pro_23",
+        "Kael_Atlas_Pro_26", "Kael_Atlas_Pro_27", "Kael_Atlas_Pro_28", "Kael_Atlas_Pro_29", "Kael_Atlas_Pro_30", "Kael_Atlas_Pro_31"
+    };
+
+    private static readonly (string atlasName, string runAlias)[] KAEL_RUN_ALIASES =
+    {
+        ("Kael_Atlas_Pro_4", "Kael_Run_Strip_0"),
+        ("Kael_Atlas_Pro_5", "Kael_Run_Strip_6"),
+        ("Kael_Atlas_Pro_6", "Kael_Run_Strip_7"),
+        ("Kael_Atlas_Pro_7", "Kael_Run_Strip_9"),
+        ("Kael_Atlas_Pro_8", "Kael_Run_Strip_10"),
+        ("Kael_Atlas_Pro_9", "Kael_Run_Strip_17")
+    };
+
     private GameObject hexShieldObj;
     private SpriteRenderer hexShieldRenderer;
 
@@ -93,18 +127,135 @@ public class KaelAutoController : MonoBehaviour
 
     private void LoadExtraKaelSprites()
     {
+        EnsureExtraKaelSpritesLoaded();
+    }
+
+    public void EnsureExtraKaelSpritesLoaded()
+    {
+        if (extraSpritesLoaded) return;
+        extraSpritesLoaded = true;
+
         for (int i = 0; i < 4; i++)
         {
             Texture2D bTex = Resources.Load<Texture2D>($"KaelExtra/Kael_Block_{i}");
             if (bTex != null)
             {
                 kaelBlockSprites[i] = Sprite.Create(bTex, new Rect(0, 0, bTex.width, bTex.height), new Vector2(0.5f, 0.12f), 115f);
+                kaelBlockSprites[i].name = $"Kael_Block_{i}";
             }
             Texture2D rTex = Resources.Load<Texture2D>($"KaelExtra/Kael_Riposte_{i}");
             if (rTex != null)
             {
                 kaelRiposteSprites[i] = Sprite.Create(rTex, new Rect(0, 0, rTex.width, rTex.height), new Vector2(0.5f, 0.12f), 115f);
+                kaelRiposteSprites[i].name = $"Kael_Riposte_{i}";
             }
+        }
+
+        LoadGauntletVariantSet(GauntletVariant.PyroReactor, "Pyro", 98.79f, 95.19f);
+        LoadGauntletVariantSet(GauntletVariant.IgneousPlasma, "Gold", 100.0f, 96.45f);
+        LoadGauntletVariantSet(GauntletVariant.VorstVoid, "Void", 101.82f, 98.54f);
+    }
+
+    private void LoadGauntletVariantSet(GauntletVariant variant, string folder, float mainPpu, float runPpu)
+    {
+        var map = new Dictionary<string, Sprite>(System.StringComparer.Ordinal);
+        foreach (string frameName in KAEL_ATLAS_FRAME_NAMES)
+        {
+            Texture2D tex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/{frameName}");
+            if (tex == null) continue;
+            Sprite spr = CreateCrispVariantSprite(tex, new Vector2(0.5f, 0f), mainPpu, $"{frameName}_{folder}");
+            map[frameName] = spr;
+        }
+
+        foreach (var (atlasName, runAlias) in KAEL_RUN_ALIASES)
+        {
+            Texture2D tex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/{atlasName}");
+            if (tex == null) continue;
+            Sprite runSpr = CreateCrispVariantSprite(tex, new Vector2(0.5f, 0f), runPpu, $"{runAlias}_{folder}");
+            map[runAlias] = runSpr;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            Texture2D bTex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/Kael_Block_{i}");
+            if (bTex != null)
+            {
+                Sprite bSpr = CreateCrispVariantSprite(bTex, new Vector2(0.5f, 0.12f), 115f, $"Kael_Block_{i}_{folder}");
+                map[$"Kael_Block_{i}"] = bSpr;
+                if (kaelBlockSprites[i] != null) variantSpriteToBase[bSpr] = kaelBlockSprites[i];
+            }
+
+            Texture2D rTex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/Kael_Riposte_{i}");
+            if (rTex != null)
+            {
+                Sprite rSpr = CreateCrispVariantSprite(rTex, new Vector2(0.5f, 0.12f), 115f, $"Kael_Riposte_{i}_{folder}");
+                map[$"Kael_Riposte_{i}"] = rSpr;
+                if (kaelRiposteSprites[i] != null) variantSpriteToBase[rSpr] = kaelRiposteSprites[i];
+            }
+        }
+
+        gauntletSpriteSets[variant] = new GauntletSpriteSet { ByBaseName = map };
+    }
+
+    private Sprite CreateCrispVariantSprite(Texture2D tex, Vector2 pivot, float ppu, string spriteName)
+    {
+        tex.filterMode = FilterMode.Point;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        Sprite spr = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), pivot, ppu, 0, SpriteMeshType.FullRect);
+        spr.name = spriteName;
+        knownVariantSprites.Add(spr);
+        return spr;
+    }
+
+    /// <summary>
+    /// Devuelve el sprite correspondiente al guantelete equipado (Pyro/Plasma/Vorst) preservando el frame base
+    /// para revertir o alternar limpiamente incluso cuando el juego está pausado en tienda.
+    /// </summary>
+    public Sprite ResolveGauntletVariantSprite(Sprite currentSprite)
+    {
+        if (currentSprite == null) return null;
+        EnsureExtraKaelSpritesLoaded();
+
+        Sprite baseSprite = currentSprite;
+        if (knownVariantSprites.Contains(currentSprite))
+        {
+            if (variantSpriteToBase.TryGetValue(currentSprite, out Sprite mappedBase) && mappedBase != null)
+            {
+                baseSprite = mappedBase;
+            }
+            else
+            {
+                return currentSprite;
+            }
+        }
+
+        GauntletVariant equipped = (PlayerStats.Instance != null)
+            ? PlayerStats.Instance.equippedGauntlet
+            : GauntletVariant.PrototypeCyan;
+
+        if (equipped == GauntletVariant.PrototypeCyan ||
+            !gauntletSpriteSets.TryGetValue(equipped, out GauntletSpriteSet set) ||
+            set.ByBaseName == null)
+        {
+            return baseSprite;
+        }
+
+        if (set.ByBaseName.TryGetValue(baseSprite.name, out Sprite variantSprite) && variantSprite != null)
+        {
+            variantSpriteToBase[variantSprite] = baseSprite;
+            return variantSprite;
+        }
+
+        return baseSprite;
+    }
+
+    public void RefreshEquippedGauntletVisuals()
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null) return;
+        Sprite resolved = ResolveGauntletVariantSprite(spriteRenderer.sprite);
+        if (resolved != null && spriteRenderer.sprite != resolved)
+        {
+            spriteRenderer.sprite = resolved;
         }
     }
 
@@ -247,7 +398,7 @@ public class KaelAutoController : MonoBehaviour
         if (CombatVFXManager.Instance != null && spriteRenderer != null)
         {
             CombatVFXManager.Instance.SpawnAfterimageGhost(
-                spriteRenderer.sprite,
+                ResolveGauntletVariantSprite(spriteRenderer.sprite),
                 transform.position,
                 transform.localScale,
                 isFacingLeft,
@@ -486,6 +637,10 @@ public class KaelAutoController : MonoBehaviour
 
     private Color GetMoralBaseTint(bool isPureza, bool isCorrupcion)
     {
+        if (PlayerStats.Instance != null && PlayerStats.Instance.equippedGauntlet != GauntletVariant.PrototypeCyan)
+        {
+            return baseSpriteColor;
+        }
         if (isCorrupcion) return new Color(1f, 0.88f, 0.95f, 1f);
         if (isPureza) return new Color(0.92f, 1f, 1f, 1f);
         return baseSpriteColor;
@@ -567,7 +722,7 @@ public class KaelAutoController : MonoBehaviour
                         isCorrupcion ? new Color(1f, 0.18f, 0.52f) : new Color(0.18f, 0.95f, 1f));
                     Color ghostCol = new Color(ghostBase.r, ghostBase.g, ghostBase.b, 0.58f);
                     CombatVFXManager.Instance.SpawnAfterimageGhost(
-                        spriteRenderer.sprite,
+                        ResolveGauntletVariantSprite(spriteRenderer.sprite),
                         transform.position,
                         transform.localScale,
                         isFacingLeft,
@@ -672,27 +827,32 @@ public class KaelAutoController : MonoBehaviour
             transform.localScale = new Vector3(s, s, 1f);
         }
 
-        if (spriteRenderer == null || isCastingUlt) return;
+        if (spriteRenderer == null) return;
 
-        if (riposteSpriteTimer > 0f)
+        if (!isCastingUlt)
         {
-            riposteSpriteTimer -= Time.unscaledDeltaTime;
-            float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
-            int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
-            if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
+            if (riposteSpriteTimer > 0f)
             {
-                spriteRenderer.sprite = kaelRiposteSprites[idx];
+                riposteSpriteTimer -= Time.unscaledDeltaTime;
+                float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
+                int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
+                if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
+                {
+                    spriteRenderer.sprite = kaelRiposteSprites[idx];
+                }
+            }
+            else if (isGuarding)
+            {
+                float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
+                int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
+                if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
+                {
+                    spriteRenderer.sprite = kaelBlockSprites[idx];
+                }
             }
         }
-        else if (isGuarding)
-        {
-            float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
-            int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
-            if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
-            {
-                spriteRenderer.sprite = kaelBlockSprites[idx];
-            }
-        }
+
+        RefreshEquippedGauntletVisuals();
     }
 
     void ExecuteComboStep(float effectiveRate, bool isPureza, bool isCorrupcion)

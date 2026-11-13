@@ -926,6 +926,10 @@ public class PlayerStats : MonoBehaviour
         {
             CombatVFXManager.Instance.SetGauntletVariant(equippedGauntlet);
         }
+        if (KaelAutoController.Instance != null)
+        {
+            KaelAutoController.Instance.RefreshEquippedGauntletVisuals();
+        }
     }
 
     public int CountAffordableArsenalItems()
