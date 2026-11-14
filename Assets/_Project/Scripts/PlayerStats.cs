@@ -166,8 +166,10 @@ public class PlayerStats : MonoBehaviour
     public int unlockedGauntletsMask = 1; // Bit 0 (Prototipo Cian) desbloqueado por defecto
     public bool hasPurchasedNexaDrone = false;
 
+    public bool IsCodexModalOpen => VorstCodexUI.Instance != null && VorstCodexUI.Instance.isOpen;
+
     public bool IsAnyBlockingModalOpen =>
-        isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen || isArsenalShopOpen;
+        isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen || isArsenalShopOpen || IsCodexModalOpen;
 
     [Header("Economía, Nivel y Moral (Compasión vs Rigor)")]
     public int gold = 0;
@@ -306,6 +308,7 @@ public class PlayerStats : MonoBehaviour
 
         LoadCyberUITextures();
         ArsenalShopUI.EnsureExists();
+        VorstCodexUI.EnsureExists();
 
         string activeScene = SceneManager.GetActiveScene().name;
         if (activeScene == "03_Nivel3_Colmena")
@@ -842,7 +845,39 @@ public class PlayerStats : MonoBehaviour
         isUpgradeTreeOpen = false;
         isArsenalShopOpen = false;
         isChoosingSkill = false;
+        if (VorstCodexUI.Instance != null && VorstCodexUI.Instance.isOpen)
+        {
+            VorstCodexUI.Instance.CloseCodex();
+        }
         Time.timeScale = 1f;
+    }
+
+    public void OpenVorstCodexModal(bool returnToPauseOnClose)
+    {
+        if (isLevelCompleted || isGameOver || isChoosingDilemma) return;
+        isUpgradeTreeOpen = false;
+        isArsenalShopOpen = false;
+        isChoosingSkill = false;
+        isPaused = false;
+        Time.timeScale = 0f;
+
+        VorstCodexUI codex = VorstCodexUI.EnsureExists();
+        if (codex != null)
+        {
+            codex.OpenCodex(() =>
+            {
+                if (returnToPauseOnClose)
+                {
+                    isPaused = true;
+                    Time.timeScale = 0f;
+                }
+                else
+                {
+                    isPaused = false;
+                    Time.timeScale = 1f;
+                }
+            });
+        }
     }
 
     // =========================================================================
@@ -2157,44 +2192,50 @@ public class PlayerStats : MonoBehaviour
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        Rect box = ScaleRect(630, 175, 660, 690);
+        Rect box = ScaleRect(630, 145, 660, 760);
         DrawSkinnedCyberPanel(box, texPanelCyan, colCyanNexo);
 
-        DrawStyledText(ScaleRect(630, 200, 660, 48), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
-        DrawStyledText(ScaleRect(630, 246, 660, 30), zoneName, 17, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 0.98f));
+        DrawStyledText(ScaleRect(630, 168, 660, 44), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(ScaleRect(630, 212, 660, 28), zoneName, 17, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 0.98f));
 
-        if (DrawSkinnedCyberButton(new Rect(750, 294, 420, 64), texBtnEmerald, "▶ CONTINUAR COMBATE", "REANUDAR MISIÓN [ESC]", 19, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 256, 420, 62), texBtnEmerald, "▶ CONTINUAR COMBATE", "REANUDAR MISIÓN [ESC]", 19, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
         {
             TogglePause();
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 370, 420, 64), texBtnCyan, "⚙ ARSENAL DE VANGUARDIA [B]", "VARIANTES DEL GUANTELETE Y DRON N.E.X.A.", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
+        int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
+        if (DrawSkinnedCyberButton(new Rect(750, 328, 420, 62), texBtnCyan, $"📘 CÓDICE VORST ({unlockedCodex}/6) [C]", "BESTIARIO, DEBILIDADES Y BAJAS", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
+        {
+            OpenVorstCodexModal(returnToPauseOnClose: true);
+        }
+
+        if (DrawSkinnedCyberButton(new Rect(750, 400, 420, 62), texBtnCyan, "⚙ ARSENAL DE VANGUARDIA [B]", "VARIANTES DEL GUANTELETE Y DRON N.E.X.A.", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
         {
             isPaused = false;
             OpenArsenalShopModal();
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 446, 420, 64), texBtnGold, "🧬 ABRIR ÁRBOL DE MEJORAS", "GESTIONAR ATRIBUTOS Y EVOLUCIÓN [TAB]", 17, 11, Color.white, colGoldYel, colGoldYel, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 472, 420, 62), texBtnGold, "🧬 ABRIR ÁRBOL DE MEJORAS", "GESTIONAR ATRIBUTOS Y EVOLUCIÓN [TAB]", 17, 11, Color.white, colGoldYel, colGoldYel, true))
         {
             isPaused = false;
             OpenUpgradeTreeAtTab(0);
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 522, 420, 60), texBtnCrimson, "↻ REINICIAR NIVEL", "COMENZAR DESDE LA OLEADA 1", 17, 11, Color.white, new Color(1f, 0.80f, 0.82f), colAttrFuerza, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 544, 420, 58), texBtnCrimson, "↻ REINICIAR NIVEL", "COMENZAR DESDE LA OLEADA 1", 17, 11, Color.white, new Color(1f, 0.80f, 0.82f), colAttrFuerza, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 594, 420, 60), texBtnPurple, "⌂ SALIR AL MENÚ PRINCIPAL", "VOLVER A LA PANTALLA DE TÍTULO", 17, 11, Color.white, colCyanNexo, colCyanNexo, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 612, 420, 58), texBtnPurple, "⌂ SALIR AL MENÚ PRINCIPAL", "VOLVER A LA PANTALLA DE TÍTULO", 17, 11, Color.white, colCyanNexo, colCyanNexo, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             Time.timeScale = 1f;
             SceneManager.LoadScene(0);
         }
 
-        DrawTopRightAudioWidget(809f, 668f, 302f, 68f);
+        DrawTopRightAudioWidget(809f, 682f, 302f, 68f);
     }
 
     void DrawNarrativeDilemmaModal()

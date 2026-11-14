@@ -442,9 +442,24 @@ public class KaelAutoController : MonoBehaviour
 
     void Update()
     {
-        // Atajos globales para abrir/cerrar el Árbol de Mejoras (TAB/M), Tienda Arsenal (B/T) o Pausa (ESC)
+        // Atajos globales para abrir/cerrar el Árbol de Mejoras (TAB/M), Tienda Arsenal (B/T), Códice Vorst (C) o Pausa (ESC)
         if (PlayerStats.Instance != null)
         {
+            if (PlayerStats.Instance.IsCodexModalOpen)
+            {
+                if (WasCodexShortcutPressed() && VorstCodexUI.Instance != null)
+                {
+                    VorstCodexUI.Instance.CloseCodex();
+                }
+                if (anim != null) anim.SetBool("IsRunning", false);
+                return;
+            }
+
+            if (WasCodexShortcutPressed())
+            {
+                PlayerStats.Instance.OpenVorstCodexModal(returnToPauseOnClose: PlayerStats.Instance.isPaused);
+                return;
+            }
             if (WasArsenalShopShortcutPressed())
             {
                 PlayerStats.Instance.ToggleArsenalShopModal();
@@ -1198,6 +1213,16 @@ public class KaelAutoController : MonoBehaviour
             if (Keyboard.current.bKey.wasPressedThisFrame || Keyboard.current.tKey.wasPressedThisFrame) return true;
         }
         try { return Input.GetKeyDown(KeyCode.B) || Input.GetKeyDown(KeyCode.T); }
+        catch { return false; }
+    }
+
+    public static bool WasCodexShortcutPressed()
+    {
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.cKey.wasPressedThisFrame) return true;
+        }
+        try { return Input.GetKeyDown(KeyCode.C); }
         catch { return false; }
     }
 
