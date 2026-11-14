@@ -108,6 +108,47 @@ public class NexaDroneCompanion : MonoBehaviour
         return comp;
     }
 
+    public bool IsDroneUnlocked => PlayerStats.Instance != null && PlayerStats.Instance.hasPurchasedNexaDrone;
+
+    void SetVisualsActive(bool active)
+    {
+        if (chassisRenderer != null) chassisRenderer.enabled = active;
+        if (coreRotorRenderer != null) coreRotorRenderer.enabled = active;
+        if (leftThrusterRenderer != null) leftThrusterRenderer.enabled = active;
+        if (rightThrusterRenderer != null) rightThrusterRenderer.enabled = active;
+        if (!active && shieldBubbleRoot != null) shieldBubbleRoot.SetActive(false);
+    }
+
+    public void ActivateFromPurchase(Transform kael = null)
+    {
+        if (kael != null) kaelTarget = kael;
+        ResetCompanion();
+        SetVisualsActive(true);
+        if (kaelTarget != null)
+        {
+            transform.position = kaelTarget.position + shoulderOffset;
+        }
+        if (LevelAudioManager.Instance != null)
+        {
+            LevelAudioManager.Instance.PlayShieldDeploy();
+        }
+        if (CombatVFXManager.Instance != null && kaelTarget != null)
+        {
+            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position, new Color(0.22f, 0.95f, 1f), 1.6f);
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 0.65f,
+                "🤖 ¡DRON N.E.X.A. DESPLEGADO!",
+                new Color(0.25f, 0.96f, 1f), 18, 1.3f);
+        }
+        if (CompanionDialogueManager.Instance != null)
+        {
+            CompanionDialogueManager.Instance.EnqueueLine(
+                "N.E.X.A. [SISTEMA EN LÍNEA]",
+                "Unidad táctica N.E.X.A. acoplada desde el Arsenal de Vanguardia. Fuego de plasma guiado y Protocolo Baluarte activados.",
+                "nexa_normal");
+        }
+    }
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -120,6 +161,7 @@ public class NexaDroneCompanion : MonoBehaviour
         EnsureSpritesGenerated();
         BuildDroneVisualHierarchy();
         BuildShieldBubbleHierarchy();
+        SetVisualsActive(false);
     }
 
     void Start()
@@ -134,6 +176,8 @@ public class NexaDroneCompanion : MonoBehaviour
         {
             transform.position = kaelTarget.position + shoulderOffset;
         }
+
+        SetVisualsActive(IsDroneUnlocked);
     }
 
     public void ResetCompanion()
@@ -148,12 +192,23 @@ public class NexaDroneCompanion : MonoBehaviour
         hasAnnouncedBulwarkThisWave = false;
 
         if (shieldBubbleRoot != null) shieldBubbleRoot.SetActive(false);
+        SetVisualsActive(IsDroneUnlocked);
         if (kaelTarget != null) transform.position = kaelTarget.position + shoulderOffset;
     }
 
     void Update()
     {
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isUpgradeTreeOpen))
+        if (!IsDroneUnlocked)
+        {
+            if (chassisRenderer != null && chassisRenderer.enabled) SetVisualsActive(false);
+            return;
+        }
+        if (chassisRenderer != null && !chassisRenderer.enabled)
+        {
+            SetVisualsActive(true);
+        }
+
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
         if (kaelTarget == null)
@@ -356,7 +411,7 @@ public class NexaDroneCompanion : MonoBehaviour
 
     public void CheckEmergencyShieldTrigger()
     {
-        if (PlayerStats.Instance == null || isShieldActive || isOverheated) return;
+        if (!IsDroneUnlocked || PlayerStats.Instance == null || isShieldActive || isOverheated) return;
         if (PlayerStats.Instance.currentHP <= 0f || PlayerStats.Instance.maxHP <= 0f) return;
 
         float hpRatio = PlayerStats.Instance.currentHP / PlayerStats.Instance.maxHP;
@@ -368,7 +423,7 @@ public class NexaDroneCompanion : MonoBehaviour
 
     public void ActivateBulwarkProtocol()
     {
-        if (isShieldActive || isOverheated) return;
+        if (!IsDroneUnlocked || isShieldActive || isOverheated) return;
 
         isShieldActive = true;
         shieldHitsRemaining = maxShieldImpacts;
@@ -414,7 +469,7 @@ public class NexaDroneCompanion : MonoBehaviour
     /// </summary>
     public bool TryAbsorbDamage(float incomingDamage)
     {
-        if (!isShieldActive || shieldHitsRemaining <= 0)
+        if (!IsDroneUnlocked || !isShieldActive || shieldHitsRemaining <= 0)
             return false;
 
         shieldHitsRemaining--;
@@ -637,8 +692,8 @@ public class NexaDroneCompanion : MonoBehaviour
 
     void OnGUI()
     {
-        if (kaelTarget == null || Camera.main == null) return;
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill))
+        if (!IsDroneUnlocked || kaelTarget == null || Camera.main == null) return;
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
         // Mostrar indicador táctico sobre Kael cuando el Protocolo Baluarte está activo o recargándose

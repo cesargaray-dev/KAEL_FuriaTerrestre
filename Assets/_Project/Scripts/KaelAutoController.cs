@@ -35,6 +35,40 @@ public class KaelAutoController : MonoBehaviour
     private float riposteSpriteTimer = 0f;
     private Sprite[] kaelBlockSprites = new Sprite[4];
     private Sprite[] kaelRiposteSprites = new Sprite[4];
+    private bool extraSpritesLoaded = false;
+
+    private struct GauntletSpriteSet
+    {
+        public Dictionary<string, Sprite> ByBaseName;
+    }
+
+    private readonly Dictionary<GauntletVariant, GauntletSpriteSet> gauntletSpriteSets =
+        new Dictionary<GauntletVariant, GauntletSpriteSet>();
+    private readonly Dictionary<Sprite, Sprite> variantSpriteToBase =
+        new Dictionary<Sprite, Sprite>();
+    private readonly HashSet<Sprite> knownVariantSprites =
+        new HashSet<Sprite>();
+
+    private static readonly string[] KAEL_ATLAS_FRAME_NAMES =
+    {
+        "Kael_Atlas_Pro_0", "Kael_Atlas_Pro_1", "Kael_Atlas_Pro_2", "Kael_Atlas_Pro_3",
+        "Kael_Atlas_Pro_4", "Kael_Atlas_Pro_5", "Kael_Atlas_Pro_6", "Kael_Atlas_Pro_7", "Kael_Atlas_Pro_8", "Kael_Atlas_Pro_9",
+        "Kael_Atlas_Pro_10", "Kael_Atlas_Pro_11", "Kael_Atlas_Pro_12", "Kael_Atlas_Pro_13",
+        "Kael_Atlas_Pro_14", "Kael_Atlas_Pro_15", "Kael_Atlas_Pro_16", "Kael_Atlas_Pro_17",
+        "Kael_Atlas_Pro_18", "Kael_Atlas_Pro_19", "Kael_Atlas_Pro_21", "Kael_Atlas_Pro_22", "Kael_Atlas_Pro_23",
+        "Kael_Atlas_Pro_26", "Kael_Atlas_Pro_27", "Kael_Atlas_Pro_28", "Kael_Atlas_Pro_29", "Kael_Atlas_Pro_30", "Kael_Atlas_Pro_31"
+    };
+
+    private static readonly (string atlasName, string runAlias)[] KAEL_RUN_ALIASES =
+    {
+        ("Kael_Atlas_Pro_4", "Kael_Run_Strip_0"),
+        ("Kael_Atlas_Pro_5", "Kael_Run_Strip_6"),
+        ("Kael_Atlas_Pro_6", "Kael_Run_Strip_7"),
+        ("Kael_Atlas_Pro_7", "Kael_Run_Strip_9"),
+        ("Kael_Atlas_Pro_8", "Kael_Run_Strip_10"),
+        ("Kael_Atlas_Pro_9", "Kael_Run_Strip_17")
+    };
+
     private GameObject hexShieldObj;
     private SpriteRenderer hexShieldRenderer;
 
@@ -42,6 +76,7 @@ public class KaelAutoController : MonoBehaviour
     private float afterimageTimer = 0f;
     private float overdriveArcTimer = 0f;
     private float moralAuraTimer = 0f;
+    private float lastLifestealPopupTime = -10f;
 
     // Controles opcionales desde botones del HUD
     [HideInInspector] public bool hudMoveLeftHeld = false;
@@ -84,23 +119,143 @@ public class KaelAutoController : MonoBehaviour
 
     void Start()
     {
-        NexaDroneCompanion.EnsureExists(transform);
+        if (PlayerStats.Instance != null && PlayerStats.Instance.hasPurchasedNexaDrone)
+        {
+            NexaDroneCompanion.EnsureExists(transform);
+        }
     }
 
     private void LoadExtraKaelSprites()
     {
+        EnsureExtraKaelSpritesLoaded();
+    }
+
+    public void EnsureExtraKaelSpritesLoaded()
+    {
+        if (extraSpritesLoaded) return;
+        extraSpritesLoaded = true;
+
         for (int i = 0; i < 4; i++)
         {
             Texture2D bTex = Resources.Load<Texture2D>($"KaelExtra/Kael_Block_{i}");
             if (bTex != null)
             {
                 kaelBlockSprites[i] = Sprite.Create(bTex, new Rect(0, 0, bTex.width, bTex.height), new Vector2(0.5f, 0.12f), 115f);
+                kaelBlockSprites[i].name = $"Kael_Block_{i}";
             }
             Texture2D rTex = Resources.Load<Texture2D>($"KaelExtra/Kael_Riposte_{i}");
             if (rTex != null)
             {
                 kaelRiposteSprites[i] = Sprite.Create(rTex, new Rect(0, 0, rTex.width, rTex.height), new Vector2(0.5f, 0.12f), 115f);
+                kaelRiposteSprites[i].name = $"Kael_Riposte_{i}";
             }
+        }
+
+        LoadGauntletVariantSet(GauntletVariant.PyroReactor, "Pyro", 98.79f, 95.19f);
+        LoadGauntletVariantSet(GauntletVariant.IgneousPlasma, "Gold", 100.0f, 96.45f);
+        LoadGauntletVariantSet(GauntletVariant.VorstVoid, "Void", 101.82f, 98.54f);
+    }
+
+    private void LoadGauntletVariantSet(GauntletVariant variant, string folder, float mainPpu, float runPpu)
+    {
+        var map = new Dictionary<string, Sprite>(System.StringComparer.Ordinal);
+        foreach (string frameName in KAEL_ATLAS_FRAME_NAMES)
+        {
+            Texture2D tex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/{frameName}");
+            if (tex == null) continue;
+            Sprite spr = CreateCrispVariantSprite(tex, new Vector2(0.5f, 0f), mainPpu, $"{frameName}_{folder}");
+            map[frameName] = spr;
+        }
+
+        foreach (var (atlasName, runAlias) in KAEL_RUN_ALIASES)
+        {
+            Texture2D tex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/{atlasName}");
+            if (tex == null) continue;
+            Sprite runSpr = CreateCrispVariantSprite(tex, new Vector2(0.5f, 0f), runPpu, $"{runAlias}_{folder}");
+            map[runAlias] = runSpr;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            Texture2D bTex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/Kael_Block_{i}");
+            if (bTex != null)
+            {
+                Sprite bSpr = CreateCrispVariantSprite(bTex, new Vector2(0.5f, 0.12f), 115f, $"Kael_Block_{i}_{folder}");
+                map[$"Kael_Block_{i}"] = bSpr;
+                if (kaelBlockSprites[i] != null) variantSpriteToBase[bSpr] = kaelBlockSprites[i];
+            }
+
+            Texture2D rTex = Resources.Load<Texture2D>($"KaelGauntlets/{folder}/Kael_Riposte_{i}");
+            if (rTex != null)
+            {
+                Sprite rSpr = CreateCrispVariantSprite(rTex, new Vector2(0.5f, 0.12f), 115f, $"Kael_Riposte_{i}_{folder}");
+                map[$"Kael_Riposte_{i}"] = rSpr;
+                if (kaelRiposteSprites[i] != null) variantSpriteToBase[rSpr] = kaelRiposteSprites[i];
+            }
+        }
+
+        gauntletSpriteSets[variant] = new GauntletSpriteSet { ByBaseName = map };
+    }
+
+    private Sprite CreateCrispVariantSprite(Texture2D tex, Vector2 pivot, float ppu, string spriteName)
+    {
+        tex.filterMode = FilterMode.Point;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        Sprite spr = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), pivot, ppu, 0, SpriteMeshType.FullRect);
+        spr.name = spriteName;
+        knownVariantSprites.Add(spr);
+        return spr;
+    }
+
+    /// <summary>
+    /// Devuelve el sprite correspondiente al guantelete equipado (Pyro/Plasma/Vorst) preservando el frame base
+    /// para revertir o alternar limpiamente incluso cuando el juego está pausado en tienda.
+    /// </summary>
+    public Sprite ResolveGauntletVariantSprite(Sprite currentSprite)
+    {
+        if (currentSprite == null) return null;
+        EnsureExtraKaelSpritesLoaded();
+
+        Sprite baseSprite = currentSprite;
+        if (knownVariantSprites.Contains(currentSprite))
+        {
+            if (variantSpriteToBase.TryGetValue(currentSprite, out Sprite mappedBase) && mappedBase != null)
+            {
+                baseSprite = mappedBase;
+            }
+            else
+            {
+                return currentSprite;
+            }
+        }
+
+        GauntletVariant equipped = (PlayerStats.Instance != null)
+            ? PlayerStats.Instance.equippedGauntlet
+            : GauntletVariant.PrototypeCyan;
+
+        if (equipped == GauntletVariant.PrototypeCyan ||
+            !gauntletSpriteSets.TryGetValue(equipped, out GauntletSpriteSet set) ||
+            set.ByBaseName == null)
+        {
+            return baseSprite;
+        }
+
+        if (set.ByBaseName.TryGetValue(baseSprite.name, out Sprite variantSprite) && variantSprite != null)
+        {
+            variantSpriteToBase[variantSprite] = baseSprite;
+            return variantSprite;
+        }
+
+        return baseSprite;
+    }
+
+    public void RefreshEquippedGauntletVisuals()
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null) return;
+        Sprite resolved = ResolveGauntletVariantSprite(spriteRenderer.sprite);
+        if (resolved != null && spriteRenderer.sprite != resolved)
+        {
+            spriteRenderer.sprite = resolved;
         }
     }
 
@@ -184,12 +339,12 @@ public class KaelAutoController : MonoBehaviour
         bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
         bool isCorrupcion = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
 
-        Color primaryParryCol = isCorrupcion
-            ? new Color(1f, 0.18f, 0.45f)
-            : (isPureza ? new Color(1f, 0.90f, 0.32f) : new Color(0.25f, 0.98f, 1f));
-        Color secondaryParryCol = isCorrupcion
-            ? new Color(0.68f, 0.12f, 1f)
-            : (isPureza ? new Color(0.25f, 0.98f, 1f) : Color.white);
+        Color primaryParryCol = GetEffectiveGauntletColor(
+            isCorrupcion ? new Color(1f, 0.18f, 0.45f) : (isPureza ? new Color(1f, 0.90f, 0.32f) : new Color(0.25f, 0.98f, 1f)),
+            useSecondary: false);
+        Color secondaryParryCol = GetEffectiveGauntletColor(
+            isCorrupcion ? new Color(0.68f, 0.12f, 1f) : (isPureza ? new Color(0.25f, 0.98f, 1f) : Color.white),
+            useSecondary: true);
 
         float dirSign = isFacingLeft ? -1f : 1f;
         Vector3 shieldPos = transform.position + new Vector3(dirSign * 0.78f, 0.62f, 0f);
@@ -225,7 +380,7 @@ public class KaelAutoController : MonoBehaviour
         // Bullet-Time (Time.timeScale = 0.22f durante 0.20s reales)
         Time.timeScale = 0.22f;
         yield return new WaitForSecondsRealtime(0.20f);
-        if (PlayerStats.Instance == null || (!PlayerStats.Instance.isPaused && !PlayerStats.Instance.isUpgradeTreeOpen && !PlayerStats.Instance.isChoosingDilemma))
+        if (PlayerStats.Instance == null || !PlayerStats.Instance.IsAnyBlockingModalOpen)
         {
             Time.timeScale = 1f;
         }
@@ -243,7 +398,7 @@ public class KaelAutoController : MonoBehaviour
         if (CombatVFXManager.Instance != null && spriteRenderer != null)
         {
             CombatVFXManager.Instance.SpawnAfterimageGhost(
-                spriteRenderer.sprite,
+                ResolveGauntletVariantSprite(spriteRenderer.sprite),
                 transform.position,
                 transform.localScale,
                 isFacingLeft,
@@ -259,9 +414,8 @@ public class KaelAutoController : MonoBehaviour
         if (attacker != null)
         {
             struck.Add(attacker);
-            attacker.TakeDamage(riposteDmg, true, knockback: 2.2f);
+            DealGauntletHitDamage(attacker, riposteDmg, isCrit: true, knockback: 2.2f, isCorrupcion: isCorrupcion);
             attacker.ApplyStun(1.8f);
-            if (isCorrupcion) attacker.ApplyPlasmaBurn(baseDmg * 0.35f, 3.2f);
         }
 
         Vector2 facingDir = isFacingLeft ? Vector2.left : Vector2.right;
@@ -271,9 +425,8 @@ public class KaelAutoController : MonoBehaviour
             if (e != null && !struck.Contains(e))
             {
                 struck.Add(e);
-                e.TakeDamage(riposteDmg * 0.85f, true, knockback: 1.4f);
+                DealGauntletHitDamage(e, riposteDmg * 0.85f, isCrit: true, knockback: 1.4f, isCorrupcion: isCorrupcion);
                 e.ApplyStun(1.8f);
-                if (isCorrupcion) e.ApplyPlasmaBurn(baseDmg * 0.35f, 3.2f);
             }
         }
 
@@ -289,9 +442,14 @@ public class KaelAutoController : MonoBehaviour
 
     void Update()
     {
-        // Atajos globales para abrir/cerrar el Árbol de Mejoras (TAB o M) o Pausa (ESC)
+        // Atajos globales para abrir/cerrar el Árbol de Mejoras (TAB/M), Tienda Arsenal (B/T) o Pausa (ESC)
         if (PlayerStats.Instance != null)
         {
+            if (WasArsenalShopShortcutPressed())
+            {
+                PlayerStats.Instance.ToggleArsenalShopModal();
+                return;
+            }
             if (WasUpgradeTreeShortcutPressed())
             {
                 PlayerStats.Instance.ToggleUpgradeTreeModal();
@@ -299,7 +457,7 @@ public class KaelAutoController : MonoBehaviour
             }
             if (WasEscapePressed())
             {
-                if (PlayerStats.Instance.isUpgradeTreeOpen || PlayerStats.Instance.isChoosingSkill)
+                if (PlayerStats.Instance.isUpgradeTreeOpen || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isArsenalShopOpen)
                 {
                     PlayerStats.Instance.CloseAllUpgradeModals();
                     return;
@@ -312,13 +470,7 @@ public class KaelAutoController : MonoBehaviour
             }
         }
 
-        if (PlayerStats.Instance != null &&
-            (PlayerStats.Instance.isPaused ||
-             PlayerStats.Instance.isGameOver ||
-             PlayerStats.Instance.isLevelCompleted ||
-             PlayerStats.Instance.isChoosingDilemma ||
-             PlayerStats.Instance.isChoosingSkill ||
-             PlayerStats.Instance.isUpgradeTreeOpen))
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
         {
             if (anim != null) anim.SetBool("IsRunning", false);
             return;
@@ -485,9 +637,72 @@ public class KaelAutoController : MonoBehaviour
 
     private Color GetMoralBaseTint(bool isPureza, bool isCorrupcion)
     {
+        if (PlayerStats.Instance != null && PlayerStats.Instance.equippedGauntlet != GauntletVariant.PrototypeCyan)
+        {
+            return baseSpriteColor;
+        }
         if (isCorrupcion) return new Color(1f, 0.88f, 0.95f, 1f);
         if (isPureza) return new Color(0.92f, 1f, 1f, 1f);
         return baseSpriteColor;
+    }
+
+    /// <summary>
+    /// Devuelve el color del Guantelete equipado (prioritario si no es el Prototipo estándar),
+    /// manteniendo los colores morales/Base cuando el Prototipo Cian está equipado.
+    /// </summary>
+    Color GetEffectiveGauntletColor(Color fallbackMoralOrDefault, bool useSecondary = false)
+    {
+        if (PlayerStats.Instance != null && PlayerStats.Instance.equippedGauntlet != GauntletVariant.PrototypeCyan)
+        {
+            GauntletSpec spec = PlayerStats.GetGauntletSpec(PlayerStats.Instance.equippedGauntlet);
+            return useSecondary ? spec.SecondaryColor : spec.PrimaryColor;
+        }
+        return fallbackMoralOrDefault;
+    }
+
+    /// <summary>
+    /// Aplica daño de combate y dispara las pasivas activas del Guantelete equipado
+    /// (quemadura Piro-Reactor, 5% robo de vida Vorst) sin duplicar lógica entre ataques.
+    /// </summary>
+    public void DealGauntletHitDamage(EnemyDummy target, float damageAmount, bool isCrit, float knockback, bool isCorrupcion, bool showLifestealPopup = true)
+    {
+        if (target == null) return;
+
+        float hpBefore = target.CurrentHP;
+        target.TakeDamage(damageAmount, isCrit, knockback);
+        float actualDealt = target.isInvulnerable ? 0f : Mathf.Max(0f, hpBefore - target.CurrentHP);
+
+        if (PlayerStats.Instance != null)
+        {
+            if (PlayerStats.Instance.equippedGauntlet == GauntletVariant.PyroReactor)
+            {
+                target.ApplyFireBurn(
+                    PlayerStats.Instance.GetPyroBurnDamagePerTick(),
+                    PlayerStats.PYRO_BURN_DURATION,
+                    PlayerStats.PYRO_BURN_TICK_INTERVAL);
+            }
+            else if (PlayerStats.Instance.equippedGauntlet == GauntletVariant.VorstVoid && actualDealt > 0f)
+            {
+                float stolen = PlayerStats.Instance.ApplyGauntletLifeSteal(actualDealt);
+                if (stolen > 0f && CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnVoidLifestealVFX(target.transform.position, transform.position);
+                    if (showLifestealPopup && Time.time - lastLifestealPopupTime >= 0.45f)
+                    {
+                        lastLifestealPopupTime = Time.time;
+                        CombatVFXManager.Instance.SpawnFloatingText(
+                            transform.position + Vector3.up * 2.15f,
+                            $"+{Mathf.Max(1, Mathf.RoundToInt(stolen))} HP (VACÍO)",
+                            new Color(0.84f, 0.38f, 1f), 14, 0.65f);
+                    }
+                }
+            }
+        }
+
+        if (isCorrupcion)
+        {
+            target.ApplyPlasmaBurn(damageAmount * 0.35f, 3.2f);
+        }
     }
 
     private void UpdateOverdriveAndMoralVisuals(bool isOverdrive, bool isPureza, bool isCorrupcion)
@@ -503,11 +718,11 @@ public class KaelAutoController : MonoBehaviour
                 if (afterimageTimer <= 0f && spriteRenderer != null)
                 {
                     afterimageTimer = 0.055f;
-                    Color ghostCol = isCorrupcion
-                        ? new Color(1f, 0.18f, 0.52f, 0.58f)
-                        : new Color(0.18f, 0.95f, 1f, 0.58f);
+                    Color ghostBase = GetEffectiveGauntletColor(
+                        isCorrupcion ? new Color(1f, 0.18f, 0.52f) : new Color(0.18f, 0.95f, 1f));
+                    Color ghostCol = new Color(ghostBase.r, ghostBase.g, ghostBase.b, 0.58f);
                     CombatVFXManager.Instance.SpawnAfterimageGhost(
-                        spriteRenderer.sprite,
+                        ResolveGauntletVariantSprite(spriteRenderer.sprite),
                         transform.position,
                         transform.localScale,
                         isFacingLeft,
@@ -520,21 +735,31 @@ public class KaelAutoController : MonoBehaviour
             if (overdriveArcTimer <= 0f)
             {
                 overdriveArcTimer = 0.085f;
-                Color arcCol = isCorrupcion
-                    ? new Color(1f, 0.20f, 0.55f, 0.9f)
-                    : new Color(0.22f, 0.96f, 1f, 0.9f);
+                Color arcBase = GetEffectiveGauntletColor(
+                    isCorrupcion ? new Color(1f, 0.20f, 0.55f) : new Color(0.22f, 0.96f, 1f));
+                Color arcCol = new Color(arcBase.r, arcBase.g, arcBase.b, 0.9f);
                 CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 0.55f, arcCol);
             }
         }
 
-        // BLOQUE 4 (Issue #22): Partículas ambientales de Pureza Nexo o Relámpagos Oscuros de Disonancia Vorst
-        if (isPureza || isCorrupcion)
+        // BLOQUE 4 (Issue #22) & Aura sutil del Guantelete elemental equipado (Issue #21)
+        bool hasElementalGauntlet = (PlayerStats.Instance != null && PlayerStats.Instance.equippedGauntlet != GauntletVariant.PrototypeCyan);
+        if (isPureza || isCorrupcion || hasElementalGauntlet)
         {
             moralAuraTimer -= Time.deltaTime;
             if (moralAuraTimer <= 0f)
             {
                 moralAuraTimer = 0.26f;
-                if (isPureza)
+                if (hasElementalGauntlet)
+                {
+                    Color gCol = CombatVFXManager.Instance.GetGauntletPrimaryColor();
+                    gCol.a = 0.85f;
+                    CombatVFXManager.Instance.SpawnFloatingRuneOrSpore(
+                        transform.position + new Vector3(Random.Range(-0.45f, 0.45f), Random.Range(0.25f, 1.05f), 0f),
+                        gCol
+                    );
+                }
+                else if (isPureza)
                 {
                     Color runeCol = (Random.value > 0.5f)
                         ? new Color(0.30f, 0.98f, 1f, 0.85f)
@@ -558,13 +783,7 @@ public class KaelAutoController : MonoBehaviour
     public void TriggerManualAttack()
     {
         if (isCastingUlt) return;
-        if (PlayerStats.Instance != null &&
-            (PlayerStats.Instance.isPaused ||
-             PlayerStats.Instance.isGameOver ||
-             PlayerStats.Instance.isLevelCompleted ||
-             PlayerStats.Instance.isChoosingDilemma ||
-             PlayerStats.Instance.isChoosingSkill ||
-             PlayerStats.Instance.isUpgradeTreeOpen))
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
         float rate = (PlayerStats.Instance != null) ? PlayerStats.Instance.attackRate : 1.2f;
@@ -608,27 +827,32 @@ public class KaelAutoController : MonoBehaviour
             transform.localScale = new Vector3(s, s, 1f);
         }
 
-        if (spriteRenderer == null || isCastingUlt) return;
+        if (spriteRenderer == null) return;
 
-        if (riposteSpriteTimer > 0f)
+        if (!isCastingUlt)
         {
-            riposteSpriteTimer -= Time.unscaledDeltaTime;
-            float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
-            int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
-            if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
+            if (riposteSpriteTimer > 0f)
             {
-                spriteRenderer.sprite = kaelRiposteSprites[idx];
+                riposteSpriteTimer -= Time.unscaledDeltaTime;
+                float prog = 1f - Mathf.Clamp01(riposteSpriteTimer / 0.36f);
+                int idx = Mathf.Clamp(Mathf.FloorToInt(prog * 4f), 0, 3);
+                if (kaelRiposteSprites != null && kaelRiposteSprites[idx] != null)
+                {
+                    spriteRenderer.sprite = kaelRiposteSprites[idx];
+                }
+            }
+            else if (isGuarding)
+            {
+                float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
+                int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
+                if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
+                {
+                    spriteRenderer.sprite = kaelBlockSprites[idx];
+                }
             }
         }
-        else if (isGuarding)
-        {
-            float heldTime = Mathf.Max(0f, Time.unscaledTime - lastBlockStartTime);
-            int idx = (heldTime < 0.08f) ? 0 : (1 + (Mathf.FloorToInt(heldTime * 10f) % 3));
-            if (kaelBlockSprites != null && kaelBlockSprites[idx] != null)
-            {
-                spriteRenderer.sprite = kaelBlockSprites[idx];
-            }
-        }
+
+        RefreshEquippedGauntletVisuals();
     }
 
     void ExecuteComboStep(float effectiveRate, bool isPureza, bool isCorrupcion)
@@ -687,8 +911,7 @@ public class KaelAutoController : MonoBehaviour
                     EnemyDummy target = targets[i];
                     if (target != null)
                     {
-                        target.TakeDamage(baseDmg * critMult, isCrit, knockback: 0.12f);
-                        if (isCorrupcion) target.ApplyPlasmaBurn(baseDmg * 0.35f, 3.2f);
+                        DealGauntletHitDamage(target, baseDmg * critMult, isCrit, knockback: 0.12f, isCorrupcion: isCorrupcion);
                         hitAnyEnemy = true;
                         if (CombatVFXManager.Instance != null)
                         {
@@ -720,8 +943,7 @@ public class KaelAutoController : MonoBehaviour
             {
                 if (enemy != null)
                 {
-                    enemy.TakeDamage(slamDamage, isCrit, knockback: 0.42f);
-                    if (isCorrupcion) enemy.ApplyPlasmaBurn(baseDmg * 0.45f, 3.5f);
+                    DealGauntletHitDamage(enemy, slamDamage, isCrit, knockback: 0.42f, isCorrupcion: isCorrupcion);
                     hitAnyEnemy = true;
                     if (CombatVFXManager.Instance != null)
                     {
@@ -732,9 +954,8 @@ public class KaelAutoController : MonoBehaviour
 
             if (CombatVFXManager.Instance != null)
             {
-                Color waveCol = isCorrupcion
-                    ? new Color(1f, 0.18f, 0.48f)
-                    : (isPureza ? new Color(1f, 0.88f, 0.32f) : new Color(0.22f, 0.92f, 1f));
+                Color waveCol = GetEffectiveGauntletColor(
+                    isCorrupcion ? new Color(1f, 0.18f, 0.48f) : (isPureza ? new Color(1f, 0.88f, 0.32f) : new Color(0.22f, 0.92f, 1f)));
                 CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + new Vector3(dirSign * 1.05f, 0.35f, 0f), waveCol, 2.1f);
                 CombatVFXManager.Instance.SpawnHitSparks(transform.position + new Vector3(dirSign * 1.15f, 0.15f, 0f), true, 14);
                 CombatVFXManager.Instance.ShakeCamera(0.15f, 0.09f);
@@ -794,7 +1015,7 @@ public class KaelAutoController : MonoBehaviour
 
     public void TriggerUltimate()
     {
-        if (isCastingUlt || PlayerStats.Instance == null) return;
+        if (isCastingUlt || PlayerStats.Instance == null || PlayerStats.Instance.IsAnyBlockingModalOpen) return;
         if (PlayerStats.Instance.ultCharge < 100f) return;
         if (!PlayerStats.Instance.ConsumeUltCharge()) return;
 
@@ -845,7 +1066,8 @@ public class KaelAutoController : MonoBehaviour
             string chargeLabel = isCorrupcion
                 ? "⚡ ¡CANALIZANDO DISONANCIA ABISAL! ⚡"
                 : (isPureza ? "☀ ¡CANALIZANDO PUREZA SOLAR NEXO! ☀" : "⚡ ¡CARGANDO CAÑÓN NEXO! ⚡");
-            Color chargeCol = isCorrupcion ? new Color(1f, 0.22f, 0.52f) : (isPureza ? new Color(1f, 0.90f, 0.35f) : Color.cyan);
+            Color chargeCol = GetEffectiveGauntletColor(
+                isCorrupcion ? new Color(1f, 0.22f, 0.52f) : (isPureza ? new Color(1f, 0.90f, 0.35f) : Color.cyan));
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.55f, chargeLabel, chargeCol, 22, 0.7f);
             CombatVFXManager.Instance.ShakeCamera(0.55f, 0.05f);
         }
@@ -881,8 +1103,7 @@ public class KaelAutoController : MonoBehaviour
             {
                 if (enemy != null)
                 {
-                    enemy.TakeDamage(hitDamage, isCrit: true, knockback: 0.24f);
-                    if (isCorrupcion) enemy.ApplyPlasmaBurn(hitDamage * 0.35f, 3.5f);
+                    DealGauntletHitDamage(enemy, hitDamage, isCrit: true, knockback: 0.24f, isCorrupcion: isCorrupcion, showLifestealPopup: (wave == 0));
                     if (CombatVFXManager.Instance != null)
                     {
                         CombatVFXManager.Instance.RegisterComboHit();
@@ -967,6 +1188,16 @@ public class KaelAutoController : MonoBehaviour
             if (Keyboard.current.tabKey.wasPressedThisFrame || Keyboard.current.mKey.wasPressedThisFrame) return true;
         }
         try { return Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.M); }
+        catch { return false; }
+    }
+
+    public static bool WasArsenalShopShortcutPressed()
+    {
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.bKey.wasPressedThisFrame || Keyboard.current.tKey.wasPressedThisFrame) return true;
+        }
+        try { return Input.GetKeyDown(KeyCode.B) || Input.GetKeyDown(KeyCode.T); }
         catch { return false; }
     }
 

@@ -269,7 +269,7 @@ public class CompanionDialogueManager : MonoBehaviour
         if (EndingCinematicController.Instance != null &&
             EndingCinematicController.Instance.isEndingActive)
             return;
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isUpgradeTreeOpen))
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
         GUI.matrix = Matrix4x4.identity;

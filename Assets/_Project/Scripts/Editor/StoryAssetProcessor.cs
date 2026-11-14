@@ -104,6 +104,24 @@ public class StoryAssetProcessor
             }
         }
 
+        // 6. Procesar Variantes del Guantelete (Arsenal de Vanguardia - Issue #21)
+        string gauntletsSrcDir = Path.Combine(uiDir, "Gauntlets");
+        string gauntletsDstDir = Path.Combine(resDir, "Gauntlets");
+        if (Directory.Exists(gauntletsSrcDir))
+        {
+            if (!Directory.Exists(gauntletsDstDir)) Directory.CreateDirectory(gauntletsDstDir);
+            string[] gFiles = Directory.GetFiles(gauntletsSrcDir, "*.png");
+            foreach (string srcFile in gFiles)
+            {
+                string fileName = Path.GetFileName(srcFile);
+                string dstFile = Path.Combine(gauntletsDstDir, fileName);
+                File.Copy(srcFile, dstFile, true);
+                AssetDatabase.ImportAsset(dstFile, ImportAssetOptions.ForceUpdate);
+                ConfigureSprite(dstFile);
+                successCount++;
+            }
+        }
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 

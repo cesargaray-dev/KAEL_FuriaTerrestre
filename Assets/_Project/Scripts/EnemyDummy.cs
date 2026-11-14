@@ -38,10 +38,18 @@ public class EnemyDummy : MonoBehaviour
     public bool isStunned => stunTimer > 0f;
     private float stunTimer = 0f;
 
-    // --- BLOQUE 4 (Issue #22): Quemadura de Plasma (DoT por Disonancia Vorst) ---
-    private float burnTimer = 0f;
-    private float burnTickTimer = 0f;
-    private float burnDamagePerTick = 4f;
+    // --- BLOQUE 4 (Issue #22) & ARSENAL PIRO-REACTOR (Issue #21): Canales de Quemadura (DoT) ---
+    private struct BurnChannel
+    {
+        public float timer;
+        public float tickTimer;
+        public float damagePerTick;
+        public float tickInterval;
+    }
+
+    private BurnChannel plasmaBurn;
+    private BurnChannel fireBurn;
+    public bool HasActiveFireBurn => fireBurn.timer > 0f;
 
     // --- BLOQUE 5 (Issue #23): Mecánicas exclusivas de Monstruos y Jefes del Nivel 3 ---
     public bool isLevel3Monster = false;
@@ -507,8 +515,52 @@ public class EnemyDummy : MonoBehaviour
     public void ApplyPlasmaBurn(float dps, float duration)
     {
         if (isDead) return;
-        burnDamagePerTick = Mathf.Max(2f, dps * 0.45f);
-        burnTimer = Mathf.Max(burnTimer, duration);
+        bool wasInactive = plasmaBurn.timer <= 0f;
+        plasmaBurn.damagePerTick = Mathf.Max(2f, dps * 0.45f);
+        plasmaBurn.timer = Mathf.Max(plasmaBurn.timer, duration);
+        plasmaBurn.tickInterval = 0.45f;
+        if (wasInactive) plasmaBurn.tickTimer = plasmaBurn.tickInterval;
+    }
+
+    /// <summary>
+    /// ARSENAL DE VANGUARDIA (Issue #21): Aplica combustión continua por tick de fuego (Guantelete Piro-Reactor).
+    /// </summary>
+    public void ApplyFireBurn(float damagePerTick, float duration, float tickInterval = PlayerStats.PYRO_BURN_TICK_INTERVAL)
+    {
+        if (isDead) return;
+        bool wasInactive = fireBurn.timer <= 0f;
+        fireBurn.damagePerTick = Mathf.Max(fireBurn.damagePerTick, Mathf.Max(2f, damagePerTick));
+        fireBurn.timer = Mathf.Max(fireBurn.timer, duration);
+        fireBurn.tickInterval = Mathf.Max(0.15f, tickInterval);
+        if (wasInactive) fireBurn.tickTimer = fireBurn.tickInterval;
+    }
+
+    void ProcessBurnChannel(ref BurnChannel ch, bool isPyroFire)
+    {
+        if (ch.timer <= 0f || isDead) return;
+
+        ch.timer = Mathf.Max(0f, ch.timer - Time.deltaTime);
+        ch.tickTimer -= Time.deltaTime;
+        if (ch.tickTimer > 0f) return;
+
+        ch.tickTimer = ch.tickInterval > 0f ? ch.tickInterval : 0.45f;
+        TakeDamage(ch.damagePerTick, false, 0f);
+        if (CombatVFXManager.Instance != null && !isDead)
+        {
+            Vector3 fxPos = transform.position + Vector3.up * 0.7f;
+            if (isPyroFire)
+            {
+                CombatVFXManager.Instance.SpawnFireBurnTickVFX(fxPos);
+                CombatVFXManager.Instance.SpawnFloatingText(
+                    fxPos + new Vector3(UnityEngine.Random.Range(-0.22f, 0.22f), 0.35f, 0f),
+                    $"🔥 -{Mathf.RoundToInt(ch.damagePerTick)}",
+                    new Color(1f, 0.42f, 0.14f), 14, 0.48f);
+            }
+            else
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(fxPos, new Color(0.85f, 0.15f, 1f));
+            }
+        }
     }
 
     void Update()
@@ -520,30 +572,12 @@ public class EnemyDummy : MonoBehaviour
             if (kaelTarget == null) return;
         }
 
-        if (PlayerStats.Instance != null &&
-            (PlayerStats.Instance.isPaused ||
-             PlayerStats.Instance.isGameOver ||
-             PlayerStats.Instance.isLevelCompleted ||
-             PlayerStats.Instance.isChoosingDilemma ||
-             PlayerStats.Instance.isChoosingSkill ||
-             PlayerStats.Instance.isUpgradeTreeOpen))
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
-        // Procesar Quemadura de Plasma (DoT - Bloque 4)
-        if (burnTimer > 0f)
-        {
-            burnTimer -= Time.deltaTime;
-            burnTickTimer -= Time.deltaTime;
-            if (burnTickTimer <= 0f)
-            {
-                burnTickTimer = 0.45f;
-                TakeDamage(burnDamagePerTick, false, 0f);
-                if (CombatVFXManager.Instance != null && !isDead)
-                {
-                    CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 0.7f, new Color(0.85f, 0.15f, 1f));
-                }
-            }
-        }
+        // Procesar Quemadura de Plasma (Bloque 4) y Combustión Piro-Reactor (Issue #21)
+        ProcessBurnChannel(ref plasmaBurn, false);
+        ProcessBurnChannel(ref fireBurn, true);
 
         // Rotar anillos psiónicos del Mini-Jefe HiveInquisitor
         for (int i = 0; i < psionicRings.Count; i++)
@@ -2248,37 +2282,40 @@ public class EnemyDummy : MonoBehaviour
     void OnGUI()
     {
         if (isDead || Camera.main == null) return;
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen) return;
+
         GUI.matrix = Matrix4x4.identity;
 
-        // Indicador flotante de Estado Aturdido (Stunned por Parry Perfecto - Bloque 1)
-        if (stunTimer > 0f)
+        // Indicador flotante de Estado Aturdido (Stunned por Parry Perfecto - Bloque 1) y Quemadura Piro-Reactor (Issue #21)
+        if (stunTimer > 0f || fireBurn.timer > 0f)
         {
-            Vector3 stunWorld = transform.position + Vector3.up * (isBoss ? 2.4f : 1.55f);
-            Vector3 stunScreen = Camera.main.WorldToScreenPoint(stunWorld);
-            if (stunScreen.z > 0)
+            Vector3 statusWorld = transform.position + Vector3.up * (isBoss ? 2.4f : 1.55f);
+            Vector3 statusScreen = Camera.main.WorldToScreenPoint(statusWorld);
+            if (statusScreen.z > 0)
             {
-                GUIStyle stunStyle = new GUIStyle(GUI.skin.label)
+                float sy = Screen.height - statusScreen.y;
+                GUIStyle statusStyle = new GUIStyle(GUI.skin.label)
                 {
-                    fontSize = PlayerStats.ScaleFont(15),
+                    fontSize = PlayerStats.ScaleFont(14),
                     fontStyle = FontStyle.Bold,
                     alignment = TextAnchor.MiddleCenter
                 };
-                stunStyle.normal.textColor = new Color(0.25f, 0.98f, 1f);
-                float sy = Screen.height - stunScreen.y;
-                GUI.Label(new Rect(stunScreen.x - 110f, sy - 16f, 220f, 32f), $"⚡ ATURDIDO ({stunTimer:F1}s) ⚡", stunStyle);
+                if (stunTimer > 0f)
+                {
+                    statusStyle.normal.textColor = new Color(0.25f, 0.98f, 1f);
+                    GUI.Label(new Rect(statusScreen.x - 110f, sy - 16f, 220f, 28f), $"⚡ ATURDIDO ({stunTimer:F1}s) ⚡", statusStyle);
+                }
+                if (fireBurn.timer > 0f)
+                {
+                    float yOff = stunTimer > 0f ? -38f : -16f;
+                    statusStyle.normal.textColor = new Color(1f, 0.48f, 0.14f);
+                    GUI.Label(new Rect(statusScreen.x - 110f, sy + yOff, 220f, 28f), $"🔥 COMBUSTIÓN ({fireBurn.timer:F1}s)", statusStyle);
+                }
             }
         }
 
         if (isBoss || isMiniBoss)
         {
-            if (PlayerStats.Instance != null &&
-                (PlayerStats.Instance.isPaused ||
-                 PlayerStats.Instance.isGameOver ||
-                 PlayerStats.Instance.isLevelCompleted ||
-                 PlayerStats.Instance.isChoosingDilemma ||
-                 PlayerStats.Instance.isChoosingSkill ||
-                 PlayerStats.Instance.isUpgradeTreeOpen))
-                return;
 
             Rect bgBox = PlayerStats.ScaleRect(720f, 10f, 480f, 74f);
             Rect titleRect = PlayerStats.ScaleRect(732f, 14f, 456f, 26f);
