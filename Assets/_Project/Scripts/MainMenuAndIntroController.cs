@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class MainMenuAndIntroController : MonoBehaviour
 {
@@ -37,7 +38,9 @@ public class MainMenuAndIntroController : MonoBehaviour
 
     private MenuSpark[] sparks;
     private const int SPARK_COUNT = 42;
-    private float[] btnHoverAnim = new float[18];
+    private float[] btnHoverAnim = new float[20];
+    private int keyboardMenuFocus = 0;
+    private float lastKeyNavTime = -10f;
 
     private readonly string[] slideTitles = {
         "ACTO I — LA CAÍDA EN 90 MINUTOS",
@@ -76,6 +79,7 @@ public class MainMenuAndIntroController : MonoBehaviour
         btnCrimsonTex  = LoadTex("StoryUI/Btn_Cyber_Crimson");
         panelCyanTex   = LoadTex("StoryUI/Panel_Cyber_Cyan");
 
+        VorstCodexUI.EnsureExists();
         InitSparks();
     }
 
@@ -138,6 +142,92 @@ public class MainMenuAndIntroController : MonoBehaviour
             if (fadeAlpha > 0f)
                 fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, Time.deltaTime * 1.8f);
         }
+        else if (VorstCodexUI.Instance == null || !VorstCodexUI.Instance.isOpen)
+        {
+            HandleMainMenuKeyboard();
+        }
+    }
+
+    void HandleMainMenuKeyboard()
+    {
+        if (Time.unscaledTime - lastKeyNavTime < 0.12f) return;
+
+        bool cPressed = (Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame);
+        if (!cPressed) { try { cPressed = Input.GetKeyDown(KeyCode.C); } catch { } }
+        if (cPressed)
+        {
+            lastKeyNavTime = Time.unscaledTime;
+            OpenVorstCodexFromMenu();
+            return;
+        }
+
+        bool upPressed = (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame));
+        if (!upPressed) { try { upPressed = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W); } catch { } }
+        if (upPressed)
+        {
+            lastKeyNavTime = Time.unscaledTime;
+            keyboardMenuFocus = (keyboardMenuFocus - 1 + 8) % 8;
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+            return;
+        }
+
+        bool downPressed = (Keyboard.current != null && (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame));
+        if (!downPressed) { try { downPressed = Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S); } catch { } }
+        if (downPressed)
+        {
+            lastKeyNavTime = Time.unscaledTime;
+            keyboardMenuFocus = (keyboardMenuFocus + 1) % 8;
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+            return;
+        }
+
+        bool enterPressed = (Keyboard.current != null && (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame));
+        if (!enterPressed) { try { enterPressed = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space); } catch { } }
+        if (enterPressed)
+        {
+            lastKeyNavTime = Time.unscaledTime;
+            ExecuteFocusedMenuButton(keyboardMenuFocus);
+        }
+    }
+
+    void ExecuteFocusedMenuButton(int focusIdx)
+    {
+        switch (focusIdx)
+        {
+            case 0: StartCinematic(); break;
+            case 1: LoadLevel1(); break;
+            case 2:
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                SceneManager.LoadScene("Lab_Zahir");
+                break;
+            case 3:
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                SceneManager.LoadScene("03_Nivel3_Colmena");
+                break;
+            case 4: OpenVorstCodexFromMenu(); break;
+            case 5:
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                showChapterSelect = !showChapterSelect;
+                if (showChapterSelect) showCredits = false;
+                break;
+            case 6:
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                showCredits = !showCredits;
+                if (showCredits) showChapterSelect = false;
+                break;
+            case 7:
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                Application.Quit();
+                break;
+        }
+    }
+
+    void OpenVorstCodexFromMenu()
+    {
+        showChapterSelect = false;
+        showCredits = false;
+        VorstCodexUI codex = VorstCodexUI.EnsureExists();
+        if (codex != null) codex.OpenCodex();
     }
 
     void StartCinematic()
@@ -206,6 +296,11 @@ public class MainMenuAndIntroController : MonoBehaviour
         // Mantener GUI.matrix en identidad para renderizar todas las fuentes a resolución nativa con nitidez absoluta
         GUI.matrix = Matrix4x4.identity;
 
+        if (VorstCodexUI.Instance != null && VorstCodexUI.Instance.isOpen)
+        {
+            return;
+        }
+
         if (!inCinematic)
         {
             DrawMainMenuScreen();
@@ -254,52 +349,66 @@ public class MainMenuAndIntroController : MonoBehaviour
         // 5. Botones Interactivos del Menú con Bordes Dobles Cyberpunk, Animación Hover y Barra Lateral Luminosa
         float btnX = 1210f;
         float btnW = 560f;
-        float btnH = 60f;
+        float btnH = 54f;
 
-        if (DrawMenuButton(0, new Rect(btnX, 290, btnW, btnH), "▶  INICIAR CAMPAÑA (CON CINEMÁTICA)", new Color(0.06f, 0.26f, 0.42f), new Color(0.22f, 0.92f, 1f), true))
+        if (DrawMenuButton(0, new Rect(btnX, 282, btnW, btnH), "▶  INICIAR CAMPAÑA (CON CINEMÁTICA)", new Color(0.06f, 0.26f, 0.42f), new Color(0.22f, 0.92f, 1f), true))
         {
+            keyboardMenuFocus = 0;
             StartCinematic();
         }
 
-        if (DrawMenuButton(1, new Rect(btnX, 362, btnW, btnH), "⚔  NIVEL 1: SECTOR 7 (LAB_CESAR)", new Color(0.10f, 0.15f, 0.28f), new Color(1f, 0.82f, 0.22f), false))
+        if (DrawMenuButton(1, new Rect(btnX, 344, btnW, btnH), "⚔  NIVEL 1: SECTOR 7 (LAB_CESAR)", new Color(0.10f, 0.15f, 0.28f), new Color(1f, 0.82f, 0.22f), false))
         {
+            keyboardMenuFocus = 1;
             LoadLevel1();
         }
 
-        if (DrawMenuButton(2, new Rect(btnX, 434, btnW, btnH), "⚡  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.15f, 0.08f, 0.28f), new Color(0.85f, 0.38f, 1f), false))
+        if (DrawMenuButton(2, new Rect(btnX, 406, btnW, btnH), "⚡  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.15f, 0.08f, 0.28f), new Color(0.85f, 0.38f, 1f), false))
         {
+            keyboardMenuFocus = 2;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             SceneManager.LoadScene("Lab_Zahir");
         }
 
-        if (DrawMenuButton(7, new Rect(btnX, 506, btnW, btnH), "☣  NIVEL 3: COLMENA NAVE NÚCLEO", new Color(0.14f, 0.07f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
+        if (DrawMenuButton(7, new Rect(btnX, 468, btnW, btnH), "☣  NIVEL 3: COLMENA NAVE NÚCLEO", new Color(0.14f, 0.07f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
         {
+            keyboardMenuFocus = 3;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             SceneManager.LoadScene("03_Nivel3_Colmena");
         }
 
-        if (DrawMenuButton(8, new Rect(btnX, 578, btnW, btnH), "❖  SELECTOR DE CAPÍTULOS Y 3 FINALES", new Color(0.09f, 0.18f, 0.26f), new Color(1f, 0.84f, 0.28f), false))
+        int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
+        if (DrawMenuButton(17, new Rect(btnX, 530, btnW, btnH), $"📘  CÓDICE VORST — BESTIARIO TÁCTICO ({unlockedCodex}/6) [C]", new Color(0.06f, 0.22f, 0.36f), new Color(0.24f, 0.96f, 1f), true))
         {
+            keyboardMenuFocus = 4;
+            OpenVorstCodexFromMenu();
+        }
+
+        if (DrawMenuButton(8, new Rect(btnX, 592, btnW, btnH), "❖  SELECTOR DE CAPÍTULOS Y 3 FINALES", new Color(0.09f, 0.18f, 0.26f), new Color(1f, 0.84f, 0.28f), false))
+        {
+            keyboardMenuFocus = 5;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             showChapterSelect = !showChapterSelect;
             if (showChapterSelect) showCredits = false;
         }
 
-        if (DrawMenuButton(3, new Rect(btnX, 650, btnW, btnH), "❖  CRÉDITOS Y EQUIPO DE DESARROLLO", new Color(0.08f, 0.11f, 0.20f), new Color(0.55f, 0.65f, 1f), false))
+        if (DrawMenuButton(3, new Rect(btnX, 654, btnW, btnH), "❖  CRÉDITOS Y EQUIPO DE DESARROLLO", new Color(0.08f, 0.11f, 0.20f), new Color(0.55f, 0.65f, 1f), false))
         {
+            keyboardMenuFocus = 6;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             showCredits = !showCredits;
             if (showCredits) showChapterSelect = false;
         }
 
-        if (DrawMenuButton(4, new Rect(btnX, 722, btnW, btnH), "✖  SALIR DEL JUEGO", new Color(0.22f, 0.06f, 0.12f), new Color(1f, 0.32f, 0.42f), false))
+        if (DrawMenuButton(4, new Rect(btnX, 716, btnW, btnH), "✖  SALIR DEL JUEGO", new Color(0.22f, 0.06f, 0.12f), new Color(1f, 0.32f, 0.42f), false))
         {
+            keyboardMenuFocus = 7;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             Application.Quit();
         }
 
         // 6. Control Deslizable de Volumen + Botón de Silencio en la Esquina Inferior Derecha
-        DrawBottomAudioControl(new Rect(btnX, 804f, btnW, 118f));
+        DrawBottomAudioControl(new Rect(btnX, 788f, btnW, 118f));
 
         // 6.5 Ventana Modal de Selección de Capítulo / Puente Jugable / 3 Finales
         if (showChapterSelect)

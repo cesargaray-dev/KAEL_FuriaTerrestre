@@ -2088,6 +2088,7 @@ public class EnemyDummy : MonoBehaviour
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 
+        VorstCodexUI.RegisterEnemyKill(this);
         OnEnemyDied?.Invoke();
 
         if (anim != null && !useCustomSprites)
@@ -2109,6 +2110,8 @@ public class EnemyDummy : MonoBehaviour
         transform.localRotation = Quaternion.identity;
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
+
+        VorstCodexUI.RegisterEnemyKill(this);
 
         if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", false);
 

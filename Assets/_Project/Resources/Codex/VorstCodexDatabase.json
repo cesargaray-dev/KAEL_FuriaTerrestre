@@ -1,0 +1,78 @@
+{
+  "version": "2.4.0-NEXO",
+  "archiveTitle": "BASE DE DATOS MILITAR TERRESTRE // CÓDICE XENOBIOLÓGICO VORST",
+  "entries": [
+    {
+      "id": "VorstWalker",
+      "code": "VRST-01 // INFANTERÍA",
+      "name": "Caminante Vorst",
+      "classification": "Unidad de Infantería Biomecánica Estándar",
+      "origin": "Cámara de Incubación Orbital — Flota de Recolección Vorst (Sector 7)",
+      "threatLevel": "NIVEL II — MODERADO (ENJAMBRE)",
+      "armorType": "Quitina Sintética Ligera (Aleación Bio-Carbono Fase 1)",
+      "weakPoints": "Articulación cervical expuesta y conducto torácico de plasma violeta",
+      "elementalWeakness": "Guantelete Prototipo (Eléctrico Cian) y Piro-Reactor (Combustión Térmica)",
+      "diaryFragment": "DIARIO DE DEFENSA TERRESTRE — ENTRADA #04 (CAPITÁN V. MORALES):\n\"Cayeron en cápsulas de impacto sobre las avenidas del Sector 7. No respiran ni dudan: avanzan en formación cerrada drenando la red eléctrica urbana. Un golpe sísmico directo al tórax basta para quebrar su exoesqueleto, pero jamás atacan solos.\""
+    },
+    {
+      "id": "Stalker",
+      "code": "VRST-02 // ACECHADOR",
+      "name": "Stalker",
+      "classification": "Depredador de Intercepción Rápida y Flanqueo",
+      "origin": "Fosas de Mutación Acelerada — Perímetro Interior de la Base Vorst",
+      "threatLevel": "NIVEL III — ALTO (ALTA MOVILIDAD)",
+      "armorType": "Placas Flexibles de Silicio-Quitina con Camuflaje Refractivo",
+      "weakPoints": "Núcleo dorsal de propulsión y tendones hidráulicos de las extremidades traseras",
+      "elementalWeakness": "Guantelete Piro-Reactor (Fuego Continuo DoT) y Bloqueo Perfecto (Parry Nexo)",
+      "diaryFragment": "DIARIO DE DEFENSA TERRESTRE — ENTRADA #11 (TENIENTE S. KOWALSKI):\n\"Los llamamos Stalkers porque escuchas el zumbido de sus garras antes de verlos saltar entre los escombros. Mi escuadrón cayó intentando apuntarles con rifles convencionales; solo un reflejo de bloqueo en la fracción de segundo previa al impacto logra aturdir su sistema nervioso.\""
+    },
+    {
+      "id": "BruteDemolisher",
+      "code": "VRST-03 // COLOSO",
+      "name": "Demoledor Bruto",
+      "classification": "Ariete Blindado de Asedio y Ruptura de Líneas",
+      "origin": "Forjas Biológicas de Gravedad Aumentada — Sector Industrial Vorst",
+      "threatLevel": "NIVEL IV — SEVERO (TANQUE PESADO)",
+      "armorType": "Coraza Compuesta de Titanio Asimilado y Placas Óseas de Alta Densidad",
+      "weakPoints": "Reactor térmico pectoral (expuesto al cargar su Puño Demoledor) y fisuras dorsales",
+      "elementalWeakness": "Guantelete de Plasma Ígneo (+15% Crítico Solar) para perforar blindaje pesado",
+      "diaryFragment": "DIARIO DE DEFENSA TERRESTRE — ENTRADA #19 (INGENIERO EN JEFE R. SALAZAR):\n\"Los Demoledores Brutos fueron diseñados con un único propósito: derribar nuestros búnkeres de titanio a puñetazo limpio. Cuando su núcleo rojo parpadea, el suelo tiembla. No intentes absorber su golpe cargado sin guardia Nexo o acabarás reducido a cenizas.\""
+    },
+    {
+      "id": "PsionicArchon",
+      "code": "VRST-04 // SOBERANO BASE",
+      "name": "Arconte Psiónico",
+      "classification": "Canalizador de Singularidad y Comandante de Convergencia",
+      "origin": "Cámara del Orbe Púrpura — Cúspide de la Base Vorst (Nivel 2)",
+      "threatLevel": "NIVEL V — CRÍTICO (LÍDER PSIÓNICO)",
+      "armorType": "Manto de Fase Cuántica y Escudo de Resonancia Telequinética",
+      "weakPoints": "Anillo de levitación craneal y los 4 orbes psiónicos durante la descarga",
+      "elementalWeakness": "Guantelete de Vacío Vorst (Sifón Biotecnológico) y Sobrecarga Ultimate Nexo",
+      "diaryFragment": "DIARIO DE DEFENSA TERRESTRE — ENTRADA #27 (ARCHIVO N.E.X.A. DESCLASIFICADO):\n\"El Arconte no combate con fuerza bruta: curva la gravedad local mediante cuatro esferas de plasma abisal alimentadas por prisioneros en estasis. Romper su concentración exige acortar distancia entre cada pulso psiónico y descargar toda la reserva del reactor Nexo.\""
+    },
+    {
+      "id": "Sector7Commander",
+      "code": "VRST-05 // LÍDER ZONA 1",
+      "name": "Comandante del Sector 7",
+      "classification": "Ejecutor Táctico de Vanguardia y Guardián del Puente",
+      "origin": "Crucero de Asalto Orbital 'Heraldo del Vacío' — Destacamento Sector 7",
+      "threatLevel": "NIVEL IV+ — ÉLITE (JEFE DE SECTOR)",
+      "armorType": "Exoesqueleto Imperial Carmesí con Revestimiento Deflector de Impactos",
+      "weakPoints": "Núcleo bio-energético del peto central tras ejecutar su embestida pesada",
+      "elementalWeakness": "Guantelete Piro-Reactor (Fuego Carmesí) y Contragolpe Sísmico (Combo Paso 3)",
+      "diaryFragment": "DIARIO DE DEFENSA TERRESTRE — ENTRADA #09 (REGISTRO PERSONAL DE KAEL):\n\"Él dirigió la escuadra de recolección que secuestró a Lía entre las llamas del Sector 7. Su armadura carmesí resiste impactos ordinarios, pero su arrogancia al cargar ataques pesados deja al descubierto el reactor que mantiene cerrado el puente hacia la Base Vorst.\""
+    },
+    {
+      "id": "SupremeSovereign",
+      "code": "VRST-06 // OMEGA-APEX",
+      "name": "Soberano Supremo",
+      "classification": "Mecha Berserker Biomecánico VORTEX-OMEGA (Regente de la Colmena)",
+      "origin": "Trono de Bio-Cables — Corazón de la Nave Núcleo Vorst (Nivel 3)",
+      "threatLevel": "NIVEL OMEGA — EXTINCIÓN PLANETARIA",
+      "armorType": "Chasis Acorazado de Hiper-Aleación Vorst con Regeneración de Fase Dual",
+      "weakPoints": "Cámara torácica del Cañón Omega (al abrir el pecho) y enfriadores tras el Salto Meteoro",
+      "elementalWeakness": "Guantelete de Vacío Vorst (5% Robo de Vida) y Plasma Ígneo en Sobremarcha (Overdrive)",
+      "diaryFragment": "DIARIO DE DEFENSA TERRESTRE — ENTRADA FINAL #33 (TRANSMISIÓN DE N.E.X.A.):\n\"Designación oficial: Soberano Supremo VORTEX-OMEGA. Una aberración colosal mitad titán viviente, mitad acorazado estelar que custodia la cúpula donde Lía permanece cautiva. Al caer por debajo del 50% de integridad entra en Furia Berserker, invocando escoltas y saltos meteóricos capaces de partir la cubierta en dos.\""
+    }
+  ]
+}
