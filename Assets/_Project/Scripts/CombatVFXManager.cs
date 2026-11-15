@@ -265,6 +265,14 @@ public class CombatVFXManager : MonoBehaviour
         muzzleRingSr.color = midCol;
         muzzleRingSr.sortingOrder = 23;
 
+        // Punta redondeada luminosa al final del rayo
+        GameObject tipObj = new GameObject("UltTipFlare");
+        tipObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer tipSr = tipObj.AddComponent<SpriteRenderer>();
+        tipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        tipSr.color = coreCol;
+        tipSr.sortingOrder = 24;
+
         // Hélice de plasma y arco eléctrico de alta tensión recorriendo el cañón
         LineRenderer helixLr = CreateUltArcLine(beamRoot.transform, "UltPlasmaHelix", 24, 0.14f, midCol, coreCol, 23);
         LineRenderer crackleLr = CreateUltArcLine(beamRoot.transform, "UltLightningArc", 26, 0.065f, coreCol, outerCol, 24);
@@ -296,6 +304,8 @@ public class CombatVFXManager : MonoBehaviour
             muzzleObj.transform.localScale = new Vector3(mScale, mScale * 1.25f, 1f);
             muzzleRingObj.transform.localScale = new Vector3(mScale * 0.55f, mScale * 1.55f, 1f);
             muzzleRingObj.transform.Rotate(0f, 0f, 360f * Time.deltaTime);
+            tipObj.transform.localPosition = new Vector3(currentLen, 0f, 0f);
+            tipObj.transform.localScale = new Vector3(mScale * 1.05f, mScale * 1.25f, 1f);
 
             Vector3 startPt = originPos;
             Vector3 endPt = originPos + new Vector3(currentLen, 0f, 0f);
@@ -382,6 +392,20 @@ public class CombatVFXManager : MonoBehaviour
         SpriteRenderer midBeam   = CreateBeamLayer(beamRoot.transform, "BossMidBeam",   midCol,   22);
         SpriteRenderer coreBeam  = CreateBeamLayer(beamRoot.transform, "BossCoreBeam",  coreCol,  23);
 
+        GameObject bossMuzzle = new GameObject("BossMuzzleFlare");
+        bossMuzzle.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer bMuzzleSr = bossMuzzle.AddComponent<SpriteRenderer>();
+        bMuzzleSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bMuzzleSr.color = coreCol;
+        bMuzzleSr.sortingOrder = 24;
+
+        GameObject bossTip = new GameObject("BossTipFlare");
+        bossTip.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer bTipSr = bossTip.AddComponent<SpriteRenderer>();
+        bTipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bTipSr.color = midCol;
+        bTipSr.sortingOrder = 24;
+
         float absLen = Mathf.Abs(length);
         float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
@@ -401,6 +425,11 @@ public class CombatVFXManager : MonoBehaviour
             coreBeam.transform.localScale     = new Vector3(absLen, 0.35f * currentThickness, 1f);
             coreBeam.transform.localPosition  = new Vector3(length / 2f, 0f, 0f);
 
+            float tipScale = 1.25f * currentThickness;
+            bossMuzzle.transform.localScale = new Vector3(tipScale, tipScale, 1f);
+            bossTip.transform.localPosition = new Vector3(length, 0f, 0f);
+            bossTip.transform.localScale = new Vector3(tipScale * 0.95f, tipScale * 1.15f, 1f);
+
             if (Random.value > 0.25f)
             {
                 Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.6f, absLen * 0.90f), Random.Range(-0.45f, 0.45f), 0f);
@@ -417,19 +446,26 @@ public class CombatVFXManager : MonoBehaviour
     Sprite GetSoftBeamSprite()
     {
         if (softBeamSprite != null) return softBeamSprite;
-        const int size = 64;
+        const int size = 128;
+        const float cap = 0.14f;
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.wrapMode = TextureWrapMode.Clamp;
         tex.filterMode = FilterMode.Bilinear;
         for (int y = 0; y < size; y++)
         {
             float v = (y + 0.5f) / size;
-            float radial = Mathf.Pow(Mathf.Sin(v * Mathf.PI), 1.85f);
+            float dy = (v - 0.5f) * 2f; // [-1, 1]
             for (int x = 0; x < size; x++)
             {
                 float u = (x + 0.5f) / size;
-                float ends = Mathf.SmoothStep(0f, 1f, Mathf.Min(u / 0.05f, (1f - u) / 0.05f));
-                tex.SetPixel(x, y, new Color(1f, 1f, 1f, radial * ends));
+                float dx = 0f;
+                if (u < cap) dx = (cap - u) / cap;
+                else if (u > 1f - cap) dx = (u - (1f - cap)) / cap;
+
+                // Cápsula elíptica con extremos completamente redondeados (sin esquinas cuadradas)
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                float alpha = (r >= 1f) ? 0f : Mathf.Pow(1f - r * r, 1.45f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
             }
         }
         tex.Apply();

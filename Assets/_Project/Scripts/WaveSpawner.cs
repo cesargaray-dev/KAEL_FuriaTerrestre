@@ -263,6 +263,21 @@ public class WaveSpawner : MonoBehaviour
         GameObject gateObj = new GameObject("VorstSanctumContainmentGate");
         gateObj.transform.position = gatePos;
 
+        Texture2D gateTex = Resources.Load<Texture2D>("Level4/SanctumGate_Level4");
+        if (gateTex != null)
+        {
+            gateTex.filterMode = FilterMode.Point;
+            GameObject gateArt = new GameObject("SanctumGateArt");
+            gateArt.transform.SetParent(gateObj.transform, false);
+            SpriteRenderer gsr = gateArt.AddComponent<SpriteRenderer>();
+            gsr.sprite = Sprite.Create(gateTex, new Rect(0f, 0f, gateTex.width, gateTex.height), new Vector2(0.5f, 0f), 100f);
+            float targetHeight = 6.1f;
+            float scale = targetHeight / Mathf.Max(0.1f, gsr.sprite.bounds.size.y);
+            gateArt.transform.localScale = new Vector3(scale, scale, 1f);
+            gateArt.transform.position = new Vector3(gateX, groundY - 0.15f, 0f);
+            gsr.sortingOrder = 15;
+        }
+
         LineRenderer gateBeam = gateObj.AddComponent<LineRenderer>();
         gateBeam.material = new Material(Shader.Find("Sprites/Default"));
         gateBeam.positionCount = 2;

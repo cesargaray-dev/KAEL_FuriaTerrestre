@@ -148,7 +148,22 @@ public class NexusThroneroomEnvironment : MonoBehaviour
         curtainSr.sortingOrder = 11;
         curtainSr.enabled = false;
 
-        // Emisor de suelo y techo
+        // Emisor de suelo y techo + Pilón Pixel Art HD si está disponible
+        Texture2D pylonTex = Resources.Load<Texture2D>("Level4/Pylon_Level4");
+        if (pylonTex != null)
+        {
+            pylonTex.filterMode = FilterMode.Point;
+            GameObject pylonObj = new GameObject("PylonSprite");
+            pylonObj.transform.SetParent(obj.transform, false);
+            SpriteRenderer psr = pylonObj.AddComponent<SpriteRenderer>();
+            psr.sprite = Sprite.Create(pylonTex, new Rect(0f, 0f, pylonTex.width, pylonTex.height), new Vector2(0.5f, 0f), 100f);
+            float targetHeight = 5.45f;
+            float scale = targetHeight / Mathf.Max(0.1f, psr.sprite.bounds.size.y);
+            pylonObj.transform.localScale = new Vector3(scale, scale, 1f);
+            pylonObj.transform.localPosition = new Vector3(0f, -0.15f, 0f);
+            psr.sortingOrder = 12;
+        }
+
         Sprite ringSpr = Level3MonsterAssetGenerator.GetPsionicRingSprite();
         for (int p = 0; p < 2; p++)
         {
