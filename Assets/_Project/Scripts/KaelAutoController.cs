@@ -631,6 +631,11 @@ public class KaelAutoController : MonoBehaviour
             float minLeftX = Mathf.Max(startPosition.x - 4.5f, maxReachedX - 11.5f);
             if (nextPos.x < minLeftX) nextPos.x = minLeftX;
 
+            if (NexusThroneroomEnvironment.Instance != null && NexusThroneroomEnvironment.Instance.IsBossArenaLocked)
+            {
+                nextPos.x = NexusThroneroomEnvironment.Instance.ClampXToBossArena(nextPos.x);
+            }
+
             transform.position = nextPos;
             if (transform.position.x > maxReachedX) maxReachedX = transform.position.x;
 

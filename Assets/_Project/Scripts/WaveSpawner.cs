@@ -101,6 +101,11 @@ public class WaveSpawner : MonoBehaviour
         enemiesAlive = 0;
         spawningWave = false;
 
+        if (NexusThroneroomEnvironment.Instance != null)
+        {
+            NexusThroneroomEnvironment.Instance.ResetSanctumArena();
+        }
+
         if (kaelTransform != null)
         {
             KaelAutoController kael = kaelTransform.GetComponent<KaelAutoController>();
