@@ -37,6 +37,9 @@ public class NexusThroneroomEnvironment : MonoBehaviour
 
     private LineRenderer leftArenaBarrier;
     private LineRenderer rightArenaBarrier;
+    private SpriteRenderer leftBarrierCurtain;
+    private SpriteRenderer rightBarrierCurtain;
+    private static Texture2D cachedBarrierCurtainTex;
 
     private const float CorridorModuleWidth = 10.24f;
 
@@ -89,28 +92,87 @@ public class NexusThroneroomEnvironment : MonoBehaviour
     {
         if (active && sanctumGroup != null && leftArenaBarrier == null)
         {
-            leftArenaBarrier = CreateContainmentBarrierLine("LeftArenaBarrier", -7.8f);
-            rightArenaBarrier = CreateContainmentBarrierLine("RightArenaBarrier", 7.8f);
+            leftArenaBarrier = CreateContainmentBarrierLine("LeftArenaBarrier", -7.8f, out leftBarrierCurtain);
+            rightArenaBarrier = CreateContainmentBarrierLine("RightArenaBarrier", 7.8f, out rightBarrierCurtain);
         }
         if (leftArenaBarrier != null) leftArenaBarrier.enabled = active;
         if (rightArenaBarrier != null) rightArenaBarrier.enabled = active;
+        if (leftBarrierCurtain != null) leftBarrierCurtain.enabled = active;
+        if (rightBarrierCurtain != null) rightBarrierCurtain.enabled = active;
     }
 
-    LineRenderer CreateContainmentBarrierLine(string barrierName, float localX)
+    static Texture2D GetBarrierCurtainTexture()
+    {
+        if (cachedBarrierCurtainTex != null) return cachedBarrierCurtainTex;
+        const int w = 32;
+        const int h = 128;
+        Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < h; y++)
+        {
+            float v = (y + 0.5f) / h;
+            float vertFade = Mathf.Sin(v * Mathf.PI);
+            float scanline = (y % 6 < 2) ? 1.0f : 0.48f;
+            for (int x = 0; x < w; x++)
+            {
+                float u = (x + 0.5f) / w;
+                float edge = Mathf.Pow(Mathf.Sin(u * Mathf.PI), 1.6f);
+                float a = edge * vertFade * scanline * 0.55f;
+                tex.SetPixel(x, y, new Color(0.68f, 0.25f, 1f, a));
+            }
+        }
+        tex.Apply();
+        cachedBarrierCurtainTex = tex;
+        return cachedBarrierCurtainTex;
+    }
+
+    LineRenderer CreateContainmentBarrierLine(string barrierName, float localX, out SpriteRenderer curtainSr)
     {
         GameObject obj = new GameObject(barrierName);
         obj.transform.SetParent(sanctumGroup, false);
+        obj.transform.localPosition = new Vector3(localX, 0f, 0f);
+
+        // Cortina energética translúcida con líneas de escaneo
+        GameObject curtainObj = new GameObject("EnergyCurtain");
+        curtainObj.transform.SetParent(obj.transform, false);
+        curtainObj.transform.localPosition = new Vector3(0f, 2.55f, 0f);
+        curtainObj.transform.localScale = new Vector3(2.2f, 4.4f, 1f);
+        curtainSr = curtainObj.AddComponent<SpriteRenderer>();
+        curtainSr.sprite = Sprite.Create(
+            GetBarrierCurtainTexture(),
+            new Rect(0f, 0f, 32f, 128f),
+            new Vector2(0.5f, 0.5f),
+            100f
+        );
+        curtainSr.sortingOrder = 11;
+        curtainSr.enabled = false;
+
+        // Emisor de suelo y techo
+        Sprite ringSpr = Level3MonsterAssetGenerator.GetPsionicRingSprite();
+        for (int p = 0; p < 2; p++)
+        {
+            GameObject emitter = new GameObject(p == 0 ? "FloorEmitter" : "CeilingEmitter");
+            emitter.transform.SetParent(obj.transform, false);
+            emitter.transform.localPosition = new Vector3(0f, p == 0 ? 0.06f : 5.05f, 0f);
+            emitter.transform.localScale = new Vector3(0.95f, 0.28f, 1f);
+            SpriteRenderer esr = emitter.AddComponent<SpriteRenderer>();
+            esr.sprite = ringSpr;
+            esr.color = new Color(0.28f, 0.94f, 1f, 0.72f);
+            esr.sortingOrder = 12;
+        }
+
         LineRenderer lr = obj.AddComponent<LineRenderer>();
         lr.useWorldSpace = false;
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.positionCount = 2;
-        lr.startWidth = 0.08f;
-        lr.endWidth = 0.08f;
-        lr.startColor = new Color(0.75f, 0.22f, 1f, 0.42f);
-        lr.endColor = new Color(0.24f, 0.92f, 1f, 0.12f);
+        lr.startWidth = 0.06f;
+        lr.endWidth = 0.06f;
+        lr.startColor = new Color(0.28f, 0.94f, 1f, 0.65f);
+        lr.endColor = new Color(0.75f, 0.22f, 1f, 0.25f);
         lr.sortingOrder = 12;
-        lr.SetPosition(0, new Vector3(localX, -0.2f, 0f));
-        lr.SetPosition(1, new Vector3(localX, 5.2f, 0f));
+        lr.SetPosition(0, new Vector3(0f, -0.1f, 0f));
+        lr.SetPosition(1, new Vector3(0f, 5.1f, 0f));
         return lr;
     }
 
@@ -332,6 +394,21 @@ public class NexusThroneroomEnvironment : MonoBehaviour
             if (Mathf.Abs(snapped - sanctumAnchorX) > 1.0f)
             {
                 RelocateSanctumCenter(snapped, withFlash: false);
+            }
+        }
+
+        if (IsBossArenaLocked && kaelTransform != null)
+        {
+            float basePulse = 0.40f + Mathf.Sin(t * 4.5f) * 0.12f;
+            if (leftBarrierCurtain != null)
+            {
+                float proxL = Mathf.Clamp01(1f - Mathf.Abs(kaelTransform.position.x - ArenaMinX) / 2.2f);
+                leftBarrierCurtain.color = new Color(0.55f + proxL * 0.35f, 0.28f + proxL * 0.55f, 1f, basePulse + proxL * 0.42f);
+            }
+            if (rightBarrierCurtain != null)
+            {
+                float proxR = Mathf.Clamp01(1f - Mathf.Abs(kaelTransform.position.x - ArenaMaxX) / 2.2f);
+                rightBarrierCurtain.color = new Color(0.55f + proxR * 0.35f, 0.28f + proxR * 0.55f, 1f, basePulse + proxR * 0.42f);
             }
         }
 

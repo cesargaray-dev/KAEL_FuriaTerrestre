@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class WaveSpawner : MonoBehaviour
@@ -27,6 +28,12 @@ public class WaveSpawner : MonoBehaviour
     public int totalKillsInLevel = 0;
     private int enemiesAlive = 0;
     private bool spawningWave = false;
+
+    public static bool IsWaitingForSanctumBreach { get; private set; } = false;
+    public static float SanctumGateBlockX { get; private set; } = 0f;
+    private bool isBreachPromptActive = false;
+    private bool breachRequested = false;
+    private float sanctumGatePosX = 0f;
 
     void Start()
     {
@@ -100,6 +107,9 @@ public class WaveSpawner : MonoBehaviour
         currentWave = 0;
         enemiesAlive = 0;
         spawningWave = false;
+        IsWaitingForSanctumBreach = false;
+        isBreachPromptActive = false;
+        breachRequested = false;
 
         if (NexusThroneroomEnvironment.Instance != null)
         {
@@ -239,63 +249,127 @@ public class WaveSpawner : MonoBehaviour
     {
         if (kaelTransform == null) yield break;
 
-        float targetCenter = Mathf.Round((kaelTransform.position.x + 7.5f) / 10.24f) * 10.24f;
+        float targetCenter = Mathf.Round((kaelTransform.position.x + 8.5f) / 10.24f) * 10.24f;
         float gateX = targetCenter - 7.4f;
+        sanctumGatePosX = gateX;
         Vector3 gatePos = new Vector3(gateX, groundY + 2.2f, 0f);
 
-        // Construir una barrera energética Vorst visible en el pasillo antes de revelarse el Santuario
+        IsWaitingForSanctumBreach = true;
+        SanctumGateBlockX = gateX - 1.2f;
+        isBreachPromptActive = true;
+        breachRequested = false;
+
+        // Construir una Compuerta de Contención Vorst multicapa visible e inconfundible
         GameObject gateObj = new GameObject("VorstSanctumContainmentGate");
         gateObj.transform.position = gatePos;
 
         LineRenderer gateBeam = gateObj.AddComponent<LineRenderer>();
         gateBeam.material = new Material(Shader.Find("Sprites/Default"));
         gateBeam.positionCount = 2;
-        gateBeam.startWidth = 0.55f;
-        gateBeam.endWidth = 0.55f;
-        gateBeam.startColor = new Color(0.95f, 0.22f, 0.68f, 0.92f);
-        gateBeam.endColor = new Color(0.55f, 0.18f, 1f, 0.92f);
+        gateBeam.startWidth = 0.72f;
+        gateBeam.endWidth = 0.72f;
+        gateBeam.startColor = new Color(0.96f, 0.20f, 0.65f, 0.90f);
+        gateBeam.endColor = new Color(0.45f, 0.14f, 1f, 0.90f);
         gateBeam.sortingOrder = 15;
         gateBeam.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
-        gateBeam.SetPosition(1, new Vector3(gateX, groundY + 5.6f, 0f));
+        gateBeam.SetPosition(1, new Vector3(gateX, groundY + 5.8f, 0f));
 
-        if (CombatVFXManager.Instance != null)
+        LineRenderer gateCore = new GameObject("GateCore").AddComponent<LineRenderer>();
+        gateCore.transform.SetParent(gateObj.transform, false);
+        gateCore.material = new Material(Shader.Find("Sprites/Default"));
+        gateCore.positionCount = 2;
+        gateCore.startWidth = 0.16f;
+        gateCore.endWidth = 0.16f;
+        gateCore.startColor = new Color(1f, 0.85f, 0.98f, 0.98f);
+        gateCore.endColor = new Color(0.28f, 0.96f, 1f, 0.98f);
+        gateCore.sortingOrder = 16;
+        gateCore.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
+        gateCore.SetPosition(1, new Vector3(gateX, groundY + 5.8f, 0f));
+
+        Sprite hexSpr = Level3MonsterAssetGenerator.GetHexShieldSprite(isPureza: false, isCorrupcion: true);
+        for (int h = 0; h < 3; h++)
         {
-            CombatVFXManager.Instance.SpawnFloatingText(
-                gatePos + Vector3.up * 0.6f,
-                "🚧 ¡COMPUERTA DEL SANTUARIO DETECTADA! ¡KAEL ROMPE LA BARRERA!",
-                new Color(1f, 0.45f, 0.82f),
-                21,
-                1.6f
-            );
+            GameObject hexNode = new GameObject($"GateHex_{h}");
+            hexNode.transform.SetParent(gateObj.transform, false);
+            hexNode.transform.position = new Vector3(gateX, groundY + 0.9f + h * 1.65f, 0f);
+            hexNode.transform.localScale = new Vector3(1.1f, 1.35f, 1f);
+            SpriteRenderer hsr = hexNode.AddComponent<SpriteRenderer>();
+            hsr.sprite = hexSpr;
+            hsr.color = new Color(0.95f, 0.25f, 0.85f, 0.78f);
+            hsr.sortingOrder = 16;
         }
 
-        // Kael avanza hacia la compuerta del Santuario
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        // Esperar a que el jugador decida derrumbar la compuerta ([J], [Espacio], [E] o clic en el banner)
+        while (!breachRequested)
+        {
+            if (PlayerStats.Instance == null || !PlayerStats.Instance.IsAnyBlockingModalOpen)
+            {
+                bool keySmash = false;
+                if (Keyboard.current != null &&
+                    (Keyboard.current.jKey.wasPressedThisFrame ||
+                     Keyboard.current.spaceKey.wasPressedThisFrame ||
+                     Keyboard.current.eKey.wasPressedThisFrame))
+                {
+                    keySmash = true;
+                }
+                else
+                {
+                    try
+                    {
+                        keySmash = Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.E);
+                    }
+                    catch { }
+                }
+
+                // Permitir romperla al pulsar ataque/interactuar cuando está en el pasillo frente al Santuario
+                if (keySmash && kaelTransform.position.x >= gateX - 8.5f)
+                {
+                    breachRequested = true;
+                }
+            }
+            yield return null;
+        }
+
+        IsWaitingForSanctumBreach = false;
+        isBreachPromptActive = false;
+
+        // Kael carga con determinación hasta la compuerta del Santuario
         Vector3 kaelStart = kaelTransform.position;
-        Vector3 kaelStrike = new Vector3(gateX - 1.25f, groundY, 0f);
+        Vector3 kaelStrike = new Vector3(gateX - 1.15f, groundY, 0f);
         KaelAutoController kaelCtrl = kaelTransform.GetComponent<KaelAutoController>();
         SpriteRenderer kaelSr = kaelTransform.GetComponent<SpriteRenderer>();
         if (kaelSr != null) kaelSr.flipX = (kaelStrike.x < kaelStart.x);
 
         float moveT = 0f;
-        while (moveT < 0.55f)
+        float moveDur = Mathf.Clamp(Mathf.Abs(kaelStrike.x - kaelStart.x) / 9.5f, 0.18f, 0.55f);
+        while (moveT < moveDur)
         {
-            kaelTransform.position = Vector3.Lerp(kaelStart, kaelStrike, moveT / 0.55f);
+            kaelTransform.position = Vector3.Lerp(kaelStart, kaelStrike, moveT / moveDur);
             moveT += Time.deltaTime;
             yield return null;
         }
         kaelTransform.position = kaelStrike;
 
-        // Golpe destructor de barrera con onda de choque y destello
+        // Golpe demoledor con breve hit-stop y explosión de barrera
         if (AudioManager.Instance != null) AudioManager.Instance.PlayHeavyHitSfx();
         else if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
 
+        Time.timeScale = 0.35f;
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.35f, 0.96f, 1f), 0.85f);
-            CombatVFXManager.Instance.ShakeCamera(0.65f, 0.30f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.28f, 0.98f, 1f), 4.6f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.92f, 0.25f, 1f), 3.4f);
-            CombatVFXManager.Instance.SpawnHitSparks(gatePos, true, 18);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.35f, 0.96f, 1f), 0.92f);
+            CombatVFXManager.Instance.ShakeCamera(0.85f, 0.35f);
+            CombatVFXManager.Instance.SpawnBossExplosionBurst(gatePos);
+            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.28f, 0.98f, 1f), 5.2f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.92f, 0.25f, 1f), 3.8f);
+            CombatVFXManager.Instance.SpawnHitSparks(gatePos, true, 24);
+        }
+        yield return new WaitForSecondsRealtime(0.22f);
+        if (PlayerStats.Instance == null || !PlayerStats.Instance.IsAnyBlockingModalOpen)
+        {
+            Time.timeScale = 1f;
         }
 
         Destroy(gateObj);
@@ -307,17 +381,62 @@ public class WaveSpawner : MonoBehaviour
             env.LockBossArenaAround(targetCenter);
         }
 
-        // Kael entra al borde izquierdo del Santuario listo para el duelo
+        // Kael entra al borde izquierdo del Santuario listo para el duelo final
         Vector3 insidePos = new Vector3(targetCenter - 5.0f, groundY, 0f);
-        if (kaelCtrl != null) kaelSr.flipX = false;
+        if (kaelCtrl != null && kaelSr != null) kaelSr.flipX = false;
         float enterT = 0f;
-        while (enterT < 0.35f)
+        while (enterT < 0.42f)
         {
-            kaelTransform.position = Vector3.Lerp(kaelStrike, insidePos, enterT / 0.35f);
+            kaelTransform.position = Vector3.Lerp(kaelStrike, insidePos, enterT / 0.42f);
             enterT += Time.deltaTime;
             yield return null;
         }
         kaelTransform.position = insidePos;
+    }
+
+    void OnGUI()
+    {
+        if (!isBreachPromptActive) return;
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen) return;
+
+        float sx = Screen.width / 1920f;
+        float sy = Screen.height / 1080f;
+        float w = 880f * sx;
+        float h = 92f * sy;
+        Rect banner = new Rect((Screen.width - w) * 0.5f, 130f * sy, w, h);
+
+        GUI.color = new Color(0.08f, 0.02f, 0.16f, 0.94f);
+        GUI.DrawTexture(banner, Texture2D.whiteTexture);
+        float pulse = 0.72f + Mathf.Sin(Time.unscaledTime * 6f) * 0.28f;
+        GUI.color = new Color(0.96f, 0.25f, 0.75f, pulse);
+        GUI.DrawTexture(new Rect(banner.x, banner.y, banner.width, 4f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(banner.x, banner.yMax - 4f, banner.width, 4f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+
+        GUIStyle titleSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(14, Mathf.RoundToInt(20f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.UpperCenter
+        };
+        titleSt.normal.textColor = new Color(1f, 0.48f, 0.85f);
+        GUI.Label(new Rect(banner.x + 12f, banner.y + 10f * sy, banner.width - 24f, 34f * sy),
+            "🚧 COMPUERTA DEL SANTUARIO DEL SOBERANO DETECTADA 🚧", titleSt);
+
+        GUIStyle subSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.LowerCenter
+        };
+        subSt.normal.textColor = new Color(0.32f, 0.98f, 1f);
+        GUI.Label(new Rect(banner.x + 12f, banner.y + 38f * sy, banner.width - 24f, 38f * sy),
+            "PULSA [J], [ESPACIO], [E] O HAZ CLIC AQUÍ PARA DERRIBAR LA BARRERA Y ENTRAR", subSt);
+
+        if (GUI.Button(banner, GUIContent.none, GUIStyle.none))
+        {
+            breachRequested = true;
+        }
     }
 
     IEnumerator SpawnNextWaveRoutine()

@@ -636,6 +636,10 @@ public class KaelAutoController : MonoBehaviour
             {
                 float minLeftX = Mathf.Max(startPosition.x - 4.5f, maxReachedX - 11.5f);
                 if (nextPos.x < minLeftX) nextPos.x = minLeftX;
+                if (WaveSpawner.IsWaitingForSanctumBreach && nextPos.x > WaveSpawner.SanctumGateBlockX)
+                {
+                    nextPos.x = WaveSpawner.SanctumGateBlockX;
+                }
             }
 
             transform.position = nextPos;
