@@ -64,8 +64,22 @@ public class CompanionDialogueManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (Instance.gameObject != gameObject &&
+                Instance.GetComponent<PlayerStats>() == null &&
+                Instance.GetComponent<WaveSpawner>() == null)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else if (GetComponent<PlayerStats>() == null && GetComponent<WaveSpawner>() == null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            else
+            {
+                Destroy(this);
+                return;
+            }
         }
         Instance = this;
 
@@ -78,6 +92,11 @@ public class CompanionDialogueManager : MonoBehaviour
         panelGoldTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Gold");
 
         InitSyntheticVoiceAudio();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private void InitSyntheticVoiceAudio()

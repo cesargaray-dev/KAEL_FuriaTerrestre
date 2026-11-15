@@ -45,15 +45,65 @@ public class EndingsManager : MonoBehaviour
     private string transitionSubtitle = "";
     private Color transitionColor = new Color(0.25f, 0.95f, 1f);
 
+    public static bool CanLoadSceneSafe(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName)) return false;
+        if (Application.CanStreamedLevelBeLoaded(sceneName)) return true;
+#if UNITY_EDITOR
+        string editorPath = $"Assets/_Project/Scenes/{sceneName}.unity";
+        if (System.IO.File.Exists(editorPath)) return true;
+#endif
+        return false;
+    }
+
+    public static void LoadSceneSafe(string sceneName)
+    {
+        Time.timeScale = 1f;
+        if (string.IsNullOrEmpty(sceneName)) return;
+
+        if (Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            SceneManager.LoadScene(sceneName);
+            return;
+        }
+#if UNITY_EDITOR
+        string editorPath = $"Assets/_Project/Scenes/{sceneName}.unity";
+        if (System.IO.File.Exists(editorPath))
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
+                editorPath,
+                new LoadSceneParameters(LoadSceneMode.Single)
+            );
+            return;
+        }
+#endif
+        SceneManager.LoadScene(sceneName);
+    }
+
+    private bool IsSharedSceneControllerObject()
+    {
+        return GetComponent<PlayerStats>() != null ||
+               GetComponent<WaveSpawner>() != null ||
+               GetComponent<MainMenuAndIntroController>() != null ||
+               GetComponent<Camera>() != null;
+    }
+
     public static EndingsManager EnsureExists()
     {
         if (Instance != null) return Instance;
         EndingsManager existing = FindAnyObjectByType<EndingsManager>();
-        if (existing != null)
+        if (existing != null && !existing.IsSharedSceneControllerObject())
         {
             Instance = existing;
-            DontDestroyOnLoad(existing.gameObject);
+            if (existing.transform.parent == null)
+            {
+                DontDestroyOnLoad(existing.gameObject);
+            }
             return existing;
+        }
+        if (existing != null && existing.IsSharedSceneControllerObject())
+        {
+            Destroy(existing);
         }
         GameObject go = new GameObject("EndingsManager");
         DontDestroyOnLoad(go);
@@ -68,24 +118,47 @@ public class EndingsManager : MonoBehaviour
 
     public static void LaunchTransitionLv2To3(string targetScene = "03_Nivel3_Colmena")
     {
+        if (string.IsNullOrEmpty(targetScene)) targetScene = "03_Nivel3_Colmena";
         EnsureExists().StartInterLevelVignette(CinematicVignetteType.CoreBreach_Lv2To3, targetScene);
     }
 
     public static void LaunchTransitionLv3To4(string targetScene = "04_Final_NexusThroneroom")
     {
+        if (string.IsNullOrEmpty(targetScene)) targetScene = "04_Final_NexusThroneroom";
         EnsureExists().StartInterLevelVignette(CinematicVignetteType.LiaDiscovery_Lv3To4, targetScene);
     }
 
     void Awake()
     {
+        if (IsSharedSceneControllerObject())
+        {
+            // Nunca marcar GameManager con DontDestroyOnLoad ni destruir el GameManager de la escena
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this);
+                return;
+            }
+            Instance = this;
+            LoadCinematicTextures();
+            return;
+        }
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        if (transform.parent == null)
+        {
+            DontDestroyOnLoad(gameObject);
+        }
         LoadCinematicTextures();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private static Texture2D LoadCinematicTex(string primaryPath, string fallbackPath)
@@ -138,7 +211,15 @@ public class EndingsManager : MonoBehaviour
     {
         LoadCinematicTextures();
         activeVignette = type;
+        if (string.IsNullOrEmpty(nextScene))
+        {
+            nextScene = (type == CinematicVignetteType.CoreBreach_Lv2To3)
+                ? "03_Nivel3_Colmena"
+                : "04_Final_NexusThroneroom";
+        }
         pendingTargetScene = nextScene;
+        hasTriggeredEnding = false;
+        transitionBannerActive = false;
         currentSlideIndex = 0;
         slideTimer = 0f;
 
@@ -171,13 +252,20 @@ public class EndingsManager : MonoBehaviour
 
         if (activeVignette != CinematicVignetteType.None)
         {
+            CinematicVignetteType finishedVignette = activeVignette;
             string target = pendingTargetScene;
-            activeVignette = CinematicVignetteType.None;
-            Time.timeScale = 1f;
-            if (!string.IsNullOrEmpty(target))
+            if (string.IsNullOrEmpty(target))
             {
-                SceneManager.LoadScene(target);
+                target = (finishedVignette == CinematicVignetteType.CoreBreach_Lv2To3)
+                    ? "03_Nivel3_Colmena"
+                    : "04_Final_NexusThroneroom";
             }
+            activeVignette = CinematicVignetteType.None;
+            pendingTargetScene = "";
+            hasTriggeredEnding = false;
+            transitionBannerActive = false;
+            Time.timeScale = 1f;
+            LoadSceneSafe(target);
             return;
         }
 

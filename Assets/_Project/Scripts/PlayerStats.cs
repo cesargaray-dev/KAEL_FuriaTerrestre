@@ -168,8 +168,12 @@ public class PlayerStats : MonoBehaviour
 
     public bool IsCodexModalOpen => VorstCodexUI.Instance != null && VorstCodexUI.Instance.isOpen;
 
+    public bool IsCinematicModalOpen =>
+        (EndingsManager.Instance != null && EndingsManager.Instance.isCinematicActive) ||
+        (EndingCinematicController.Instance != null && EndingCinematicController.Instance.isEndingActive);
+
     public bool IsAnyBlockingModalOpen =>
-        isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen || isArsenalShopOpen || IsCodexModalOpen;
+        isPaused || isGameOver || isLevelCompleted || isChoosingDilemma || isChoosingSkill || isUpgradeTreeOpen || isArsenalShopOpen || IsCodexModalOpen || IsCinematicModalOpen;
 
     [Header("Economía, Nivel y Moral (Compasión vs Rigor)")]
     public int gold = 0;
@@ -300,8 +304,15 @@ public class PlayerStats : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (Instance.gameObject != gameObject && Instance.gameObject.scene != gameObject.scene)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else
+            {
+                Destroy(this);
+                return;
+            }
         }
         Instance = this;
         Time.timeScale = 1f;
@@ -335,10 +346,21 @@ public class PlayerStats : MonoBehaviour
             ResetSkillsToBase();
             LoadProgressIfContinuing();
         }
+        else if (activeScene == "Lab_Cesar")
+        {
+            levelNumber = 1;
+            zoneName = "SECTOR 7 — CIUDAD EN RUINAS";
+            nextLevelSceneName = "Lab_Zahir";
+        }
 
         RecalculateStats();
         currentHP = maxHP;
         SyncEquippedGauntletVisuals();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void LoadCyberUITextures()
@@ -2066,7 +2088,8 @@ public class PlayerStats : MonoBehaviour
 
         if (levelNumber >= 3)
         {
-            bool hasLevel4Scene = (levelNumber == 3) && !string.IsNullOrEmpty(nextLevelSceneName) && Application.CanStreamedLevelBeLoaded(nextLevelSceneName);
+            string lv4Target = string.IsNullOrEmpty(nextLevelSceneName) ? "04_Final_NexusThroneroom" : nextLevelSceneName;
+            bool hasLevel4Scene = (levelNumber == 3) && EndingsManager.CanLoadSceneSafe(lv4Target);
             if (hasLevel4Scene)
             {
                 if (DrawSkinnedCyberButton(
@@ -2078,7 +2101,7 @@ public class PlayerStats : MonoBehaviour
                 {
                     if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                     SaveProgressForNextLevel();
-                    EndingsManager.LaunchTransitionLv3To4(nextLevelSceneName);
+                    EndingsManager.LaunchTransitionLv3To4(lv4Target);
                 }
 
                 if (DrawSkinnedCyberButton(
@@ -2124,9 +2147,12 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
-        bool hasNextLevel = !string.IsNullOrEmpty(nextLevelSceneName) && Application.CanStreamedLevelBeLoaded(nextLevelSceneName);
+        string lvNextTarget = string.IsNullOrEmpty(nextLevelSceneName)
+            ? (levelNumber == 1 ? "Lab_Zahir" : "03_Nivel3_Colmena")
+            : nextLevelSceneName;
+        bool hasNextLevel = EndingsManager.CanLoadSceneSafe(lvNextTarget);
 
-        if (hasNextLevel || levelNumber == 1)
+        if (hasNextLevel || levelNumber == 1 || levelNumber == 2)
         {
             string nextBtnTitle = (levelNumber == 1)
                 ? "▶ AVANZAR AL NIVEL 2 (CINEMÁTICA PUENTE)"
@@ -2151,7 +2177,7 @@ public class PlayerStats : MonoBehaviour
                 else
                 {
                     // Viñeta 1 (Nv.2 -> Nv.3): Kael detonando la barrera exterior de la Nave Núcleo e ingresando por una brecha en llamas
-                    EndingsManager.LaunchTransitionLv2To3(nextLevelSceneName);
+                    EndingsManager.LaunchTransitionLv2To3(lvNextTarget);
                 }
             }
 

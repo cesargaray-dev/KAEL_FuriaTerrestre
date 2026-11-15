@@ -722,7 +722,12 @@ public class VorstCodexUI : MonoBehaviour
             return;
         }
         Instance = this;
-        if (GetComponent<Camera>() == null && transform.parent == null)
+        if (gameObject.name == "VorstCodexUI" &&
+            GetComponent<Camera>() == null &&
+            GetComponent<MainMenuAndIntroController>() == null &&
+            GetComponent<PlayerStats>() == null &&
+            GetComponent<WaveSpawner>() == null &&
+            transform.parent == null)
         {
             DontDestroyOnLoad(gameObject);
         }

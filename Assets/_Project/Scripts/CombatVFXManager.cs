@@ -37,8 +37,15 @@ public class CombatVFXManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (Instance.gameObject != gameObject && Instance.gameObject.scene != gameObject.scene)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else
+            {
+                Destroy(this);
+                return;
+            }
         }
         Instance = this;
 
@@ -51,6 +58,11 @@ public class CombatVFXManager : MonoBehaviour
         ringSprite = CreateRingSprite(64);
 
         SetGauntletVariant(GauntletVariant.PrototypeCyan);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()

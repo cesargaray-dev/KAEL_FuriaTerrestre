@@ -138,9 +138,34 @@ public class MainMenuAndIntroController : MonoBehaviour
 
         if (inCinematic)
         {
-            slideTimer += Time.deltaTime;
+            slideTimer += dt;
             if (fadeAlpha > 0f)
-                fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, Time.deltaTime * 1.8f);
+                fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, dt * 1.8f);
+
+            bool escPressed = (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame);
+            if (!escPressed) { try { escPressed = Input.GetKeyDown(KeyCode.Escape); } catch { } }
+            if (escPressed)
+            {
+                LoadLevel1();
+                return;
+            }
+
+            bool advancePressed = (Keyboard.current != null && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame));
+            if (!advancePressed) { try { advancePressed = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return); } catch { } }
+            if (advancePressed)
+            {
+                string fullTxt = slideNarrations[Mathf.Clamp(currentSlide, 0, slideNarrations.Length - 1)];
+                int chars = Mathf.Clamp(Mathf.FloorToInt(slideTimer * 45f), 0, fullTxt.Length);
+                if (chars < fullTxt.Length)
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    slideTimer = 10f;
+                }
+                else
+                {
+                    NextSlideOrStartGame();
+                }
+            }
         }
         else if (VorstCodexUI.Instance == null || !VorstCodexUI.Instance.isOpen)
         {
@@ -196,14 +221,8 @@ public class MainMenuAndIntroController : MonoBehaviour
         {
             case 0: StartCinematic(); break;
             case 1: LoadLevel1(); break;
-            case 2:
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("Lab_Zahir");
-                break;
-            case 3:
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("03_Nivel3_Colmena");
-                break;
+            case 2: LoadSceneFromMenu("Lab_Zahir"); break;
+            case 3: LoadSceneFromMenu("03_Nivel3_Colmena"); break;
             case 4: OpenVorstCodexFromMenu(); break;
             case 5:
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -254,13 +273,28 @@ public class MainMenuAndIntroController : MonoBehaviour
         }
     }
 
+    void LoadSceneFromMenu(string targetScene)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        inCinematic = false;
+        showChapterSelect = false;
+        showCredits = false;
+        Time.timeScale = 1f;
+        EndingsManager.LoadSceneSafe(targetScene);
+    }
+
     void LoadLevel1()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        inCinematic = false;
+        showChapterSelect = false;
+        showCredits = false;
+        Time.timeScale = 1f;
 
-        if (Application.CanStreamedLevelBeLoaded(gameplaySceneName))
+        string target = string.IsNullOrEmpty(gameplaySceneName) ? "Lab_Cesar" : gameplaySceneName;
+        if (EndingsManager.CanLoadSceneSafe(target))
         {
-            SceneManager.LoadScene(gameplaySceneName);
+            EndingsManager.LoadSceneSafe(target);
         }
         else if (SceneManager.sceneCountInBuildSettings > 1)
         {
@@ -268,7 +302,7 @@ public class MainMenuAndIntroController : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Agrega la escena '{gameplaySceneName}' en File -> Build Profiles / Build Settings -> Scene List.");
+            EndingsManager.LoadSceneSafe("Lab_Cesar");
         }
     }
 
@@ -366,15 +400,13 @@ public class MainMenuAndIntroController : MonoBehaviour
         if (DrawMenuButton(2, new Rect(btnX, 406, btnW, btnH), "⚡  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.15f, 0.08f, 0.28f), new Color(0.85f, 0.38f, 1f), false))
         {
             keyboardMenuFocus = 2;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-            SceneManager.LoadScene("Lab_Zahir");
+            LoadSceneFromMenu("Lab_Zahir");
         }
 
         if (DrawMenuButton(7, new Rect(btnX, 468, btnW, btnH), "☣  NIVEL 3: COLMENA NAVE NÚCLEO", new Color(0.14f, 0.07f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
         {
             keyboardMenuFocus = 3;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-            SceneManager.LoadScene("03_Nivel3_Colmena");
+            LoadSceneFromMenu("03_Nivel3_Colmena");
         }
 
         int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
@@ -435,19 +467,16 @@ public class MainMenuAndIntroController : MonoBehaviour
 
             if (DrawMenuButton(11, new Rect(cBtnX1, 424, cBtnW, cBtnH), "⚡ CAPÍTULO 2: BASE VORST (ZAHIR)", new Color(0.14f, 0.08f, 0.26f), new Color(0.85f, 0.38f, 1f), false))
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("Lab_Zahir");
+                LoadSceneFromMenu("Lab_Zahir");
             }
             if (DrawMenuButton(12, new Rect(cBtnX2, 424, cBtnW, cBtnH), "☣ CAPÍTULO 3: COLMENA BIO-CABLES", new Color(0.06f, 0.22f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("03_Nivel3_Colmena");
+                LoadSceneFromMenu("03_Nivel3_Colmena");
             }
 
             if (DrawMenuButton(18, new Rect(165f, 498f, 750f, 64f), "👑 CAPÍTULO 4 (FINAL): TRONO DE LA DISONANCIA — RESCATE DE LÍA", new Color(0.24f, 0.07f, 0.34f), new Color(0.88f, 0.32f, 1f), true))
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("04_Final_NexusThroneroom");
+                LoadSceneFromMenu("04_Final_NexusThroneroom");
             }
 
             DrawStyledText(ScaleRect(90, 582, 900, 32), "── DESENLACES CINEMÁTICOS DINÁMICOS (SEGÚN COMPASIÓN VS RIGOR) ──", 17, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f));

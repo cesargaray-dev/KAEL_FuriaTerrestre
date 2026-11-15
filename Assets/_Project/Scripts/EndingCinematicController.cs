@@ -68,6 +68,11 @@ public class EndingCinematicController : MonoBehaviour
         LoadEndingIllustrations();
     }
 
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     private static Texture2D LoadEndingTex(string primaryPath, string fallbackPath)
     {
         Texture2D tex = Resources.Load<Texture2D>(primaryPath);

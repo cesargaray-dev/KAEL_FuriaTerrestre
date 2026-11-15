@@ -292,7 +292,7 @@ MonoBehaviour:
   healthBarOffsetY: 1.95
   levelNumber: 3
   zoneName: "NAVE N\xDACLEO VORST \u2014 COLMENA DE BIO-CABLES"
-  nextLevelSceneName: 
+  nextLevelSceneName: 04_Final_NexusThroneroom
   isPaused: 0
   isGameOver: 0
   isChoosingDilemma: 0
