@@ -1076,6 +1076,11 @@ public class PlayerStats : MonoBehaviour
         {
             return;
         }
+        if (EndingsManager.Instance != null &&
+            EndingsManager.Instance.isCinematicActive)
+        {
+            return;
+        }
 
         GUI.matrix = Matrix4x4.identity;
 
@@ -2068,13 +2073,12 @@ public class PlayerStats : MonoBehaviour
                     new Rect(424f, 612f, 520f, 82f),
                     texBtnEmerald,
                     "⚡ AVANZAR AL NIVEL 4 (TRONO FINAL)",
-                    "SUBIR A LA CÚPULA DONDE ESTÁ CAUTIVA LÍA",
+                    "VIÑETA II: DESCUBRIMIENTO DE LA CÁPSULA DE LÍA",
                     18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
                 {
                     if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                     SaveProgressForNextLevel();
-                    Time.timeScale = 1f;
-                    SceneManager.LoadScene(nextLevelSceneName);
+                    EndingsManager.LaunchTransitionLv3To4(nextLevelSceneName);
                 }
 
                 if (DrawSkinnedCyberButton(
@@ -2146,7 +2150,8 @@ public class PlayerStats : MonoBehaviour
                 }
                 else
                 {
-                    SceneManager.LoadScene(nextLevelSceneName);
+                    // Viñeta 1 (Nv.2 -> Nv.3): Kael detonando la barrera exterior de la Nave Núcleo e ingresando por una brecha en llamas
+                    EndingsManager.LaunchTransitionLv2To3(nextLevelSceneName);
                 }
             }
 

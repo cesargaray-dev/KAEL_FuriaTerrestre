@@ -38,6 +38,28 @@ public class CompanionDialogueManager : MonoBehaviour
 
     private HashSet<int> triggeredWaves = new HashSet<int>();
 
+    // --- AUDIO SINTÉTICO Y EFECTOS CINEMÁTICOS PARA SUBTÍTULOS Y VIÑETAS ---
+    private AudioSource voiceSource;
+    private AudioClip clipVoiceKael;
+    private AudioClip clipVoiceNexa;
+    private AudioClip clipVoiceAlert;
+    private AudioClip clipCinematicBoom;
+    private int lastSpokenCharIndex = -1;
+
+    public static CompanionDialogueManager EnsureExists()
+    {
+        if (Instance != null) return Instance;
+        CompanionDialogueManager existing = FindAnyObjectByType<CompanionDialogueManager>();
+        if (existing != null)
+        {
+            Instance = existing;
+            return existing;
+        }
+        GameObject go = new GameObject("CompanionDialogueManager");
+        Instance = go.AddComponent<CompanionDialogueManager>();
+        return Instance;
+    }
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -54,6 +76,103 @@ public class CompanionDialogueManager : MonoBehaviour
         panelCyanTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Cyan");
         panelCrimsonTex = LoadTexAsTexture("StoryUI/Panel_Cyber_Crimson");
         panelGoldTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Gold");
+
+        InitSyntheticVoiceAudio();
+    }
+
+    private void InitSyntheticVoiceAudio()
+    {
+        voiceSource = gameObject.GetComponent<AudioSource>();
+        if (voiceSource == null)
+        {
+            voiceSource = gameObject.AddComponent<AudioSource>();
+        }
+        voiceSource.playOnAwake = false;
+        voiceSource.loop = false;
+        voiceSource.spatialBlend = 0f;
+
+        clipVoiceKael = CreateSyntheticVoiceClip("Voice_Kael", 165f, 210f, 0.036f, false);
+        clipVoiceNexa = CreateSyntheticVoiceClip("Voice_Nexa", 640f, 880f, 0.032f, true);
+        clipVoiceAlert = CreateSyntheticVoiceClip("Voice_Alert", 420f, 290f, 0.042f, true);
+        clipCinematicBoom = CreateCinematicPulseClip();
+    }
+
+    private AudioClip CreateSyntheticVoiceClip(string name, float f0, float f1, float duration, bool harmonicRich)
+    {
+        int sampleRate = 22050;
+        int samples = Mathf.Max(64, Mathf.FloorToInt(sampleRate * duration));
+        float[] data = new float[samples];
+        for (int i = 0; i < samples; i++)
+        {
+            float t = (float)i / sampleRate;
+            float p = (float)i / samples;
+            float env = Mathf.Sin(p * Mathf.PI) * Mathf.Exp(-p * 2.2f);
+            float freq = Mathf.Lerp(f0, f1, p);
+            float s = Mathf.Sin(2f * Mathf.PI * freq * t);
+            if (harmonicRich)
+            {
+                s = s * 0.65f + Mathf.Sin(2f * Mathf.PI * (freq * 1.5f) * t) * 0.35f;
+            }
+            data[i] = Mathf.Clamp(s * env * 0.32f, -0.8f, 0.8f);
+        }
+        AudioClip clip = AudioClip.Create(name, samples, 1, sampleRate, false);
+        clip.SetData(data, 0);
+        return clip;
+    }
+
+    private AudioClip CreateCinematicPulseClip()
+    {
+        int sampleRate = 22050;
+        float duration = 0.42f;
+        int samples = Mathf.FloorToInt(sampleRate * duration);
+        float[] data = new float[samples];
+        for (int i = 0; i < samples; i++)
+        {
+            float t = (float)i / sampleRate;
+            float p = (float)i / samples;
+            float env = Mathf.Clamp01(p / 0.08f) * Mathf.Exp(-p * 4.2f);
+            float sub = Mathf.Sin(2f * Mathf.PI * Mathf.Lerp(135f, 48f, p) * t) * 0.65f;
+            float shimmer = Mathf.Sin(2f * Mathf.PI * Mathf.Lerp(520f, 780f, p) * t) * 0.25f;
+            data[i] = Mathf.Clamp((sub + shimmer) * env * 0.6f, -0.9f, 0.9f);
+        }
+        AudioClip clip = AudioClip.Create("SFX_Cinematic_Pulse", samples, 1, sampleRate, false);
+        clip.SetData(data, 0);
+        return clip;
+    }
+
+    public void PlaySyntheticVoiceTick(string portraitKey, int charIndex)
+    {
+        if (charIndex <= 0 || charIndex == lastSpokenCharIndex || (charIndex % 3 != 0)) return;
+        lastSpokenCharIndex = charIndex;
+
+        if (AudioManager.Instance != null && AudioManager.Instance.isMuted) return;
+        if (voiceSource == null) InitSyntheticVoiceAudio();
+        if (voiceSource == null) return;
+
+        float vol = (AudioManager.Instance != null) ? AudioManager.Instance.masterVolume * 0.42f : 0.35f;
+        AudioClip clip = clipVoiceNexa;
+        if (!string.IsNullOrEmpty(portraitKey))
+        {
+            if (portraitKey.StartsWith("kael")) clip = clipVoiceKael;
+            else if (portraitKey.Contains("alert") || portraitKey.Contains("dark")) clip = clipVoiceAlert;
+        }
+        if (clip != null)
+        {
+            voiceSource.pitch = UnityEngine.Random.Range(0.94f, 1.07f);
+            voiceSource.PlayOneShot(clip, vol);
+        }
+    }
+
+    public void PlayCinematicTransitionEffect()
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.isMuted) return;
+        if (voiceSource == null) InitSyntheticVoiceAudio();
+        if (voiceSource != null && clipCinematicBoom != null)
+        {
+            float vol = (AudioManager.Instance != null) ? AudioManager.Instance.masterVolume * 0.68f : 0.55f;
+            voiceSource.pitch = 1f;
+            voiceSource.PlayOneShot(clipCinematicBoom, vol);
+        }
     }
 
     Texture2D LoadTexAsTexture(string path)
@@ -83,6 +202,7 @@ public class CompanionDialogueManager : MonoBehaviour
         {
             charTimer += Time.unscaledDeltaTime * 48f;
             visibleChars = Mathf.Clamp(Mathf.FloorToInt(charTimer), 0, currentLine.text.Length);
+            PlaySyntheticVoiceTick(currentLine.portraitKey, visibleChars);
         }
         else
         {
@@ -250,6 +370,7 @@ public class CompanionDialogueManager : MonoBehaviour
             charTimer = 0f;
             visibleChars = 0;
             autoAdvanceTimer = 0f;
+            lastSpokenCharIndex = -1;
         }
         else
         {
@@ -302,6 +423,9 @@ public class CompanionDialogueManager : MonoBehaviour
             return;
         if (EndingCinematicController.Instance != null &&
             EndingCinematicController.Instance.isEndingActive)
+            return;
+        if (EndingsManager.Instance != null &&
+            EndingsManager.Instance.isCinematicActive)
             return;
         if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
