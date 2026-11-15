@@ -90,7 +90,7 @@ public class NexusThroneroomEnvironment : MonoBehaviour
 
     void UpdateArenaContainmentBarriers(bool active)
     {
-        if (active && sanctumGroup != null && leftArenaBarrier == null)
+        if (active && sanctumGroup != null && leftArenaBarrier == null && leftBarrierCurtain == null)
         {
             leftArenaBarrier = CreateContainmentBarrierLine("LeftArenaBarrier", -7.8f, out leftBarrierCurtain);
             rightArenaBarrier = CreateContainmentBarrierLine("RightArenaBarrier", 7.8f, out rightBarrierCurtain);
@@ -133,22 +133,6 @@ public class NexusThroneroomEnvironment : MonoBehaviour
         obj.transform.SetParent(sanctumGroup, false);
         obj.transform.localPosition = new Vector3(localX, 0f, 0f);
 
-        // Cortina energética translúcida con líneas de escaneo
-        GameObject curtainObj = new GameObject("EnergyCurtain");
-        curtainObj.transform.SetParent(obj.transform, false);
-        curtainObj.transform.localPosition = new Vector3(0f, 2.55f, 0f);
-        curtainObj.transform.localScale = new Vector3(2.2f, 4.4f, 1f);
-        curtainSr = curtainObj.AddComponent<SpriteRenderer>();
-        curtainSr.sprite = Sprite.Create(
-            GetBarrierCurtainTexture(),
-            new Rect(0f, 0f, 32f, 128f),
-            new Vector2(0.5f, 0.5f),
-            100f
-        );
-        curtainSr.sortingOrder = 11;
-        curtainSr.enabled = false;
-
-        // Emisor de suelo y techo + Pilón Pixel Art HD si está disponible
         Texture2D pylonTex = Resources.Load<Texture2D>("Level4/Pylon_Level4");
         if (pylonTex != null)
         {
@@ -162,20 +146,24 @@ public class NexusThroneroomEnvironment : MonoBehaviour
             pylonObj.transform.localScale = new Vector3(scale, scale, 1f);
             pylonObj.transform.localPosition = new Vector3(0f, -0.15f, 0f);
             psr.sortingOrder = 12;
+            curtainSr = psr;
+            return null;
         }
 
-        Sprite ringSpr = Level3MonsterAssetGenerator.GetPsionicRingSprite();
-        for (int p = 0; p < 2; p++)
-        {
-            GameObject emitter = new GameObject(p == 0 ? "FloorEmitter" : "CeilingEmitter");
-            emitter.transform.SetParent(obj.transform, false);
-            emitter.transform.localPosition = new Vector3(0f, p == 0 ? 0.06f : 5.05f, 0f);
-            emitter.transform.localScale = new Vector3(0.95f, 0.28f, 1f);
-            SpriteRenderer esr = emitter.AddComponent<SpriteRenderer>();
-            esr.sprite = ringSpr;
-            esr.color = new Color(0.28f, 0.94f, 1f, 0.72f);
-            esr.sortingOrder = 12;
-        }
+        // Fallback procedural si no existe el sprite Pylon_Level4
+        GameObject curtainObj = new GameObject("EnergyCurtain");
+        curtainObj.transform.SetParent(obj.transform, false);
+        curtainObj.transform.localPosition = new Vector3(0f, 2.55f, 0f);
+        curtainObj.transform.localScale = new Vector3(2.2f, 4.4f, 1f);
+        curtainSr = curtainObj.AddComponent<SpriteRenderer>();
+        curtainSr.sprite = Sprite.Create(
+            GetBarrierCurtainTexture(),
+            new Rect(0f, 0f, 32f, 128f),
+            new Vector2(0.5f, 0.5f),
+            100f
+        );
+        curtainSr.sortingOrder = 11;
+        curtainSr.enabled = false;
 
         LineRenderer lr = obj.AddComponent<LineRenderer>();
         lr.useWorldSpace = false;
@@ -414,16 +402,21 @@ public class NexusThroneroomEnvironment : MonoBehaviour
 
         if (IsBossArenaLocked && kaelTransform != null)
         {
+            bool usingPylonArt = (leftArenaBarrier == null);
             float basePulse = 0.40f + Mathf.Sin(t * 4.5f) * 0.12f;
             if (leftBarrierCurtain != null)
             {
                 float proxL = Mathf.Clamp01(1f - Mathf.Abs(kaelTransform.position.x - ArenaMinX) / 2.2f);
-                leftBarrierCurtain.color = new Color(0.55f + proxL * 0.35f, 0.28f + proxL * 0.55f, 1f, basePulse + proxL * 0.42f);
+                leftBarrierCurtain.color = usingPylonArt
+                    ? Color.Lerp(Color.white, new Color(0.85f, 0.96f, 1f, 1f), proxL * 0.55f)
+                    : new Color(0.55f + proxL * 0.35f, 0.28f + proxL * 0.55f, 1f, basePulse + proxL * 0.42f);
             }
             if (rightBarrierCurtain != null)
             {
                 float proxR = Mathf.Clamp01(1f - Mathf.Abs(kaelTransform.position.x - ArenaMaxX) / 2.2f);
-                rightBarrierCurtain.color = new Color(0.55f + proxR * 0.35f, 0.28f + proxR * 0.55f, 1f, basePulse + proxR * 0.42f);
+                rightBarrierCurtain.color = usingPylonArt
+                    ? Color.Lerp(Color.white, new Color(0.85f, 0.96f, 1f, 1f), proxR * 0.55f)
+                    : new Color(0.55f + proxR * 0.35f, 0.28f + proxR * 0.55f, 1f, basePulse + proxR * 0.42f);
             }
         }
 

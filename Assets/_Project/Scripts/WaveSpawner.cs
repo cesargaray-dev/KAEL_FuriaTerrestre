@@ -277,41 +277,18 @@ public class WaveSpawner : MonoBehaviour
             gateArt.transform.position = new Vector3(gateX, groundY - 0.15f, 0f);
             gsr.sortingOrder = 15;
         }
-
-        LineRenderer gateBeam = gateObj.AddComponent<LineRenderer>();
-        gateBeam.material = new Material(Shader.Find("Sprites/Default"));
-        gateBeam.positionCount = 2;
-        gateBeam.startWidth = 0.72f;
-        gateBeam.endWidth = 0.72f;
-        gateBeam.startColor = new Color(0.96f, 0.20f, 0.65f, 0.90f);
-        gateBeam.endColor = new Color(0.45f, 0.14f, 1f, 0.90f);
-        gateBeam.sortingOrder = 15;
-        gateBeam.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
-        gateBeam.SetPosition(1, new Vector3(gateX, groundY + 5.8f, 0f));
-
-        LineRenderer gateCore = new GameObject("GateCore").AddComponent<LineRenderer>();
-        gateCore.transform.SetParent(gateObj.transform, false);
-        gateCore.material = new Material(Shader.Find("Sprites/Default"));
-        gateCore.positionCount = 2;
-        gateCore.startWidth = 0.16f;
-        gateCore.endWidth = 0.16f;
-        gateCore.startColor = new Color(1f, 0.85f, 0.98f, 0.98f);
-        gateCore.endColor = new Color(0.28f, 0.96f, 1f, 0.98f);
-        gateCore.sortingOrder = 16;
-        gateCore.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
-        gateCore.SetPosition(1, new Vector3(gateX, groundY + 5.8f, 0f));
-
-        Sprite hexSpr = Level3MonsterAssetGenerator.GetHexShieldSprite(isPureza: false, isCorrupcion: true);
-        for (int h = 0; h < 3; h++)
+        else
         {
-            GameObject hexNode = new GameObject($"GateHex_{h}");
-            hexNode.transform.SetParent(gateObj.transform, false);
-            hexNode.transform.position = new Vector3(gateX, groundY + 0.9f + h * 1.65f, 0f);
-            hexNode.transform.localScale = new Vector3(1.1f, 1.35f, 1f);
-            SpriteRenderer hsr = hexNode.AddComponent<SpriteRenderer>();
-            hsr.sprite = hexSpr;
-            hsr.color = new Color(0.95f, 0.25f, 0.85f, 0.78f);
-            hsr.sortingOrder = 16;
+            LineRenderer gateBeam = gateObj.AddComponent<LineRenderer>();
+            gateBeam.material = new Material(Shader.Find("Sprites/Default"));
+            gateBeam.positionCount = 2;
+            gateBeam.startWidth = 0.72f;
+            gateBeam.endWidth = 0.72f;
+            gateBeam.startColor = new Color(0.96f, 0.20f, 0.65f, 0.90f);
+            gateBeam.endColor = new Color(0.45f, 0.14f, 1f, 0.90f);
+            gateBeam.sortingOrder = 15;
+            gateBeam.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
+            gateBeam.SetPosition(1, new Vector3(gateX, groundY + 5.8f, 0f));
         }
 
         if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
