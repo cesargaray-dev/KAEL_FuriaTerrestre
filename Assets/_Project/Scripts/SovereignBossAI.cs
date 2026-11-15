@@ -32,8 +32,11 @@ public class NexusThroneroomEnvironment : MonoBehaviour
     private bool isLiaLiberated = false;
     private bool isPhase3Siphoning = false;
     public bool IsBossArenaLocked { get; private set; } = false;
-    public float ArenaMinX => sanctumAnchorX - 8.2f;
-    public float ArenaMaxX => sanctumAnchorX + 8.2f;
+    public float ArenaMinX => sanctumAnchorX - 7.8f;
+    public float ArenaMaxX => sanctumAnchorX + 7.8f;
+
+    private LineRenderer leftArenaBarrier;
+    private LineRenderer rightArenaBarrier;
 
     private const float CorridorModuleWidth = 10.24f;
 
@@ -58,6 +61,8 @@ public class NexusThroneroomEnvironment : MonoBehaviour
             sanctumGroup.position = new Vector3(sanctumAnchorX, -2.95f, 0f);
         }
 
+        UpdateArenaContainmentBarriers(true);
+
         if (InfiniteBackground.Instance != null)
         {
             InfiniteBackground.Instance.ActivateLevel4SanctumAt(sanctumAnchorX);
@@ -69,6 +74,7 @@ public class NexusThroneroomEnvironment : MonoBehaviour
         IsBossArenaLocked = false;
         isPhase3Siphoning = false;
         isLiaLiberated = false;
+        UpdateArenaContainmentBarriers(false);
         if (sanctumGroup != null)
         {
             sanctumGroup.gameObject.SetActive(false);
@@ -77,6 +83,35 @@ public class NexusThroneroomEnvironment : MonoBehaviour
         {
             InfiniteBackground.Instance.ResetLevel4Sanctum();
         }
+    }
+
+    void UpdateArenaContainmentBarriers(bool active)
+    {
+        if (active && sanctumGroup != null && leftArenaBarrier == null)
+        {
+            leftArenaBarrier = CreateContainmentBarrierLine("LeftArenaBarrier", -7.8f);
+            rightArenaBarrier = CreateContainmentBarrierLine("RightArenaBarrier", 7.8f);
+        }
+        if (leftArenaBarrier != null) leftArenaBarrier.enabled = active;
+        if (rightArenaBarrier != null) rightArenaBarrier.enabled = active;
+    }
+
+    LineRenderer CreateContainmentBarrierLine(string barrierName, float localX)
+    {
+        GameObject obj = new GameObject(barrierName);
+        obj.transform.SetParent(sanctumGroup, false);
+        LineRenderer lr = obj.AddComponent<LineRenderer>();
+        lr.useWorldSpace = false;
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.positionCount = 2;
+        lr.startWidth = 0.08f;
+        lr.endWidth = 0.08f;
+        lr.startColor = new Color(0.75f, 0.22f, 1f, 0.42f);
+        lr.endColor = new Color(0.24f, 0.92f, 1f, 0.12f);
+        lr.sortingOrder = 12;
+        lr.SetPosition(0, new Vector3(localX, -0.2f, 0f));
+        lr.SetPosition(1, new Vector3(localX, 5.2f, 0f));
+        return lr;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -265,6 +300,7 @@ public class NexusThroneroomEnvironment : MonoBehaviour
 
         // Oculto durante el corredor de oleadas 1-9; se activa al llegar al Santuario del Trono en Oleada 10
         sanctumGroup.gameObject.SetActive(IsBossArenaLocked);
+        UpdateArenaContainmentBarriers(IsBossArenaLocked);
     }
 
     void RelocateSanctumCenter(float newX, bool withFlash)
@@ -499,6 +535,7 @@ public class SovereignBossAI : MonoBehaviour
 
     private float nextSpecialCooldown = 2.0f;
     private float nextPrimaryCooldown = 0.8f;
+    private float nextSummonCooldown = 11.0f;
     private float forceFieldReapplyCooldown = 0f;
     private float forceFieldElapsed = 0f;
 
@@ -571,6 +608,7 @@ public class SovereignBossAI : MonoBehaviour
             if (shieldDomeRenderer == null) AttachForceFieldDome();
             if (capsuleSiphonBeam == null) AttachSiphonBeam();
             nextSpecialCooldown = Time.time + 2.6f;
+            nextSummonCooldown = Time.time + 10.5f;
         }
     }
 
@@ -755,6 +793,20 @@ public class SovereignBossAI : MonoBehaviour
 
         if (shieldDomeRenderer != null) shieldDomeRenderer.enabled = false;
         SetSiphonVisualsActive(false);
+
+        // Retirar refuerzos pretorianos restantes al caer el Soberano
+        EnemyDummy[] allEnemies = FindObjectsByType<EnemyDummy>(FindObjectsInactive.Exclude);
+        foreach (EnemyDummy other in allEnemies)
+        {
+            if (other != null && other != enemy && !other.IsDead)
+            {
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnShockwaveRing(other.transform.position + Vector3.up * 0.6f, new Color(0.8f, 0.25f, 1f), 1.6f);
+                }
+                Destroy(other.gameObject);
+            }
+        }
 
         VorstCodexUI.RegisterEnemyKill(enemy);
         StartCoroutine(FinalBossDefeatAndEndingRoutine());
@@ -1053,6 +1105,12 @@ public class SovereignBossAI : MonoBehaviour
     // =========================================================================
     void UpdateSupremeSovereign(float distX, float dirToKael)
     {
+        if (currentPhase >= 2 && Time.time >= nextSummonCooldown && CountActiveMinions() < 2)
+        {
+            StartCoroutine(SovereignSummonTroopsRoutine());
+            return;
+        }
+
         if (currentPhase == 1)
         {
             // FASE 1 (Duelo Marcial): Teletransportación lateral + ráfagas cortantes en arco + estocadas rápidas
@@ -1446,6 +1504,54 @@ public class SovereignBossAI : MonoBehaviour
             yield return null;
         }
         nextSpecialCooldown = Time.time + 2.4f;
+        isActingExternally = false;
+    }
+
+    int CountActiveMinions()
+    {
+        int count = 0;
+        EnemyDummy[] all = FindObjectsByType<EnemyDummy>(FindObjectsInactive.Exclude);
+        foreach (EnemyDummy e in all)
+        {
+            if (e != null && e != enemy && !e.IsDead) count++;
+        }
+        return count;
+    }
+
+    IEnumerator SovereignSummonTroopsRoutine()
+    {
+        isActingExternally = true;
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.3f,
+                "⚔ ¡GUARDIA PRETORIANA, PROTEGED EL NÚCLEO! ⚔",
+                new Color(0.92f, 0.35f, 1f),
+                21,
+                1.5f
+            );
+            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.84f, 0.24f, 1f), 3.4f);
+        }
+
+        float t = 0f;
+        while (t < 0.55f)
+        {
+            if (defeatTriggered || enemy.IsDead) { EndAction(); yield break; }
+            ApplyBossFrameProgress(animPhaseTransFrames, t / 0.55f);
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
+        if (spawner != null)
+        {
+            spawner.SpawnSovereignReinforcements(transform.position, 2);
+        }
+
+        nextSummonCooldown = Time.time + 15.0f;
+        nextSpecialCooldown = Mathf.Max(nextSpecialCooldown, Time.time + 1.4f);
         isActingExternally = false;
     }
 

@@ -198,6 +198,128 @@ public class WaveSpawner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Invoca refuerzos de la Guardia Pretoriana Vorst dentro del Santuario durante la batalla del Soberano Supremo.
+    /// </summary>
+    public void SpawnSovereignReinforcements(Vector3 bossPos, int count = 2)
+    {
+        if (vorstWalkerPrefab == null) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            float offsetX = (i % 2 == 0) ? -2.2f - i * 0.7f : 2.2f + i * 0.7f;
+            float spawnX = bossPos.x + offsetX;
+            if (NexusThroneroomEnvironment.Instance != null)
+            {
+                spawnX = NexusThroneroomEnvironment.Instance.ClampXToBossArena(spawnX);
+            }
+            Vector3 spawnPos = new Vector3(spawnX, groundY, 0f);
+            GameObject obj = Instantiate(vorstWalkerPrefab, spawnPos, Quaternion.identity);
+            EnemyDummy enemy = obj.GetComponent<EnemyDummy>();
+            if (enemy != null)
+            {
+                SpriteRenderer sr = obj.GetComponent<SpriteRenderer>();
+                SetupLevel4PraetorianUnit(enemy, obj, sr, totalWaves, i + Random.Range(0, 3), count);
+                enemy.goldReward = 30;
+                enemy.expReward = 35;
+
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnShockwaveRing(spawnPos + Vector3.up * 0.6f, new Color(0.84f, 0.24f, 1f), 2.4f);
+                    CombatVFXManager.Instance.SpawnElectricArc(spawnPos + Vector3.up * 0.8f, new Color(0.28f, 0.96f, 1f));
+                }
+
+                enemiesAlive++;
+                enemy.OnEnemyDied += HandleEnemyDied;
+            }
+        }
+    }
+
+    IEnumerator PlaySanctumBreachTransitionRoutine()
+    {
+        if (kaelTransform == null) yield break;
+
+        float targetCenter = Mathf.Round((kaelTransform.position.x + 7.5f) / 10.24f) * 10.24f;
+        float gateX = targetCenter - 7.4f;
+        Vector3 gatePos = new Vector3(gateX, groundY + 2.2f, 0f);
+
+        // Construir una barrera energética Vorst visible en el pasillo antes de revelarse el Santuario
+        GameObject gateObj = new GameObject("VorstSanctumContainmentGate");
+        gateObj.transform.position = gatePos;
+
+        LineRenderer gateBeam = gateObj.AddComponent<LineRenderer>();
+        gateBeam.material = new Material(Shader.Find("Sprites/Default"));
+        gateBeam.positionCount = 2;
+        gateBeam.startWidth = 0.55f;
+        gateBeam.endWidth = 0.55f;
+        gateBeam.startColor = new Color(0.95f, 0.22f, 0.68f, 0.92f);
+        gateBeam.endColor = new Color(0.55f, 0.18f, 1f, 0.92f);
+        gateBeam.sortingOrder = 15;
+        gateBeam.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
+        gateBeam.SetPosition(1, new Vector3(gateX, groundY + 5.6f, 0f));
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                gatePos + Vector3.up * 0.6f,
+                "🚧 ¡COMPUERTA DEL SANTUARIO DETECTADA! ¡KAEL ROMPE LA BARRERA!",
+                new Color(1f, 0.45f, 0.82f),
+                21,
+                1.6f
+            );
+        }
+
+        // Kael avanza hacia la compuerta del Santuario
+        Vector3 kaelStart = kaelTransform.position;
+        Vector3 kaelStrike = new Vector3(gateX - 1.25f, groundY, 0f);
+        KaelAutoController kaelCtrl = kaelTransform.GetComponent<KaelAutoController>();
+        SpriteRenderer kaelSr = kaelTransform.GetComponent<SpriteRenderer>();
+        if (kaelSr != null) kaelSr.flipX = (kaelStrike.x < kaelStart.x);
+
+        float moveT = 0f;
+        while (moveT < 0.55f)
+        {
+            kaelTransform.position = Vector3.Lerp(kaelStart, kaelStrike, moveT / 0.55f);
+            moveT += Time.deltaTime;
+            yield return null;
+        }
+        kaelTransform.position = kaelStrike;
+
+        // Golpe destructor de barrera con onda de choque y destello
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayHeavyHitSfx();
+        else if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.35f, 0.96f, 1f), 0.85f);
+            CombatVFXManager.Instance.ShakeCamera(0.65f, 0.30f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.28f, 0.98f, 1f), 4.6f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.92f, 0.25f, 1f), 3.4f);
+            CombatVFXManager.Instance.SpawnHitSparks(gatePos, true, 18);
+        }
+
+        Destroy(gateObj);
+
+        // Al romperse la barrera, se revela y bloquea simétricamente el Santuario del Trono
+        NexusThroneroomEnvironment env = NexusThroneroomEnvironment.EnsureExists();
+        if (env != null)
+        {
+            env.LockBossArenaAround(targetCenter);
+        }
+
+        // Kael entra al borde izquierdo del Santuario listo para el duelo
+        Vector3 insidePos = new Vector3(targetCenter - 5.0f, groundY, 0f);
+        if (kaelCtrl != null) kaelSr.flipX = false;
+        float enterT = 0f;
+        while (enterT < 0.35f)
+        {
+            kaelTransform.position = Vector3.Lerp(kaelStrike, insidePos, enterT / 0.35f);
+            enterT += Time.deltaTime;
+            yield return null;
+        }
+        kaelTransform.position = insidePos;
+    }
+
     IEnumerator SpawnNextWaveRoutine()
     {
         spawningWave = true;
@@ -233,6 +355,11 @@ public class WaveSpawner : MonoBehaviour
         }
         else if (isBossWave && CombatVFXManager.Instance != null)
         {
+            if (isLevel4Throneroom)
+            {
+                yield return StartCoroutine(PlaySanctumBreachTransitionRoutine());
+            }
+
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
             string warnTitle = isLevel4Throneroom
                 ? "☣ ¡ARCONTE SUPREMO — SOBERANO VORST! ☣"
@@ -264,6 +391,14 @@ public class WaveSpawner : MonoBehaviour
 
             float jitterX = Random.Range(-0.12f, 0.12f);
             float spawnX = kaelTransform.position.x + spawnDistanceAhead + (i * enemySpacing) + jitterX;
+            if (isLevel4Throneroom && isBossWave && NexusThroneroomEnvironment.Instance != null && NexusThroneroomEnvironment.Instance.IsBossArenaLocked)
+            {
+                spawnX = Mathf.Clamp(
+                    NexusThroneroomEnvironment.Instance.ArenaMaxX - 1.5f - (hordeCount - 1 - i) * 1.4f,
+                    NexusThroneroomEnvironment.Instance.ArenaMinX + 1.0f,
+                    NexusThroneroomEnvironment.Instance.ArenaMaxX - 0.8f
+                );
+            }
             Vector3 spawnPos = new Vector3(spawnX, groundY, 0f);
 
             bool spawningSovereignBoss = (isLevel4Throneroom && isBossWave && i == hordeCount - 1);
