@@ -4,7 +4,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Identificadores oficiales de las 6 especies del Códice Vorst.
+/// Identificadores oficiales de las 15 especies del Códice Vorst.
+/// Abarca los cuatro niveles de campaña y los jefes mayores:
+/// - Nivel 1 & 2: Sector 7 & Base Vorst (0..4)
+/// - Nivel 3: Colmena Vorst (5..9)
+/// - Nivel 4: Trono del Soberano (10..14)
 /// </summary>
 public enum CodexSpeciesId
 {
@@ -13,7 +17,30 @@ public enum CodexSpeciesId
     BruteDemolisher = 2,
     PsionicArchon = 3,
     Sector7Commander = 4,
-    SupremeSovereign = 5
+
+    BioStalker = 5,
+    BioLasher = 6,
+    BioHulk = 7,
+    HiveInquisitor = 8,
+    VortexOmega = 9,
+
+    PraetorianBlade = 10,
+    PraetorianMarksman = 11,
+    PraetorianAegis = 12,
+    PraetorianCustodian = 13,
+    SupremeSovereign = 14
+}
+
+/// <summary>
+/// Pestañas de filtrado de zona de campaña para navegación del Códice Vorst.
+/// </summary>
+public enum ZoneTab
+{
+    Todos = 0,
+    Sector7 = 1,
+    BaseVorst = 2,
+    Colmena = 3,
+    Trono = 4
 }
 
 /// <summary>
@@ -47,13 +74,17 @@ public class CodexSpeciesEntry
     public string DefenseDiaryFragment;
     public Color ThemeColor;
     public string IconResourcePath;
+    public string ResourceFolder;
+    public string AnimPrefix;
+    public int LevelIndex; // 1: Sector 7, 2: Base Vorst, 3: Colmena, 4: Trono
 }
 
 /// <summary>
 /// Enciclopedia Táctica Interactiva (Códice Vorst) accesible desde el Menú Principal (00_MainMenu)
 /// y desde el Menú de Pausa en cualquier nivel de combate.
 /// Soporta desbloqueo progresivo al derrotar criaturas, conteo de bajas de sesión e histórico,
-/// visor animado en tiempo real (Caminar / Ataque / Colapso) y navegación completa con teclado y mouse.
+/// visor animado en tiempo real con anclaje a línea de base (Caminar / Ataque / Colapso),
+/// pestañas de zona de campaña y navegación completa con teclado y mouse.
 /// </summary>
 public class VorstCodexUI : MonoBehaviour
 {
@@ -64,6 +95,7 @@ public class VorstCodexUI : MonoBehaviour
 
     public static readonly CodexSpeciesEntry[] Catalog = new CodexSpeciesEntry[]
     {
+        // 0: VorstWalker (Nivel 1: Sector 7)
         new CodexSpeciesEntry
         {
             SpeciesId = CodexSpeciesId.VorstWalker,
@@ -80,8 +112,12 @@ public class VorstCodexUI : MonoBehaviour
             DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #04 (CAPITÁN V. MORALES)",
             DefenseDiaryFragment = "\"Cayeron en cápsulas de impacto sobre las avenidas del Sector 7. No respiran ni dudan: avanzan en formación cerrada drenando la red eléctrica urbana. Un golpe sísmico directo al tórax basta para quebrar su exoesqueleto, pero jamás atacan solos.\"",
             ThemeColor = new Color(0.24f, 0.92f, 1.00f),
-            IconResourcePath = "Codex/Icon_Codex_VorstWalker"
+            IconResourcePath = "Codex/Icon_Codex_VorstWalker",
+            ResourceFolder = "Codex",
+            AnimPrefix = "VorstWalker",
+            LevelIndex = 1
         },
+        // 1: Stalker (Nivel 2: Base Vorst)
         new CodexSpeciesEntry
         {
             SpeciesId = CodexSpeciesId.Stalker,
@@ -98,8 +134,12 @@ public class VorstCodexUI : MonoBehaviour
             DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #11 (TENIENTE S. KOWALSKI)",
             DefenseDiaryFragment = "\"Los llamamos Stalkers porque escuchas el zumbido de sus garras antes de verlos saltar entre los escombros. Mi escuadrón cayó intentando apuntarles con rifles convencionales; solo un reflejo de guardia en la fracción de segundo previa al impacto logra aturdir su sistema nervioso.\"",
             ThemeColor = new Color(0.22f, 0.98f, 0.66f),
-            IconResourcePath = "Codex/Icon_Codex_Stalker"
+            IconResourcePath = "Codex/Icon_Codex_Stalker",
+            ResourceFolder = "Level2",
+            AnimPrefix = "Stalker",
+            LevelIndex = 2
         },
+        // 2: BruteDemolisher (Nivel 2: Base Vorst)
         new CodexSpeciesEntry
         {
             SpeciesId = CodexSpeciesId.BruteDemolisher,
@@ -116,8 +156,12 @@ public class VorstCodexUI : MonoBehaviour
             DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #19 (INGENIERO EN JEFE R. SALAZAR)",
             DefenseDiaryFragment = "\"Los Demoledores Brutos fueron diseñados con un único propósito: derribar nuestros búnkeres de titanio a puñetazo limpio. Cuando su núcleo rojo parpadea, el suelo tiembla. No intentes absorber su golpe cargado sin guardia Nexo o acabarás reducido a cenizas.\"",
             ThemeColor = new Color(1.00f, 0.44f, 0.18f),
-            IconResourcePath = "Codex/Icon_Codex_Brute"
+            IconResourcePath = "Codex/Icon_Codex_Brute",
+            ResourceFolder = "Level2",
+            AnimPrefix = "Brute",
+            LevelIndex = 2
         },
+        // 3: PsionicArchon (Nivel 2: Base Vorst)
         new CodexSpeciesEntry
         {
             SpeciesId = CodexSpeciesId.PsionicArchon,
@@ -134,8 +178,12 @@ public class VorstCodexUI : MonoBehaviour
             DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #27 (ARCHIVO N.E.X.A. DESCLASIFICADO)",
             DefenseDiaryFragment = "\"El Arconte no combate con fuerza bruta: curva la gravedad local mediante cuatro esferas de plasma abisal alimentadas por prisioneros en estasis. Romper su concentración exige acortar distancia entre cada pulso psiónico y descargar toda la reserva del reactor Nexo.\"",
             ThemeColor = new Color(0.82f, 0.34f, 1.00f),
-            IconResourcePath = "Codex/Icon_Codex_Archon"
+            IconResourcePath = "Codex/Icon_Codex_Archon",
+            ResourceFolder = "Level2",
+            AnimPrefix = "Archon",
+            LevelIndex = 2
         },
+        // 4: Sector7Commander (Nivel 1: Sector 7)
         new CodexSpeciesEntry
         {
             SpeciesId = CodexSpeciesId.Sector7Commander,
@@ -152,38 +200,247 @@ public class VorstCodexUI : MonoBehaviour
             DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #09 (REGISTRO PERSONAL DE KAEL)",
             DefenseDiaryFragment = "\"Él dirigió la escuadra de recolección que secuestró a Lía entre las llamas del Sector 7. Su armadura carmesí resiste impactos ordinarios, pero su arrogancia al cargar ataques pesados deja al descubierto el reactor que mantiene cerrado el puente hacia la Base Vorst.\"",
             ThemeColor = new Color(1.00f, 0.26f, 0.56f),
-            IconResourcePath = "Codex/Icon_Codex_Commander"
+            IconResourcePath = "Codex/Icon_Codex_Commander",
+            ResourceFolder = "Codex",
+            AnimPrefix = "Commander",
+            LevelIndex = 1
         },
+        // 5: BioStalker (Nivel 3: Colmena)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.BioStalker,
+            CodeName = "VRST-06 // PANTERA NEÓN",
+            DisplayName = "Pantera Biomecánica Neón",
+            Classification = "Depredador Cuadrúpedo de Bio-Plasma Rápido",
+            AlienOrigin = "Criaderos de Quimeras — Núcleo de Incubación de la Colmena (Nivel 3)",
+            ThreatLevelText = "NIVEL III+ — ALTO (DEPREDADOR HIPERSÓNICO)",
+            ThreatRating = 3,
+            ArmorType = "Carcasa Quimérica Reforzada con Resonancia de Plasma Cian",
+            BodyWeakPoints = "Tendones de salto traseros y conductos de enfriamiento cervical",
+            ElementalWeakness = "Guantelete Prototipo (Eléctrico Cian) y Piro-Reactor (Combustión Térmica)",
+            TacticalStatsSummary = "HP BASE: 75-180  |  DAÑO: 7-18  |  VEL: 2.75 m/s  |  BOTÍN: 12-35 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #41 (EXPLORADORA TÁCTICA E. VEGA)",
+            DefenseDiaryFragment = "\"Las panteras biomecánicas de la Colmena no atacan en línea recta: rebotan contra los bio-cables del techo cayendo a espaldas del convoy. Su velocidad supera los reflejos humanos estándar; únicamente la sincronía del guantelete y un corte circular detienen su arremetida.\"",
+            ThemeColor = new Color(0.18f, 0.96f, 0.88f),
+            IconResourcePath = "Codex/Icon_Codex_BioStalker",
+            ResourceFolder = "Level3",
+            AnimPrefix = "BioStalker",
+            LevelIndex = 3
+        },
+        // 6: BioLasher (Nivel 3: Colmena)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.BioLasher,
+            CodeName = "VRST-07 // LÁTIGO PSIÓNICO",
+            DisplayName = "Alienígena Neón Tentacular",
+            Classification = "Canalizador Levitante de Filamentos Energéticos",
+            AlienOrigin = "Cámara de Levitación Electromagnética — Colmena Vorst (Nivel 3)",
+            ThreatLevelText = "NIVEL III+ — ALTO (CONTROL DE ÁREA Y LEVITACIÓN)",
+            ThreatRating = 3,
+            ArmorType = "Membrana Sináptica Fluctuante con Amortiguación Antigravitatoria",
+            BodyWeakPoints = "Matriz central de flotación y zarcillos durante la extensión de ataque",
+            ElementalWeakness = "Guantelete de Plasma Ígneo (Combustión de tejido sináptico)",
+            TacticalStatsSummary = "HP BASE: 90-210  |  DAÑO: 9-22  |  VEL: 1.85 m/s  |  BOTÍN: 15-40 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #45 (SUBTENIENTE M. CHANG)",
+            DefenseDiaryFragment = "\"Flotan como medusas abisales pero sus tentáculos descargan pulsos cortantes capaces de rebanar mamparos blindados. Cuando inician su danza sinusoidal, la estática del aire eriza la piel. Concentra fuego continuo o lánzalos al suelo con una onda de choque sísmica.\"",
+            ThemeColor = new Color(0.96f, 0.22f, 0.72f),
+            IconResourcePath = "Codex/Icon_Codex_BioLasher",
+            ResourceFolder = "Level3",
+            AnimPrefix = "BioLasher",
+            LevelIndex = 3
+        },
+        // 7: BioHulk (Nivel 3: Colmena)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.BioHulk,
+            CodeName = "VRST-08 // TITÁN BIO-CORAZA",
+            DisplayName = "Coloso Blindado Neón",
+            Classification = "Unidad de Asalto Pesado con Cañón Láser Torácico",
+            AlienOrigin = "Forjas Biomecánicas de Asedio Pesado — Colmena Vorst (Nivel 3)",
+            ThreatLevelText = "NIVEL IV+ — SEVERO (MURALLA BIOMECÁNICA)",
+            ThreatRating = 4,
+            ArmorType = "Blindaje Superpuesto de Hiper-Quitina y Cerámica Regenerativa",
+            BodyWeakPoints = "Cañón láser pectoral despresurizado para disparar y coyunturas de rodilla",
+            ElementalWeakness = "Guantelete Nexo Perforante (Crítico Solar) y Parry a quemarropa",
+            TacticalStatsSummary = "HP BASE: 150-380  |  DAÑO: 13-28  |  VEL: 1.15 m/s  |  BOTÍN: 25-60 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #52 (INGENIERO DE ASALTO T. VARGAS)",
+            DefenseDiaryFragment = "\"El Coloso de la Colmena no se detiene ante nada: cada paso hace temblar la pasarela metálica. Si intentas mantener distancia desplegará el haz de plasma pesado de su pecho. Acorta el espacio, esquiva su pisotón y descarga el puño cargado sobre su núcleo descubierto.\"",
+            ThemeColor = new Color(0.42f, 0.96f, 0.20f),
+            IconResourcePath = "Codex/Icon_Codex_BioHulk",
+            ResourceFolder = "Level3",
+            AnimPrefix = "BioHulk",
+            LevelIndex = 3
+        },
+        // 8: HiveInquisitor (Nivel 3: Colmena)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.HiveInquisitor,
+            CodeName = "VRST-09 // HECHICERO COLMENA",
+            DisplayName = "Inquisidor Psiónico Neón",
+            Classification = "Director Psiónico de Proyectiles Guiados y Torrentes de Fuego",
+            AlienOrigin = "Santuario de Comunión Psiónica — Perímetro Central de la Colmena (Nivel 3)",
+            ThreatLevelText = "NIVEL V — CRÍTICO (SUPREMO INQUISIDOR PSIÓNICO)",
+            ThreatRating = 5,
+            ArmorType = "Túnica de Energía del Vacío con Barreras Absorbentes",
+            BodyWeakPoints = "Corona de resonancia mental y enfriamiento tras la salva de misiles",
+            ElementalWeakness = "Guantelete de Vacío Vorst (Drenaje de energía psiónica)",
+            TacticalStatsSummary = "HP BASE: 110-1450  |  DAÑO: 11-25  |  VEL: 1.30 m/s  |  BOTÍN: 35-200 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #58 (INFORME TÁCTICO N.E.X.A.)",
+            DefenseDiaryFragment = "\"El Inquisidor de la Colmena actúa como mente colmena secundaria. Coordina las oleadas mientras canaliza lluvia de proyectiles guiados y vórtices llameantes. Neutralizarlo rápidamente desorganiza de inmediato a los acechadores y colosos escoltas.\"",
+            ThemeColor = new Color(0.69f, 0.28f, 1.00f),
+            IconResourcePath = "Codex/Icon_Codex_HiveInquisitor",
+            ResourceFolder = "Level3",
+            AnimPrefix = "HiveInquisitor",
+            LevelIndex = 3
+        },
+        // 9: VortexOmega (Nivel 3: Colmena Boss)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.VortexOmega,
+            CodeName = "VRST-10 // OMEGA-BERSERKER",
+            DisplayName = "Mecha Berserker VORTEX-OMEGA",
+            Classification = "Mecha Berserker Colosal y Guardián del Núcleo de Estasis",
+            AlienOrigin = "Fosa de Fusión Biomecánica — Cúpula Central de la Colmena (Nivel 3)",
+            ThreatLevelText = "NIVEL OMEGA — EXTINCIÓN (JEFE FINAL COLMENA)",
+            ThreatRating = 6,
+            ArmorType = "Blindaje Titánico de Hiper-Aleación con Refuerzo de Nanocables",
+            BodyWeakPoints = "Reactor torácico expuesto al abrir el pecho y enfriadores en Salto Meteoro",
+            ElementalWeakness = "Combo Continuo Sobremarcha + Guantelete Piro-Reactor / Vacío",
+            TacticalStatsSummary = "HP BASE: 3400  |  DAÑO: 28-56  |  FASE FURIA: <50% HP  |  BOTÍN: 400 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #63 (REGISTRO CÓDICE N.E.X.A.)",
+            DefenseDiaryFragment = "\"VORTEX-OMEGA: El titán guardián que retiene las cápsulas de bio-estasis en la Colmena. Al descender al 50% de integridad sus ojos se tornan escarlata, desata saltos meteóricos y libera dos escoltas quiméricos. Cada impacto de su garra parte el acero macizo.\"",
+            ThemeColor = new Color(1.00f, 0.20f, 0.33f),
+            IconResourcePath = "Codex/Icon_Codex_VortexOmega",
+            ResourceFolder = "Level3",
+            AnimPrefix = "VortexOmega",
+            LevelIndex = 3
+        },
+        // 10: PraetorianBlade (Nivel 4: Trono)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.PraetorianBlade,
+            CodeName = "VRST-11 // ALABARDA IMPERIAL",
+            DisplayName = "Hoja Pretoriana Vorst",
+            Classification = "Guardia de Asalto con Hoja de Plasma de Alta Velocidad",
+            AlienOrigin = "Guarnición del Trono Imperial Vorst — Salón del Trono (Nivel 4)",
+            ThreatLevelText = "NIVEL IV — SEVERO (FLANQUEADOR PRETORIANO)",
+            ThreatRating = 4,
+            ArmorType = "Armadura Pretoriana Pulida de Aleación Blanca y Carmesí",
+            BodyWeakPoints = "Articulación del codo armado y flanco opuesto tras estocada profunda",
+            ElementalWeakness = "Bloqueo Perfecto Nexo (Parry) y Contragolpe Eléctrico",
+            TacticalStatsSummary = "HP BASE: 112-250  |  DAÑO: 12-26  |  VEL: 2.10-2.45 m/s  |  BOTÍN: 20-55 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #72 (COMANDANTE DE ASALTO D. RÍOS)",
+            DefenseDiaryFragment = "\"La guardia de asalto del Trono no conoce la vacilación. Esgrimen alabardas de bio-plasma con precisión quirúrgica, buscando esquinas ciegas mientras la vanguardia absorbe el impacto. Un parry exacto en el cenit de su estocada es su única vulnerabilidad.\"",
+            ThemeColor = new Color(1.00f, 0.38f, 0.22f),
+            IconResourcePath = "Codex/Icon_Codex_PraetorianBlade",
+            ResourceFolder = "Level4",
+            AnimPrefix = "PraetorianBlade",
+            LevelIndex = 4
+        },
+        // 11: PraetorianMarksman (Nivel 4: Trono)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.PraetorianMarksman,
+            CodeName = "VRST-12 // CAÑÓN IMPERIAL",
+            DisplayName = "Francotirador Pretoriano Vorst",
+            Classification = "Tirador de Élite con Rifle de Plasma Pesado",
+            AlienOrigin = "Bastión de Artillería del Trono Imperial Vorst (Nivel 4)",
+            ThreatLevelText = "NIVEL IV — SEVERO (FRANCOTIRADOR PESADO)",
+            ThreatRating = 4,
+            ArmorType = "Coraza Ligera Refractaria con Estabilizadores Magnéticos",
+            BodyWeakPoints = "Lente focal del rifle al iniciar la carga del haz láser y generador dorsal",
+            ElementalWeakness = "Acercamiento rápido con Desplazamiento Sísmico + Piro-Reactor",
+            TacticalStatsSummary = "HP BASE: 128-280  |  DAÑO: 13-28  |  ALCANCE: 2.65 m  |  BOTÍN: 25-60 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #76 (TENIENTE K. SORENSON)",
+            DefenseDiaryFragment = "\"Se posicionan a retaguardia, protegidos por los escudos Aegis, calibrando disparos de haz continuo que perforan escudos convencionales. Cuando la mira roja apunte a tu pecho, debes esquivar de inmediato o reflejar el haz con guardia Nexo sobrecargada.\"",
+            ThemeColor = new Color(0.28f, 0.62f, 1.00f),
+            IconResourcePath = "Codex/Icon_Codex_PraetorianMarksman",
+            ResourceFolder = "Level4",
+            AnimPrefix = "PraetorianMarksman",
+            LevelIndex = 4
+        },
+        // 12: PraetorianAegis (Nivel 4: Trono)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.PraetorianAegis,
+            CodeName = "VRST-13 // ESCUDO IMPERIAL",
+            DisplayName = "Baluarte Aegis Pretoriano",
+            Classification = "Vanguardia Acorazada con Escudo Hexagonal y Maza",
+            AlienOrigin = "Línea de Defensa Pretoriana — Salón del Trono Vorst (Nivel 4)",
+            ThreatLevelText = "NIVEL IV+ — SEVERO (DEFENSA IMPENETRABLE)",
+            ThreatRating = 4,
+            ArmorType = "Pavés Hexagonal Reforzado con Rejilla de Dispersión Cinética",
+            BodyWeakPoints = "Lado diestro expuesto al levantar la maza para golpear y talones de apoyo",
+            ElementalWeakness = "Ataques cargados de Plasma Solar y Rompeguardia Nexo",
+            TacticalStatsSummary = "HP BASE: 175-390  |  DAÑO: 14-30  |  VEL: 1.45 m/s  |  BOTÍN: 30-70 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #81 (CAPITANA R. O'CONNOR)",
+            DefenseDiaryFragment = "\"Los Baluartes Aegis forman muros vivientes impenetrables ante proyectiles ligeros. Golpean el pavimento con sus mazas para aturdir a la infantería aliada. Para superarlos es imperativo romper su postura con un remate sísmico en el tercer eslabón del combo.\"",
+            ThemeColor = new Color(0.55f, 0.83f, 1.00f),
+            IconResourcePath = "Codex/Icon_Codex_PraetorianAegis",
+            ResourceFolder = "Level4",
+            AnimPrefix = "PraetorianAegis",
+            LevelIndex = 4
+        },
+        // 13: PraetorianCustodian (Nivel 4: Trono)
+        new CodexSpeciesEntry
+        {
+            SpeciesId = CodexSpeciesId.PraetorianCustodian,
+            CodeName = "VRST-14 // LANZA IMPERIAL",
+            DisplayName = "Custodio Pretoriano Vorst — Lanza Imperial",
+            Classification = "Comandante de la Guardia Pretoriana y Ejecutor en Salto Meteoro",
+            AlienOrigin = "Cámara de Honor de la Guardia Pretoriana — Salón del Trono (Nivel 4)",
+            ThreatLevelText = "NIVEL V+ — CRÍTICO (MINI-JEFE PRETORIANO)",
+            ThreatRating = 5,
+            ArmorType = "Armadura de Fase Imperial Dorada-Carmesí con Propulsores Dorsales",
+            BodyWeakPoints = "Aleta de propulsión dorsal durante el aterrizaje tras la picada",
+            ElementalWeakness = "Parry Sincronizado en la caída de picada + Disonancia Vorst",
+            TacticalStatsSummary = "HP BASE: 1550  |  DAÑO: 22-48  |  ALCANCE: 2.25 m  |  BOTÍN: 220 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA #88 (ARCHIVO N.E.X.A. DESCLASIFICADO)",
+            DefenseDiaryFragment = "\"El Custodio Pretoriano lidera la quinta oleada del Salón del Trono. Equipado con propulsores dorsales, se eleva fuera de pantalla para caer como un bólido empuñando su lanza de plasma. Un contragolpe perfecto al tocar tierra es el único modo de sobrevivir a su impacto.\"",
+            ThemeColor = new Color(1.00f, 0.76f, 0.18f),
+            IconResourcePath = "Codex/Icon_Codex_PraetorianCustodian",
+            ResourceFolder = "Level4",
+            AnimPrefix = "PraetorianCustodian",
+            LevelIndex = 4
+        },
+        // 14: SupremeSovereign (Nivel 4: Trono Boss)
         new CodexSpeciesEntry
         {
             SpeciesId = CodexSpeciesId.SupremeSovereign,
-            CodeName = "VRST-06 // OMEGA-APEX",
-            DisplayName = "Soberano Supremo",
-            Classification = "Mecha Berserker Biomecánico VORTEX-OMEGA (Regente de la Colmena)",
-            AlienOrigin = "Trono de Bio-Cables — Corazón de la Nave Núcleo Vorst (Nivel 3)",
-            ThreatLevelText = "NIVEL OMEGA — EXTINCIÓN PLANETARIA (JEFE SUPREMO)",
+            CodeName = "VRST-15 // SOBERANO SUPREMO",
+            DisplayName = "Soberano Supremo — Arconte Vorst",
+            Classification = "Monarca Absoluto de la Flota Vorst en 3 Fases de Convergencia",
+            AlienOrigin = "Trono de la Singularidad — Salón del Trono Vorst (Nivel 4)",
+            ThreatLevelText = "NIVEL APEX — AMENAZA UNIVERSAL (JEFE FINAL ABSOLUTO)",
             ThreatRating = 6,
-            ArmorType = "Chasis Acorazado de Hiper-Aleación Vorst con Regeneración de Fase Dual",
-            BodyWeakPoints = "Cámara torácica del Cañón Omega (al abrir el pecho) y enfriadores tras el Salto Meteoro.",
-            ElementalWeakness = "Guantelete de Vacío Vorst (5% Robo de Vida) y Plasma Ígneo en Sobremarcha (Overdrive)",
-            TacticalStatsSummary = "HP BASE: 3400  |  DAÑO: 28-64  |  FASE 2: <50% HP  |  BOTÍN: 450 ORO",
-            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA FINAL #33 (TRANSMISIÓN DE N.E.X.A.)",
-            DefenseDiaryFragment = "\"Designación oficial: Soberano Supremo VORTEX-OMEGA. Una aberración colosal mitad titán viviente, mitad acorazado estelar que custodia la cúpula donde Lía permanece cautiva. Al caer por debajo del 50% de integridad entra en Furia Berserker, invocando escoltas y saltos meteóricos capaces de partir la cubierta en dos.\"",
-            ThemeColor = new Color(1.00f, 0.82f, 0.22f),
-            IconResourcePath = "Codex/Icon_Codex_Sovereign"
+            ArmorType = "Coraza Monolítica Vorst con Cúpula Hexagonal Impenetrable en Fase 3",
+            BodyWeakPoints = "Apertura de pecho en disparo láser y ruptura de cúpula con Ultimate [K] a Combo x30",
+            ElementalWeakness = "Sobrecarga Ultimate Nexo (Combo x30) y Sifón de Vacío",
+            TacticalStatsSummary = "HP BASE: 3400  |  DAÑO: 28-64  |  FASES: 3 ETAPAS DE COMBATE  |  BOTÍN: 500 ORO",
+            DefenseDiaryTitle = "DIARIO DE DEFENSA TERRESTRE — ENTRADA FINAL #99 (TRANSMISIÓN DE N.E.X.A.)",
+            DefenseDiaryFragment = "\"Soberano Supremo: El ápice de la especie Vorst. En Fase 1 combate con lanza y telequinesis marcial; en Fase 2 invoca orbes oscuros y rayos torácicos; en Fase 3 se fusiona con la cápsula de Lía bajo un escudo impenetrable. Solo la sobremarcha máxima del Guantelete puede quebrar su núcleo.\"",
+            ThemeColor = new Color(1.00f, 0.84f, 0.22f),
+            IconResourcePath = "Codex/Icon_Codex_Sovereign",
+            ResourceFolder = "Level4",
+            AnimPrefix = "SupremeSovereign",
+            LevelIndex = 4
         }
     };
 
     // Estado estático en memoria + persistencia en PlayerPrefs
     private static bool _persistenceLoaded = false;
     private static int _unlockedMask = 0;
-    private static readonly int[] _totalKills = new int[6];
-    private static readonly int[] _sessionKills = new int[6];
+    private static readonly int[] _totalKills = new int[Catalog.Length];
+    private static readonly int[] _sessionKills = new int[Catalog.Length];
 
     public bool isOpen = false;
     private Action onCloseCallback;
 
+    // Navegación por pestañas y selección
+    public ZoneTab selectedTab = ZoneTab.Todos;
+    private Vector2 speciesScrollPos = Vector2.zero;
     private int selectedIndex = 0;
+
     private CodexAnimState selectedAnimState = CodexAnimState.Walk;
     private bool animPaused = false;
     private bool flipSpriteHorizontal = false;
@@ -206,8 +463,9 @@ public class VorstCodexUI : MonoBehaviour
     private Texture2D texBtnPurple;
     private Texture2D holoGridTex;
     private Texture2D holoGlowTex;
+    private static Texture2D _fallbackBadgeTex;
 
-    private readonly Texture2D[] speciesIcons = new Texture2D[6];
+    private readonly Texture2D[] speciesIcons = new Texture2D[Catalog.Length];
     private readonly Dictionary<int, Texture2D[]> walkFramesBySpecies = new Dictionary<int, Texture2D[]>();
     private readonly Dictionary<int, Texture2D[]> attackFramesBySpecies = new Dictionary<int, Texture2D[]>();
     private readonly Dictionary<int, Texture2D[]> dieFramesBySpecies = new Dictionary<int, Texture2D[]>();
@@ -236,7 +494,7 @@ public class VorstCodexUI : MonoBehaviour
 
     public static void EnsurePersistenceLoaded()
     {
-        if (_persistenceLoaded) return;
+        if (_persistenceLoaded && _totalKills != null && _totalKills.Length == Catalog.Length) return;
         _persistenceLoaded = true;
 
         _unlockedMask = PlayerPrefs.GetInt(PREFS_UNLOCKED_MASK, 0);
@@ -251,18 +509,51 @@ public class VorstCodexUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Determina a cuál de las 6 entradas del Códice Vorst corresponde un EnemyDummy derrotado.
+    /// Determina con precisión a cuál de las 15 entradas del Códice Vorst corresponde un EnemyDummy derrotado.
+    /// Inspecciona de forma prioritaria el identificador canónico 'VisualTypePublic', seguido de 'enemyTitle'
+    /// y atributos jerárquicos de combate (isBoss, isMiniBoss, isLevel3Monster).
     /// </summary>
     public static CodexSpeciesId ClassifyEnemy(EnemyDummy enemy)
     {
         if (enemy == null) return CodexSpeciesId.VorstWalker;
 
-        string title = (enemy.enemyTitle ?? "").ToLowerInvariant();
+        // 1. PRIORIDAD MÁXIMA: Identificador canónico en VisualTypePublic
+        string vt = (enemy.VisualTypePublic ?? "").Trim();
+        if (!string.IsNullOrEmpty(vt))
+        {
+            // Nivel 3 (Colmena)
+            if (vt.Equals("BioStalker", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.BioStalker;
+            if (vt.Equals("BioLasher", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.BioLasher;
+            if (vt.Equals("BioHulk", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.BioHulk;
+            if (vt.Equals("HiveInquisitor", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.HiveInquisitor;
+            if (vt.Equals("VortexOmega", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.VortexOmega;
 
+            // Nivel 4 (Trono)
+            if (vt.Equals("PraetorianBlade", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.PraetorianBlade;
+            if (vt.Equals("PraetorianMarksman", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.PraetorianMarksman;
+            if (vt.Equals("PraetorianAegis", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.PraetorianAegis;
+            if (vt.Equals("PraetorianCustodian", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.PraetorianCustodian;
+            if (vt.Equals("SupremeSovereign", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.SupremeSovereign;
+
+            // Nivel 1 & 2 (Base Vorst y Sector 7)
+            if (vt.Equals("Stalker", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.Stalker;
+            if (vt.Equals("Brute", StringComparison.OrdinalIgnoreCase) || vt.Equals("BruteDemolisher", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.BruteDemolisher;
+            if (vt.Equals("Archon", StringComparison.OrdinalIgnoreCase) || vt.Equals("PsionicArchon", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.PsionicArchon;
+            if (vt.Equals("Commander", StringComparison.OrdinalIgnoreCase) || vt.Equals("Sector7Commander", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.Sector7Commander;
+            if (vt.Equals("VorstWalker", StringComparison.OrdinalIgnoreCase) || vt.Equals("Walker", StringComparison.OrdinalIgnoreCase)) return CodexSpeciesId.VorstWalker;
+        }
+
+        // 2. PRIORIDAD SECUNDARIA: Inspección de título descriptivo y roles de jefe
+        string title = (enemy.enemyTitle ?? "").ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(title)) return CodexSpeciesId.VorstWalker;
+
+        // 2.1. Jefes principales y Mini-Jefes
         if (enemy.isBoss)
         {
-            if (title.Contains("vortex") || title.Contains("omega") || title.Contains("soberano supremo") || enemy.isLevel3Monster)
+            if (title.Contains("supreme") || title.Contains("soberano supremo") || title.Contains("arconte vorst"))
                 return CodexSpeciesId.SupremeSovereign;
+            if (title.Contains("vortex") || title.Contains("omega") || enemy.isLevel3Monster)
+                return CodexSpeciesId.VortexOmega;
             if (title.Contains("arconte"))
                 return CodexSpeciesId.PsionicArchon;
             if (title.Contains("comandante") || title.Contains("sector 7"))
@@ -271,20 +562,47 @@ public class VorstCodexUI : MonoBehaviour
 
         if (enemy.isMiniBoss)
         {
-            if (title.Contains("inquisidor") || title.Contains("arconte"))
+            if (title.Contains("custodio") || title.Contains("lanza imperial") || title.Contains("pretoriano"))
+                return CodexSpeciesId.PraetorianCustodian;
+            if (title.Contains("inquisidor") || title.Contains("colmena") || enemy.isLevel3Monster)
+                return CodexSpeciesId.HiveInquisitor;
+            if (title.Contains("arconte"))
                 return CodexSpeciesId.PsionicArchon;
             return CodexSpeciesId.BruteDemolisher;
         }
 
-        if (title.Contains("soberano") || title.Contains("vortex") || title.Contains("omega"))
+        // 2.2. Especies de Nivel 4 (Pretorianos)
+        if (title.Contains("soberano supremo") || title.Contains("supreme"))
             return CodexSpeciesId.SupremeSovereign;
-        if (title.Contains("comandante"))
+        if (title.Contains("custodio") || title.Contains("lanza imperial"))
+            return CodexSpeciesId.PraetorianCustodian;
+        if (title.Contains("aegis") || title.Contains("baluarte"))
+            return CodexSpeciesId.PraetorianAegis;
+        if (title.Contains("marksman") || title.Contains("francotirador"))
+            return CodexSpeciesId.PraetorianMarksman;
+        if (title.Contains("blade") || title.Contains("hoja pretoriana"))
+            return CodexSpeciesId.PraetorianBlade;
+
+        // 2.3. Especies de Nivel 3 (Colmena)
+        if (title.Contains("vortex") || title.Contains("omega"))
+            return CodexSpeciesId.VortexOmega;
+        if (title.Contains("inquisidor") || title.Contains("inquisitor"))
+            return CodexSpeciesId.HiveInquisitor;
+        if (title.Contains("biohulk") || title.Contains("coloso blindado neón") || (enemy.isLevel3Monster && (title.Contains("hulk") || title.Contains("coloso"))))
+            return CodexSpeciesId.BioHulk;
+        if (title.Contains("biolasher") || title.Contains("tentacular") || title.Contains("lasher"))
+            return CodexSpeciesId.BioLasher;
+        if (title.Contains("biostalker") || title.Contains("pantera") || (enemy.isLevel3Monster && title.Contains("stalker")))
+            return CodexSpeciesId.BioStalker;
+
+        // 2.4. Especies de Nivel 1 & 2 (Base Vorst y Sector 7)
+        if (title.Contains("comandante") || title.Contains("sector 7"))
             return CodexSpeciesId.Sector7Commander;
-        if (title.Contains("arconte") || title.Contains("inquisidor"))
+        if (title.Contains("arconte"))
             return CodexSpeciesId.PsionicArchon;
-        if (title.Contains("bruto") || title.Contains("coloso") || title.Contains("demoledor") || title.Contains("hulk"))
+        if (title.Contains("bruto") || title.Contains("coloso") || title.Contains("demoledor"))
             return CodexSpeciesId.BruteDemolisher;
-        if (title.Contains("stalker") || title.Contains("acechador") || title.Contains("lasher") || title.Contains("quimera"))
+        if (title.Contains("stalker") || title.Contains("acechador"))
             return CodexSpeciesId.Stalker;
 
         return CodexSpeciesId.VorstWalker;
@@ -305,7 +623,7 @@ public class VorstCodexUI : MonoBehaviour
     {
         EnsurePersistenceLoaded();
         int idx = Mathf.Clamp((int)species, 0, Catalog.Length - 1);
-        bool wasUnlocked = IsSpeciesUnlocked(species);
+        bool wasUnlocked = IsSpeciesUnlocked((CodexSpeciesId)idx);
 
         _sessionKills[idx]++;
         _totalKills[idx]++;
@@ -331,20 +649,26 @@ public class VorstCodexUI : MonoBehaviour
     public static bool IsSpeciesUnlocked(CodexSpeciesId species)
     {
         EnsurePersistenceLoaded();
-        int bit = 1 << (int)species;
-        return (_unlockedMask & bit) != 0 || _totalKills[(int)species] > 0;
+        int idx = (int)species;
+        if (idx < 0 || idx >= Catalog.Length) return false;
+        int bit = 1 << idx;
+        return (_unlockedMask & bit) != 0 || (_totalKills != null && _totalKills[idx] > 0);
     }
 
     public static int GetTotalKills(CodexSpeciesId species)
     {
         EnsurePersistenceLoaded();
-        return _totalKills[Mathf.Clamp((int)species, 0, Catalog.Length - 1)];
+        if (_totalKills == null || _totalKills.Length == 0) return 0;
+        int idx = Mathf.Clamp((int)species, 0, _totalKills.Length - 1);
+        return _totalKills[idx];
     }
 
     public static int GetSessionKills(CodexSpeciesId species)
     {
         EnsurePersistenceLoaded();
-        return _sessionKills[Mathf.Clamp((int)species, 0, Catalog.Length - 1)];
+        if (_sessionKills == null || _sessionKills.Length == 0) return 0;
+        int idx = Mathf.Clamp((int)species, 0, _sessionKills.Length - 1);
+        return _sessionKills[idx];
     }
 
     public static int GetUnlockedSpeciesCount()
@@ -362,7 +686,10 @@ public class VorstCodexUI : MonoBehaviour
     {
         EnsurePersistenceLoaded();
         int sum = 0;
-        for (int i = 0; i < Catalog.Length; i++) sum += _totalKills[i];
+        if (_totalKills != null)
+        {
+            for (int i = 0; i < Catalog.Length && i < _totalKills.Length; i++) sum += _totalKills[i];
+        }
         return sum;
     }
 
@@ -407,7 +734,29 @@ public class VorstCodexUI : MonoBehaviour
     {
         if (holoGridTex != null) Destroy(holoGridTex);
         if (holoGlowTex != null) Destroy(holoGlowTex);
+        if (_fallbackBadgeTex != null) Destroy(_fallbackBadgeTex);
         if (Instance == this) Instance = null;
+    }
+
+    public static Texture2D GetFallbackBadgeTexture(Color themeColor)
+    {
+        if (_fallbackBadgeTex == null)
+        {
+            const int size = 64;
+            _fallbackBadgeTex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    bool border = (x <= 1 || x >= size - 2 || y <= 1 || y >= size - 2);
+                    bool diag = (x == y || x == (size - 1 - y));
+                    Color c = border ? themeColor : (diag ? new Color(themeColor.r, themeColor.g, themeColor.b, 0.6f) : new Color(0.04f, 0.08f, 0.16f, 0.95f));
+                    _fallbackBadgeTex.SetPixel(x, y, c);
+                }
+            }
+            _fallbackBadgeTex.Apply();
+        }
+        return _fallbackBadgeTex;
     }
 
     void EnsureAssetsLoaded()
@@ -427,37 +776,16 @@ public class VorstCodexUI : MonoBehaviour
         for (int i = 0; i < Catalog.Length; i++)
         {
             speciesIcons[i] = LoadResTex(Catalog[i].IconResourcePath);
+            if (speciesIcons[i] == null)
+            {
+                speciesIcons[i] = GetFallbackBadgeTexture(Catalog[i].ThemeColor);
+            }
+
+            string prefix = $"{Catalog[i].ResourceFolder}/{Catalog[i].AnimPrefix}_";
+            walkFramesBySpecies[i] = LoadFrameSequence(prefix + "Walk_", 8);
+            attackFramesBySpecies[i] = LoadFrameSequence(prefix + "Attack_", 8);
+            dieFramesBySpecies[i] = LoadFrameSequence(prefix + "Die_", 8);
         }
-
-        // 0: Caminante Vorst (Resources/Codex/VorstWalker_*)
-        walkFramesBySpecies[(int)CodexSpeciesId.VorstWalker] = LoadFrameSequence("Codex/VorstWalker_Walk_", 4);
-        attackFramesBySpecies[(int)CodexSpeciesId.VorstWalker] = LoadFrameSequence("Codex/VorstWalker_Attack_", 3);
-        dieFramesBySpecies[(int)CodexSpeciesId.VorstWalker] = LoadFrameSequence("Codex/VorstWalker_Die_", 4);
-
-        // 1: Stalker (Resources/Level2/Stalker_*)
-        walkFramesBySpecies[(int)CodexSpeciesId.Stalker] = LoadFrameSequence("Level2/Stalker_Walk_", 8);
-        attackFramesBySpecies[(int)CodexSpeciesId.Stalker] = LoadFrameSequence("Level2/Stalker_Attack_", 8);
-        dieFramesBySpecies[(int)CodexSpeciesId.Stalker] = LoadFrameSequence("Level2/Stalker_Die_", 8);
-
-        // 2: Demoledor Bruto (Resources/Level2/Brute_*)
-        walkFramesBySpecies[(int)CodexSpeciesId.BruteDemolisher] = LoadFrameSequence("Level2/Brute_Walk_", 8);
-        attackFramesBySpecies[(int)CodexSpeciesId.BruteDemolisher] = LoadFrameSequence("Level2/Brute_Attack_", 8);
-        dieFramesBySpecies[(int)CodexSpeciesId.BruteDemolisher] = LoadFrameSequence("Level2/Brute_Die_", 8);
-
-        // 3: Arconte Psiónico (Resources/Level2/Archon_*)
-        walkFramesBySpecies[(int)CodexSpeciesId.PsionicArchon] = LoadFrameSequence("Level2/Archon_Walk_", 8);
-        attackFramesBySpecies[(int)CodexSpeciesId.PsionicArchon] = LoadFrameSequence("Level2/Archon_Attack_", 8);
-        dieFramesBySpecies[(int)CodexSpeciesId.PsionicArchon] = LoadFrameSequence("Level2/Archon_Die_", 8);
-
-        // 4: Comandante del Sector 7 (Resources/Codex/Commander_*)
-        walkFramesBySpecies[(int)CodexSpeciesId.Sector7Commander] = LoadFrameSequence("Codex/Commander_Walk_", 4);
-        attackFramesBySpecies[(int)CodexSpeciesId.Sector7Commander] = LoadFrameSequence("Codex/Commander_Attack_", 3);
-        dieFramesBySpecies[(int)CodexSpeciesId.Sector7Commander] = LoadFrameSequence("Codex/Commander_Die_", 4);
-
-        // 5: Soberano Supremo VORTEX-OMEGA (Resources/Level3/VortexOmega_*)
-        walkFramesBySpecies[(int)CodexSpeciesId.SupremeSovereign] = LoadFrameSequence("Level3/VortexOmega_Walk_", 8);
-        attackFramesBySpecies[(int)CodexSpeciesId.SupremeSovereign] = LoadFrameSequence("Level3/VortexOmega_Attack_", 8);
-        dieFramesBySpecies[(int)CodexSpeciesId.SupremeSovereign] = LoadFrameSequence("Level3/VortexOmega_Die_", 8);
 
         BuildProceduralTextures();
     }
@@ -524,6 +852,80 @@ public class VorstCodexUI : MonoBehaviour
         }
     }
 
+    // =========================================================================
+    // NAVEGACIÓN Y FILTRADO POR PESTAÑAS DE ZONA
+    // =========================================================================
+
+    public List<int> FilterByTab(ZoneTab tab) => FilterSpeciesByTab(tab);
+
+    public List<int> FilterSpeciesByTab(ZoneTab tab)
+    {
+        List<int> list = new List<int>();
+        for (int i = 0; i < Catalog.Length; i++)
+        {
+            bool match = tab switch
+            {
+                ZoneTab.Sector7 => (Catalog[i].LevelIndex == 1),
+                ZoneTab.BaseVorst => (Catalog[i].LevelIndex == 2),
+                ZoneTab.Colmena => (Catalog[i].LevelIndex == 3),
+                ZoneTab.Trono => (Catalog[i].LevelIndex == 4),
+                _ => true
+            };
+            if (match) list.Add(i);
+        }
+        return list;
+    }
+
+    public List<int> GetVisibleSpeciesIndices()
+    {
+        return FilterSpeciesByTab(selectedTab);
+    }
+
+    public void SwitchTab(int tabIndex)
+    {
+        SetTab((ZoneTab)Mathf.Clamp(tabIndex, 0, 4));
+    }
+
+    public void SetTab(ZoneTab tab)
+    {
+        selectedTab = tab;
+        speciesScrollPos = Vector2.zero;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+
+        List<int> visible = GetVisibleSpeciesIndices();
+        if (visible.Count > 0)
+        {
+            selectedIndex = Mathf.Clamp(selectedIndex, 0, visible.Count - 1);
+        }
+    }
+
+    public int GetSelectedCatalogIndex()
+    {
+        List<int> visible = GetVisibleSpeciesIndices();
+        if (visible.Count > 0 && selectedIndex >= 0 && selectedIndex < visible.Count)
+        {
+            return visible[selectedIndex];
+        }
+        return Mathf.Clamp(selectedIndex, 0, Catalog.Length - 1);
+    }
+
+    void EnsureSelectedCardVisible(List<int> visibleIndices, float rowHeightScreen, float viewH)
+    {
+        if (selectedIndex < 0 || selectedIndex >= visibleIndices.Count) return;
+
+        float cardTop = selectedIndex * rowHeightScreen;
+        float cardBottom = cardTop + rowHeightScreen;
+
+        if (cardTop < speciesScrollPos.y)
+        {
+            speciesScrollPos.y = cardTop;
+        }
+        else if (cardBottom > speciesScrollPos.y + viewH)
+        {
+            speciesScrollPos.y = cardBottom - viewH;
+        }
+    }
+
     void Update()
     {
         if (!isOpen) return;
@@ -569,12 +971,32 @@ public class VorstCodexUI : MonoBehaviour
             return;
         }
 
-        // Navegación vertical de especies: W / S o Flecha Arriba / Abajo
+        // Pestañas con Q y E
+        if (WasKeyPressed(KeyCode.Q, k => k.qKey.wasPressedThisFrame))
+        {
+            lastNavInputTime = Time.unscaledTime;
+            SwitchTab(((int)selectedTab - 1 + 5) % 5);
+            return;
+        }
+        if (WasKeyPressed(KeyCode.E, k => k.eKey.wasPressedThisFrame))
+        {
+            lastNavInputTime = Time.unscaledTime;
+            SwitchTab(((int)selectedTab + 1) % 5);
+            return;
+        }
+
+        // Navegación vertical de especies dentro de la pestaña activa: W / S o Flecha Arriba / Abajo
         if (WasKeyPressed(KeyCode.UpArrow, k => k.upArrowKey.wasPressedThisFrame) ||
             WasKeyPressed(KeyCode.W, k => k.wKey.wasPressedThisFrame))
         {
             lastNavInputTime = Time.unscaledTime;
-            SelectSpecies((selectedIndex - 1 + Catalog.Length) % Catalog.Length);
+            List<int> visible = GetVisibleSpeciesIndices();
+            if (visible.Count > 0)
+            {
+                selectedIndex = (selectedIndex - 1 + visible.Count) % visible.Count;
+                float sy = Screen.height / 1080f;
+                EnsureSelectedCardVisible(visible, 132f * sy, 740f * sy);
+            }
             return;
         }
 
@@ -582,7 +1004,13 @@ public class VorstCodexUI : MonoBehaviour
             WasKeyPressed(KeyCode.S, k => k.sKey.wasPressedThisFrame))
         {
             lastNavInputTime = Time.unscaledTime;
-            SelectSpecies((selectedIndex + 1) % Catalog.Length);
+            List<int> visible = GetVisibleSpeciesIndices();
+            if (visible.Count > 0)
+            {
+                selectedIndex = (selectedIndex + 1) % visible.Count;
+                float sy = Screen.height / 1080f;
+                EnsureSelectedCardVisible(visible, 132f * sy, 740f * sy);
+            }
             return;
         }
 
@@ -662,9 +1090,25 @@ public class VorstCodexUI : MonoBehaviour
         catch { return false; }
     }
 
-    void SelectSpecies(int index)
+    public void SelectSpecies(int index)
     {
-        selectedIndex = Mathf.Clamp(index, 0, Catalog.Length - 1);
+        List<int> filtered = GetVisibleSpeciesIndices();
+        if (filtered == null || filtered.Count == 0)
+        {
+            selectedIndex = 0;
+            return;
+        }
+
+        int visIdx = filtered.IndexOf(index);
+        if (visIdx >= 0)
+        {
+            selectedIndex = visIdx;
+        }
+        else
+        {
+            selectedIndex = Mathf.Clamp(index, 0, filtered.Count - 1);
+        }
+
         animTimer = 0f;
         currentFrameIndex = 0;
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -700,6 +1144,7 @@ public class VorstCodexUI : MonoBehaviour
 
     Texture2D[] GetActiveAnimationFrames()
     {
+        int catIdx = GetSelectedCatalogIndex();
         Dictionary<int, Texture2D[]> dict = selectedAnimState switch
         {
             CodexAnimState.Attack => attackFramesBySpecies,
@@ -707,11 +1152,25 @@ public class VorstCodexUI : MonoBehaviour
             _ => walkFramesBySpecies
         };
 
-        if (dict.TryGetValue(selectedIndex, out Texture2D[] frames) && frames != null && frames.Length > 0)
+        if (dict.TryGetValue(catIdx, out Texture2D[] frames) && frames != null && frames.Length > 0)
         {
             return frames;
         }
-        return null;
+
+        // Fallback 1: Walk frames de la misma especie
+        if (walkFramesBySpecies.TryGetValue(catIdx, out Texture2D[] walkFrames) && walkFrames != null && walkFrames.Length > 0)
+        {
+            return walkFrames;
+        }
+
+        // Fallback 2: Icono táctico
+        if (catIdx >= 0 && catIdx < speciesIcons.Length && speciesIcons[catIdx] != null)
+        {
+            return new Texture2D[] { speciesIcons[catIdx] };
+        }
+
+        // Fallback 3: Textura procedimental segura
+        return new Texture2D[] { GetFallbackBadgeTexture(Catalog[catIdx].ThemeColor) };
     }
 
     void OnGUI()
@@ -743,13 +1202,13 @@ public class VorstCodexUI : MonoBehaviour
         // 3. Cabecera de Base de Datos Militar
         DrawHeaderBar();
 
-        // 4. Columna Izquierda: Selector Lateral de las 6 Especies Vorst (460px ancho)
+        // 4. Columna Izquierda: Selector Lateral de Especies con Pestañas de Zona (456px ancho)
         DrawLeftSpeciesList();
 
-        // 5. Columna Central: Visor Holográfico de Animaciones en Vivo (540px ancho)
+        // 5. Columna Central: Visor Holográfico de Animaciones con Anclaje a Línea de Base (540px ancho)
         DrawCenterAnimationViewport();
 
-        // 6. Columna Derecha: Ficha Técnica Detallada, Debilidades, Bajas y Diario Terrestre (752px ancho)
+        // 6. Columna Derecha: Ficha Técnica Detallada, Debilidades, Bajas y Diario Terrestre (756px ancho)
         DrawRightTechnicalDossier();
 
         // 7. Pie de Página: Guía de Controles Híbridos Teclado + Mouse
@@ -766,7 +1225,7 @@ public class VorstCodexUI : MonoBehaviour
         int totalKillsAll = GetAllSpeciesTotalKills();
 
         DrawStyledText(ScaleRect(76f, 84f, 920f, 24f),
-            $"ARCHIVO DE INTELIGENCIA N.E.X.A. v2.4   •   ESPECÍMENES REGISTRADOS: <color=#2ee678>{unlockedCount} / {Catalog.Length}</color>   •   BAJAS TOTALES CONFIRMADAS: <color=#ffd35c>{totalKillsAll}</color>",
+            $"ARCHIVO DE INTELIGENCIA N.E.X.A. v2.5   •   ESPECÍMENES REGISTRADOS: <color=#2ee678>{unlockedCount} / {Catalog.Length}</color>   •   BAJAS TOTALES CONFIRMADAS: <color=#ffd35c>{totalKillsAll}</color>",
             14, TextAnchor.MiddleLeft, new Color(0.82f, 0.92f, 1f));
 
         // Barra de progreso de desbloqueo global del Códice
@@ -775,7 +1234,7 @@ public class VorstCodexUI : MonoBehaviour
         DrawStyledText(ScaleRect(1012f, 58f, 226f, 20f), $"PROGRESO DEL CÓDICE: {Mathf.RoundToInt((unlockedCount / (float)Catalog.Length) * 100f)}%", 12, TextAnchor.MiddleCenter, new Color(0.22f, 0.94f, 1f));
         DrawProgressBar(ScaleRect(1014f, 82f, 222f, 14f), unlockedCount / (float)Catalog.Length, new Color(0.08f, 0.12f, 0.22f), new Color(0.18f, 0.94f, 0.54f));
 
-        // Botón para alternar Previsualización Táctica N.E.X.A. (Permite inspeccionar modelos bloqueados en evaluación)
+        // Botón para alternar Previsualización Táctica N.E.X.A.
         if (DrawCyberButton(
             new Rect(1264f, 48f, 326f, 58f),
             simulationPreviewAll ? texBtnEmerald : texBtnGold,
@@ -799,33 +1258,83 @@ public class VorstCodexUI : MonoBehaviour
         }
     }
 
+    void DrawZoneTabs()
+    {
+        float startX = 84f;
+        float tabY = 184f;
+        float tabW = 82f;
+        float tabGap = 4f;
+
+        string[] tabNames = new string[] { "TODOS", "SECTOR 7", "BASE VORST", "COLMENA", "TRONO" };
+        ZoneTab[] tabs = new ZoneTab[] { ZoneTab.Todos, ZoneTab.Sector7, ZoneTab.BaseVorst, ZoneTab.Colmena, ZoneTab.Trono };
+
+        for (int t = 0; t < 5; t++)
+        {
+            Rect tabBase = new Rect(startX + t * (tabW + tabGap), tabY, tabW, 26f);
+            Rect tabScreen = ScaleRect(tabBase.x, tabBase.y, tabBase.width, tabBase.height);
+            bool isActive = (selectedTab == tabs[t]);
+            bool hovered = tabScreen.Contains(Event.current.mousePosition);
+
+            Color border = isActive ? new Color(0.24f, 0.94f, 1f) : (hovered ? Color.white : new Color(0.20f, 0.35f, 0.52f, 0.75f));
+            Color bg = isActive ? new Color(0.08f, 0.24f, 0.42f, 0.98f) : (hovered ? new Color(0.06f, 0.14f, 0.26f, 0.95f) : new Color(0.02f, 0.05f, 0.11f, 0.92f));
+            Color textCol = isActive ? Color.white : (hovered ? Color.white : new Color(0.70f, 0.85f, 0.96f));
+
+            DrawCyberBox(tabScreen, bg, border, isActive ? 2f : 1f);
+            DrawStyledText(tabScreen, tabNames[t], 10, TextAnchor.MiddleCenter, textCol);
+
+            if (GUI.Button(tabScreen, GUIContent.none, GUIStyle.none))
+            {
+                SwitchTab(t);
+            }
+        }
+    }
+
     void DrawLeftSpeciesList()
     {
         Rect listPanel = ScaleRect(68f, 122f, 456f, 846f);
         DrawCyberBox(listPanel, new Color(0.02f, 0.04f, 0.09f, 0.94f), new Color(0.20f, 0.78f, 0.96f, 0.85f), 2f);
 
-        DrawStyledText(ScaleRect(84f, 134f, 424f, 28f),
+        DrawStyledText(ScaleRect(84f, 134f, 424f, 26f),
             "❖ SELECTOR DE ESPECÍMENES [▲/▼]",
             16, TextAnchor.MiddleLeft, new Color(0.22f, 0.92f, 1f));
         DrawStyledText(ScaleRect(84f, 158f, 424f, 20f),
-            "Selecciona una criatura para analizar su anatomía y récords:",
-            12, TextAnchor.MiddleLeft, new Color(0.70f, 0.84f, 0.96f));
+            "Filtra por zona [Q/E] o selecciona una criatura:",
+            11, TextAnchor.MiddleLeft, new Color(0.70f, 0.84f, 0.96f));
 
-        float startY = 188f;
-        float rowH = 122f;
-        float gapY = 8f;
+        // Pestañas de Zona (5 Pestañas: TODOS, SECTOR 7, BASE VORST, COLMENA, TRONO)
+        DrawZoneTabs();
 
-        for (int i = 0; i < Catalog.Length; i++)
+        // Contenedor ScrollView de tarjetas
+        List<int> visibleIndices = GetVisibleSpeciesIndices();
+        Rect viewScreenRect = ScaleRect(84f, 218f, 424f, 740f);
+
+        float sx = Screen.width / 1920f;
+        float sy = Screen.height / 1080f;
+
+        float cardHDesign = 124f;
+        float gapYDesign = 8f;
+        float rowHeightScreen = (cardHDesign + gapYDesign) * sy;
+        float totalContentHeightScreen = (visibleIndices.Count * (cardHDesign + gapYDesign) - gapYDesign) * sy;
+
+        bool needsScroll = visibleIndices.Count > 5;
+        float scrollbarWidthScreen = needsScroll ? (16f * sx) : 0f;
+        Rect contentScreenRect = new Rect(0f, 0f, viewScreenRect.width - scrollbarWidthScreen, Mathf.Max(viewScreenRect.height, totalContentHeightScreen));
+
+        speciesScrollPos = GUI.BeginScrollView(viewScreenRect, speciesScrollPos, contentScreenRect, false, needsScroll);
+
+        for (int v = 0; v < visibleIndices.Count; v++)
         {
+            int i = visibleIndices[v];
             CodexSpeciesEntry entry = Catalog[i];
-            bool selected = (i == selectedIndex);
+            bool selected = (v == selectedIndex);
             bool unlocked = IsSpeciesUnlocked(entry.SpeciesId);
             bool inspectable = unlocked || simulationPreviewAll;
             int kills = GetTotalKills(entry.SpeciesId);
 
-            float y = startY + i * (rowH + gapY);
-            Rect cardBase = new Rect(84f, y, 424f, rowH);
-            Rect cardScreen = ScaleRect(cardBase.x, cardBase.y, cardBase.width, cardBase.height);
+            float cardY = v * rowHeightScreen;
+            float cardW = contentScreenRect.width;
+            float cardH = cardHDesign * sy;
+            Rect cardScreen = new Rect(0f, cardY, cardW, cardH);
             bool hovered = cardScreen.Contains(Event.current.mousePosition);
 
             Color borderCol = selected
@@ -837,40 +1346,48 @@ public class VorstCodexUI : MonoBehaviour
 
             DrawCyberBox(cardScreen, bgCol, borderCol, selected ? 2.5f : 1.5f);
 
-            // Barra lateral luminosa de selección
+            // Barra lateral de selección
             if (selected)
             {
                 GUI.color = entry.ThemeColor;
-                GUI.DrawTexture(ScaleRect(cardBase.x, cardBase.y, 7f, cardBase.height), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(0f, cardY, 6f * sx, cardH), Texture2D.whiteTexture);
                 GUI.color = Color.white;
             }
 
-            // Recuadro de miniatura del espécimen
-            Rect iconBox = ScaleRect(cardBase.x + 14f, cardBase.y + 14f, 92f, 94f);
+            // Recuadro de miniatura
+            Rect iconBox = new Rect(12f * sx, cardY + 12f * sy, 92f * sx, 100f * sy);
             DrawCyberBox(iconBox, new Color(0.01f, 0.02f, 0.05f, 0.98f), borderCol, 1.5f);
 
-            Texture2D iconTex = speciesIcons[i];
-            if (iconTex != null)
+            Texture2D iconTex = (i < speciesIcons.Length) ? speciesIcons[i] : null;
+            if (iconTex == null && walkFramesBySpecies.TryGetValue(i, out Texture2D[] wFrames) && wFrames != null && wFrames.Length > 0)
             {
-                Rect innerIcon = ScaleRect(cardBase.x + 20f, cardBase.y + 20f, 80f, 82f);
-                GUI.color = inspectable ? Color.white : new Color(0.06f, 0.18f, 0.28f, 0.92f);
-                GUI.DrawTexture(innerIcon, iconTex, ScaleMode.ScaleToFit);
-                GUI.color = Color.white;
+                iconTex = wFrames[0];
+            }
+            if (iconTex == null)
+            {
+                iconTex = GetFallbackBadgeTexture(entry.ThemeColor);
             }
 
-            // Textos de la tarjeta lateral
-            DrawStyledText(ScaleRect(cardBase.x + 118f, cardBase.y + 12f, 292f, 20f),
-                entry.CodeName, 12, TextAnchor.MiddleLeft, entry.ThemeColor);
+            Rect innerIcon = new Rect(16f * sx, cardY + 16f * sy, 84f * sx, 92f * sy);
+            GUI.color = inspectable ? Color.white : new Color(0.06f, 0.18f, 0.28f, 0.92f);
+            GUI.DrawTexture(innerIcon, iconTex, ScaleMode.ScaleToFit);
+            GUI.color = Color.white;
+
+            // Textos informativos de la tarjeta
+            float textX = 114f * sx;
+            float textW = cardW - 124f * sx;
+            DrawStyledText(new Rect(textX, cardY + 10f * sy, textW, 18f * sy),
+                entry.CodeName, 11, TextAnchor.MiddleLeft, entry.ThemeColor);
 
             string titleDisplay = inspectable ? entry.DisplayName.ToUpper() : $"[CLASIFICADO] {entry.DisplayName.ToUpper()}";
-            DrawStyledText(ScaleRect(cardBase.x + 118f, cardBase.y + 32f, 292f, 28f),
-                titleDisplay, 17, TextAnchor.MiddleLeft, selected ? Color.white : new Color(0.90f, 0.95f, 1f));
+            DrawStyledText(new Rect(textX, cardY + 28f * sy, textW, 26f * sy),
+                titleDisplay, 16, TextAnchor.MiddleLeft, selected ? Color.white : new Color(0.90f, 0.95f, 1f));
 
-            DrawStyledText(ScaleRect(cardBase.x + 118f, cardBase.y + 60f, 292f, 20f),
-                entry.Classification, 11, TextAnchor.MiddleLeft, new Color(0.72f, 0.84f, 0.96f));
+            DrawStyledText(new Rect(textX, cardY + 54f * sy, textW, 20f * sy),
+                entry.Classification, 10, TextAnchor.MiddleLeft, new Color(0.72f, 0.84f, 0.96f));
 
             // Insignia inferior: Estado de Desbloqueo + Conteo de Bajas
-            Rect statusPill = ScaleRect(cardBase.x + 118f, cardBase.y + 84f, 292f, 26f);
+            Rect statusPill = new Rect(textX, cardY + 78f * sy, textW, 26f * sy);
             Color statusCol = unlocked
                 ? new Color(0.18f, 0.95f, 0.56f)
                 : (simulationPreviewAll ? new Color(0.24f, 0.92f, 1f) : new Color(1f, 0.56f, 0.24f));
@@ -879,18 +1396,24 @@ public class VorstCodexUI : MonoBehaviour
             string statusTxt = unlocked
                 ? $"✔ DESBLOQUEADO  •  ☠ {kills} BAJA(S)"
                 : (simulationPreviewAll ? $"🔓 SIMULACIÓN N.E.X.A.  •  0 BAJAS" : "🔒 DERROTA EN COMBATE PARA DESBLOQUEAR");
-            DrawStyledText(statusPill, statusTxt, 11, TextAnchor.MiddleCenter, statusCol);
+            DrawStyledText(statusPill, statusTxt, 10, TextAnchor.MiddleCenter, statusCol);
 
             if (GUI.Button(cardScreen, GUIContent.none, GUIStyle.none))
             {
-                SelectSpecies(i);
+                selectedIndex = v;
+                animTimer = 0f;
+                currentFrameIndex = 0;
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             }
         }
+
+        GUI.EndScrollView();
     }
 
     void DrawCenterAnimationViewport()
     {
-        CodexSpeciesEntry entry = Catalog[selectedIndex];
+        int catIdx = GetSelectedCatalogIndex();
+        CodexSpeciesEntry entry = Catalog[catIdx];
         bool unlocked = IsSpeciesUnlocked(entry.SpeciesId);
         bool inspectable = unlocked || simulationPreviewAll;
 
@@ -918,7 +1441,7 @@ public class VorstCodexUI : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        // Resplandor radial de fondo con el color temático de la especie
+        // Resplandor radial de fondo
         if (holoGlowTex != null)
         {
             float pulse = 0.85f + Mathf.Sin(Time.unscaledTime * 3.2f) * 0.12f;
@@ -928,17 +1451,29 @@ public class VorstCodexUI : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        // Plataforma de proyección inferior
-        Rect pedestalRect = ScaleRect(628f, 578f, 360f, 18f);
+        // Plataforma de proyección inferior (Pedestal)
+        float pedestalBaseline = 578f;
+        float pedestalBaselineY = pedestalBaseline;
+        float baselineY = pedestalBaseline;
+        Rect pedestalRect = ScaleRect(628f, pedestalBaselineY, 360f, 18f);
         GUI.color = new Color(entry.ThemeColor.r, entry.ThemeColor.g, entry.ThemeColor.b, 0.55f);
         GUI.DrawTexture(pedestalRect, Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        // Renderizado del Frame Activo de la Animación del Enemigo
+        // Renderizado del Frame Activo con Anclaje Inferior a Línea de Base
         Texture2D[] frames = GetActiveAnimationFrames();
         int totalFrames = (frames != null && frames.Length > 0) ? frames.Length : 1;
         int safeFrameIdx = Mathf.Clamp(currentFrameIndex, 0, totalFrames - 1);
-        Texture2D activeTex = (frames != null && frames.Length > 0) ? frames[safeFrameIdx] : speciesIcons[selectedIndex];
+        Texture2D activeTex = (frames != null && frames.Length > 0) ? frames[safeFrameIdx] : speciesIcons[catIdx];
+
+        if (activeTex == null && walkFramesBySpecies.TryGetValue(catIdx, out Texture2D[] fallbackWalk) && fallbackWalk != null && fallbackWalk.Length > 0)
+        {
+            activeTex = fallbackWalk[0];
+        }
+        if (activeTex == null)
+        {
+            activeTex = GetFallbackBadgeTexture(entry.ThemeColor);
+        }
 
         if (activeTex != null)
         {
@@ -946,18 +1481,37 @@ public class VorstCodexUI : MonoBehaviour
                 ? Mathf.Sin(Time.unscaledTime * 8f) * 4f
                 : 0f;
 
-            Rect spriteBox = ScaleRect(608f, 228f + bobY, 400f, 352f);
+            // ANCLAJE MATEMÁTICO A LÍNEA DE BASE FIJA (0px Vertical Jitter)
+            const float maxViewportW = 440f;
+            const float maxViewportH = 352f;
+            const float fixedCenterSpineX = 808f;
 
-            // Si está bloqueado y no está en simulación, mostrar silueta cian oscura encriptada
+            float wTex = Mathf.Max(1f, activeTex.width);
+            float hTex = Mathf.Max(1f, activeTex.height);
+            float fitScale = Mathf.Min(maxViewportW / wTex, maxViewportH / hTex);
+
+            float drawW = wTex * fitScale;
+            float drawH = hTex * fitScale;
+            float renderHeight = drawH;
+            float spriteBottom = baselineY;
+
+            float drawX = fixedCenterSpineX - (drawW * 0.5f);
+            float drawY = baselineY - renderHeight + bobY;
+
+            Rect spriteScreenRect = ScaleRect(drawX, drawY, drawW, drawH);
+
+            // Silueta encriptada si el espécimen no ha sido derrotado y no está en simulación
             GUI.color = inspectable ? Color.white : new Color(0.05f, 0.22f, 0.34f, 0.94f);
 
             if (flipSpriteHorizontal)
             {
-                GUI.DrawTextureWithTexCoords(spriteBox, activeTex, new Rect(1f, 0f, -1f, 1f), true);
+                // Inversión horizontal conservando bounding box y anclaje inferior idénticos
+                GUI.DrawTextureWithTexCoords(spriteScreenRect, activeTex, new Rect(1f, 0f, -1f, 1f), true);
             }
             else
             {
-                GUI.DrawTexture(spriteBox, activeTex, ScaleMode.ScaleToFit, true);
+                // Renderizado StretchToFill sobre el rectángulo de relación de aspecto calculada
+                GUI.DrawTexture(spriteScreenRect, activeTex, ScaleMode.StretchToFill, true);
             }
             GUI.color = Color.white;
         }
@@ -999,7 +1553,7 @@ public class VorstCodexUI : MonoBehaviour
             }
         }
 
-        // Controles del Reproductor de Animaciones (Debajo del Visor)
+        // Controles del Reproductor de Animaciones
         DrawStyledText(ScaleRect(560f, 654f, 496f, 24f),
             "🎬 CONTROL DE SECUENCIA DE ANIMACIÓN [◀ A/D ▶  |  1-2-3]",
             13, TextAnchor.MiddleCenter, new Color(0.80f, 0.92f, 1f));
@@ -1063,7 +1617,7 @@ public class VorstCodexUI : MonoBehaviour
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
         }
 
-        // Medidor de Nivel de Amenaza Militar en la parte inferior de la columna central
+        // Medidor de Nivel de Amenaza Militar
         Rect threatBox = ScaleRect(560f, 808f, 496f, 142f);
         DrawCyberBox(threatBox, new Color(0.03f, 0.05f, 0.12f, 0.96f), entry.ThemeColor, 1.5f);
         DrawStyledText(ScaleRect(576f, 818f, 464f, 24f),
@@ -1100,7 +1654,8 @@ public class VorstCodexUI : MonoBehaviour
 
     void DrawRightTechnicalDossier()
     {
-        CodexSpeciesEntry entry = Catalog[selectedIndex];
+        int catIdx = GetSelectedCatalogIndex();
+        CodexSpeciesEntry entry = Catalog[catIdx];
         bool unlocked = IsSpeciesUnlocked(entry.SpeciesId);
         bool inspectable = unlocked || simulationPreviewAll;
         int totalKills = GetTotalKills(entry.SpeciesId);
@@ -1125,7 +1680,7 @@ public class VorstCodexUI : MonoBehaviour
             entry.Classification,
             13, TextAnchor.MiddleLeft, new Color(0.76f, 0.88f, 1f));
 
-        // Contador Destacado de Récord de Bajas (Esquina Superior Derecha de la Ficha)
+        // Contador Destacado de Récord de Bajas
         Rect killsBadge = ScaleRect(1608f, 146f, 208f, 66f);
         DrawCyberBox(killsBadge, new Color(0.02f, 0.05f, 0.11f, 0.98f), new Color(1f, 0.82f, 0.22f), 1.5f);
         DrawStyledText(ScaleRect(1614f, 150f, 196f, 20f), "☠ RÉCORD DE BAJAS", 12, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.22f));
@@ -1172,7 +1727,6 @@ public class VorstCodexUI : MonoBehaviour
         Rect diaryBox = ScaleRect(1112f, 654f, 716f, 294f);
         DrawCyberBox(diaryBox, new Color(0.03f, 0.06f, 0.13f, 0.98f), new Color(0.22f, 0.92f, 1f, 0.9f), 2f);
 
-        // Decoración superior de transmisión de archivo militar
         Rect diaryHeader = ScaleRect(1114f, 656f, 712f, 38f);
         GUI.color = new Color(0.06f, 0.16f, 0.28f, 0.95f);
         GUI.DrawTexture(diaryHeader, Texture2D.whiteTexture);
@@ -1227,7 +1781,7 @@ public class VorstCodexUI : MonoBehaviour
         }
 
         DrawStyledText(footerRect,
-            "<color=#38e1ff>[▲/▼ o W/S]</color> Seleccionar Especie   •   <color=#ffd35c>[◀/▶ o A/D o 1-2-3]</color> Cambiar Animación   •   <color=#2ee678>[ESPACIO]</color> Pausar/Reanudar   •   <color=#38e1ff>[F]</color> Voltear   •   <color=#ffd35c>[TAB]</color> Simulación N.E.X.A.   •   <color=#ff5c77>[ESC]</color> Cerrar",
+            "<color=#38e1ff>[Q/E]</color> Pestañas de Zona   •   <color=#38e1ff>[▲/▼ o W/S]</color> Seleccionar Especie   •   <color=#ffd35c>[◀/▶ o A/D o 1-2-3]</color> Cambiar Animación   •   <color=#2ee678>[ESPACIO]</color> Pausar/Reanudar   •   <color=#38e1ff>[F]</color> Voltear   •   <color=#ffd35c>[TAB]</color> Simulación N.E.X.A.   •   <color=#ff5c77>[ESC]</color> Cerrar",
             13, TextAnchor.MiddleCenter, Color.white);
     }
 

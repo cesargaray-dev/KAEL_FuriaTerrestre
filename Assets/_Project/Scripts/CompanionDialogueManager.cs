@@ -107,10 +107,44 @@ public class CompanionDialogueManager : MonoBehaviour
         triggeredWaves.Add(wave);
 
         string sceneName = SceneManager.GetActiveScene().name;
-        bool isLevel3 = (sceneName == "03_Nivel3_Colmena") ||
-                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3);
-        bool isLevel2 = !isLevel3 && ((sceneName == "Lab_Zahir") ||
+        bool isLevel4 = (sceneName == "04_Final_NexusThroneroom") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 4);
+        bool isLevel3 = !isLevel4 && ((sceneName == "03_Nivel3_Colmena") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3));
+        bool isLevel2 = !isLevel4 && !isLevel3 && ((sceneName == "Lab_Zahir") ||
                         (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2));
+
+        // --- NIVEL 4 DEFINITIVO: EL TRONO DE LA DISONANCIA (CÚPULA NAVE NÚCLEO) ---
+        if (isLevel4)
+        {
+            if (wave == 1)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Hemos alcanzado la cúpula superior de la Nave Núcleo: el Trono de la Disonancia. Frente al ventanal orbital de la Tierra yace la cápsula de bio-conversión de Lía.", "nexa_normal");
+                EnqueueLine("KAEL", "¡Lía! Está suspendida entre esos rayos violetas... ¡Guardia Pretoriana Vorst al frente! Ningún escudo ni trinchera evitará que la libere.", "kael_shout");
+            }
+            else if (wave == 3)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Cuando estés junto a la cápsula de Lía puedes pulsar [E] para sincronizar un pulso fraternal de Nexo (+15% HP y +25% Carga Ultimate).", "nexa_normal");
+            }
+            else if (wave == 5)
+            {
+                EnqueueLine("N.E.X.A. [ALERTA]", "¡Amenaza Pretoriana! El Custodio Pretoriano Vorst salta hacia nuestra posición con su lanza de energía. ¡Sal del círculo rojo de advertencia o bloquea con Parry [S]!", "nexa_alert");
+                EnqueueLine("KAEL", "¡Leeré su caída y destrozaré su lanza en el aire!", "kael_shout");
+            }
+            else if (wave == 8)
+            {
+                EnqueueLine("N.E.X.A. [CONFESIÓN CRÍTICA]", "Kael... antes de enfrentar al Trono debes saber la verdad que oculté en mi matriz: el Guantelete Nexo fue forjado usando el corazón del primer Soberano Vorst.", "nexa_alert");
+                EnqueueLine("N.E.X.A. [CONFESIÓN CRÍTICA]", "Si desatas toda tu furia sin control contra el núcleo, corres el riesgo de absorber su corona y sustituir al tirano en lugar de destruirlo.", "nexa_alert");
+                EnqueueLine("KAEL", "No seré su marioneta, N.E.X.A. Lucho por Lía y por la Tierra, no para heredar un trono manchado.", "kael_shout");
+            }
+            else if (wave == 10)
+            {
+                EnqueueLine("N.E.X.A. [EMERGENCIA FINAL]", "¡EL ARCONTE SUPREMO — SOBERANO VORST desciende al combate! Prepárate: Duelo Marcial en Fase 1, pilares orbitales en Fase 2 y Fusión con el Núcleo en Fase 3.", "nexa_alert");
+                EnqueueLine("N.E.X.A. [TÁCTICA NEXO]", "Cuando active su Campo de Fuerza en Fase 3, encadena combos hasta Sobremarcha (x30) y dispara la Ultimate 'Sobrecarga Nexo' [K] para quebrarlo.", "nexa_normal");
+                EnqueueLine("KAEL", "¡Todo termina aquí, Soberano! ¡Por la humanidad y por mi hermana Lía!", "kael_shout");
+            }
+            return;
+        }
 
         // --- BLOQUE 5 (Issue #23): DIÁLOGOS EXCLUSIVOS DEL NIVEL 3 (COLMENA DE BIO-CABLES) ---
         if (isLevel3)

@@ -12,24 +12,30 @@ public class InfiniteBackground : MonoBehaviour
             targetCamera = Camera.main.transform;
 
         string sceneName = SceneManager.GetActiveScene().name;
-        bool isLevel3 = (sceneName == "03_Nivel3_Colmena") ||
-                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3);
-        bool isLevel2 = !isLevel3 && ((sceneName == "Lab_Zahir") ||
+        bool isLevel4 = (sceneName == "04_Final_NexusThroneroom") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 4);
+        bool isLevel3 = !isLevel4 && ((sceneName == "03_Nivel3_Colmena") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3));
+        bool isLevel2 = !isLevel4 && !isLevel3 && ((sceneName == "Lab_Zahir") ||
                         (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2));
 
-        if ((isLevel2 || isLevel3) && Camera.main != null)
+        if ((isLevel2 || isLevel3 || isLevel4) && Camera.main != null)
         {
-            Camera.main.backgroundColor = isLevel3
-                ? new Color(0.04f, 0.015f, 0.09f, 1f)
-                : new Color(0.05f, 0.02f, 0.12f, 1f);
+            Camera.main.backgroundColor = isLevel4
+                ? new Color(0.03f, 0.015f, 0.08f, 1f)
+                : (isLevel3
+                    ? new Color(0.04f, 0.015f, 0.09f, 1f)
+                    : new Color(0.05f, 0.02f, 0.12f, 1f));
         }
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null)
         {
-            if (isLevel3 || isLevel2 || sr.sprite == null)
+            if (isLevel4 || isLevel3 || isLevel2 || sr.sprite == null)
             {
-                string bgPath = isLevel3 ? "Level3/BG_Hive_Level3" : "Level2/BG_BaseVorst_Level2";
+                string bgPath = isLevel4
+                    ? "Level4/BG_Throneroom_Level4"
+                    : (isLevel3 ? "Level3/BG_Hive_Level3" : "Level2/BG_BaseVorst_Level2");
                 Texture2D bgTex = Resources.Load<Texture2D>(bgPath);
                 if (bgTex != null)
                 {

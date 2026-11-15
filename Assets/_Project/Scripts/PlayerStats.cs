@@ -311,11 +311,19 @@ public class PlayerStats : MonoBehaviour
         VorstCodexUI.EnsureExists();
 
         string activeScene = SceneManager.GetActiveScene().name;
-        if (activeScene == "03_Nivel3_Colmena")
+        if (activeScene == "04_Final_NexusThroneroom")
+        {
+            levelNumber = 4;
+            zoneName = "TRONO DE LA DISONANCIA — CÚPULA NAVE NÚCLEO";
+            nextLevelSceneName = "";
+            ResetSkillsToBase();
+            LoadProgressIfContinuing();
+        }
+        else if (activeScene == "03_Nivel3_Colmena")
         {
             levelNumber = 3;
             zoneName = "NAVE NÚCLEO VORST — COLMENA DE BIO-CABLES";
-            nextLevelSceneName = "";
+            nextLevelSceneName = "04_Final_NexusThroneroom";
             ResetSkillsToBase();
             LoadProgressIfContinuing();
         }
@@ -2204,7 +2212,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
-        if (DrawSkinnedCyberButton(new Rect(750, 328, 420, 62), texBtnCyan, $"📘 CÓDICE VORST ({unlockedCodex}/6) [C]", "BESTIARIO, DEBILIDADES Y BAJAS", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 328, 420, 62), texBtnCyan, $"📘 CÓDICE VORST ({unlockedCodex}/{VorstCodexUI.Catalog.Length}) [C]", "BESTIARIO, DEBILIDADES Y BAJAS", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
         {
             OpenVorstCodexModal(returnToPauseOnClose: true);
         }
