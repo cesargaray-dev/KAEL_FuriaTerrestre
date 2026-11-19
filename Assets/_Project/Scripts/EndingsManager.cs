@@ -356,11 +356,11 @@ public class EndingsManager : MonoBehaviour
 
         speakers = new string[]
         {
-            "KAEL VANE [DESCUBRIMIENTO DEL SANTUARIO]",
-            "N.E.X.A. [ALERTA DE SOMBRA SOBERANA]",
-            "KAEL VANE [JURAMENTO FRATERNAL]"
+            "KAEL VANE [UMBRAL DEL SANTUARIO]",
+            "KAEL VANE [JURAMENTO FRATERNAL]",
+            "N.E.X.A. [ALERTA DE SOMBRA SOBERANA]"
         };
-        portraits = new string[] { "kael_normal", "nexa_alert", "kael_shout" };
+        portraits = new string[] { "kael_normal", "kael_shout", "nexa_alert" };
         return new string[]
         {
             "CAPÍTULO FINAL — EL TRONO DE LA DISONANCIA: Con VORTEX-OMEGA reducido a cenizas, las compuertas superiores se abren hacia el Domo Imperial frente a la Tierra en órbita. En el centro brilla la cápsula de Lía.",

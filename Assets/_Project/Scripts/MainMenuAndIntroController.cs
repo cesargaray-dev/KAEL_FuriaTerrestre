@@ -9,6 +9,7 @@ public class MainMenuAndIntroController : MonoBehaviour
 
     private Texture2D menuBgTex;
     private Texture2D[] introSlides = new Texture2D[4];
+    private Texture2D portKaelNormal;
     private Texture2D portKaelShout;
     private Texture2D portNexaNormal;
     private Texture2D btnCyanTex;
@@ -52,8 +53,8 @@ public class MainMenuAndIntroController : MonoBehaviour
     private readonly string[] slideSpeakers = {
         "ARCHIVO DE DEFENSA TERRESTRE",
         "KAEL",
-        "N.E.X.A. [SISTEMA ANCESTRAL]",
-        "KAEL & N.E.X.A."
+        "KAEL [EL GUANTELETE NEXO]",
+        "N.E.X.A. [SISTEMA ANCESTRAL]"
     };
 
     private readonly string[] slideNarrations = {
@@ -71,6 +72,7 @@ public class MainMenuAndIntroController : MonoBehaviour
         {
             introSlides[i] = LoadTex($"StoryUI/Intro_{i + 1}");
         }
+        portKaelNormal = LoadTex("StoryUI/Portrait_Kael_Normal");
         portKaelShout  = LoadTex("StoryUI/Portrait_Kael_Shout");
         portNexaNormal = LoadTex("StoryUI/Portrait_Nexa_Normal");
         btnCyanTex     = LoadTex("StoryUI/Btn_Cyber_Cyan");
@@ -660,14 +662,16 @@ public class MainMenuAndIntroController : MonoBehaviour
             DrawCyberPanelDouble(dialogBox, new Color(0.03f, 0.06f, 0.12f, 0.96f), new Color(0.22f, 0.88f, 1f), new Color(1f, 0.82f, 0.22f, 0.45f), 2.5f);
         }
 
-        Texture2D port = (currentSlide == 1) ? portKaelShout : ((currentSlide >= 2) ? portNexaNormal : null);
+        Texture2D port = (currentSlide == 1) ? portKaelShout
+                       : ((currentSlide == 2) ? (portKaelNormal != null ? portKaelNormal : portKaelShout)
+                       : ((currentSlide >= 3) ? portNexaNormal : null));
         float textStartX = 180f;
         float textWidth = 1236f;
 
         if (port != null)
         {
             Rect pFrame = ScaleRect(176f, 825f, 198f, 198f);
-            GUI.color = (currentSlide == 1) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
+            GUI.color = (currentSlide == 1 || currentSlide == 2) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
             GUI.DrawTexture(pFrame, Texture2D.whiteTexture);
             Rect pRect = new Rect(pFrame.x + 2f, pFrame.y + 2f, pFrame.width - 4f, pFrame.height - 4f);
             GUI.color = new Color(0.04f, 0.07f, 0.14f, 1f);

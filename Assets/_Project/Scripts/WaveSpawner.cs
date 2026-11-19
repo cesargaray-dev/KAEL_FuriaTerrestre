@@ -62,6 +62,11 @@ public class WaveSpawner : MonoBehaviour
             groundY = -2.95f;
             EnemyDummy.PreloadLevel2Frames();
         }
+        else
+        {
+            // Nivel 1 (Sector 7): alinear con la calzada del escenario por encima del HUD inferior
+            groundY = -3.42f;
+        }
 
         // Asegurar que exista el gestor de Audio en la escena
         if (FindAnyObjectByType<LevelAudioManager>() == null)
@@ -75,7 +80,7 @@ public class WaveSpawner : MonoBehaviour
             if (kael != null) kaelTransform = kael.transform;
         }
 
-        if (groundY < -3.05f) groundY = -2.95f;
+        if ((isLevel2BaseVorst || isLevel3Hive || isLevel4Throneroom) && groundY < -3.05f) groundY = -2.95f;
 
         StartCoroutine(SpawnNextWaveRoutine());
     }

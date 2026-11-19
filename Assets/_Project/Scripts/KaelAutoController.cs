@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -106,7 +107,13 @@ public class KaelAutoController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) baseSpriteColor = spriteRenderer.color;
 
-        if (transform.position.y < -3.1f)
+        string activeScene = SceneManager.GetActiveScene().name;
+        bool isLevel1Scene = (activeScene == "Lab_Cesar" || activeScene == "01_JuegoPrincipal");
+        if (isLevel1Scene)
+        {
+            transform.position = new Vector3(transform.position.x, -3.42f, transform.position.z);
+        }
+        else if (transform.position.y < -3.1f)
         {
             transform.position = new Vector3(transform.position.x, -2.85f, transform.position.z);
         }

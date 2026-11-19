@@ -1034,12 +1034,16 @@ public class SovereignBossAI : MonoBehaviour
         float dirToKael = (kaelTarget != null && kaelTarget.position.x > transform.position.x) ? 1f : -1f;
         if (sr != null) sr.flipX = (dirToKael > 0f);
 
-        // Telegrafiado breve de la lanza con cuadro de impulso
+        // Telegrafiado claro de la lanza con aura de carga
         ApplyBossFrame(animAttackFrames, 1);
         if (sr != null) sr.color = new Color(1f, 0.85f, 0.55f);
-        yield return new WaitForSeconds(0.12f);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(transform.position + new Vector3(dirToKael * 0.85f, 0.95f, 0f), new Color(1f, 0.72f, 0.25f), 0.40f, 1.15f);
+        }
+        yield return new WaitForSeconds(0.24f);
         ApplyBossFrame(animAttackFrames, 2);
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.20f);
         if (defeatTriggered || enemy.IsDead || enemy.isStunned) { EndAction(); yield break; }
 
         if (sr != null) sr.color = Color.white;
@@ -1047,10 +1051,10 @@ public class SovereignBossAI : MonoBehaviour
         Vector3 lungePos = startPos + new Vector3(dirToKael * 1.15f, 0f, 0f);
 
         float t = 0f;
-        while (t < 0.14f)
+        while (t < 0.18f)
         {
-            transform.position = Vector3.Lerp(startPos, lungePos, t / 0.14f);
-            ApplyBossFrameProgress(animAttackFrames, 0.38f + (t / 0.14f) * 0.30f);
+            transform.position = Vector3.Lerp(startPos, lungePos, t / 0.18f);
+            ApplyBossFrameProgress(animAttackFrames, 0.38f + (t / 0.18f) * 0.30f);
             t += Time.deltaTime;
             yield return null;
         }
@@ -1059,7 +1063,10 @@ public class SovereignBossAI : MonoBehaviour
         if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.SpawnHitSparks(transform.position + new Vector3(dirToKael * 1.2f, 0.7f, 0f), true, 8);
+            Vector3 lanceTip = transform.position + new Vector3(dirToKael * 1.15f, 0.82f, 0f);
+            CombatVFXManager.Instance.SpawnSlashArcVFX(lanceTip, dirToKael, new Color(1f, 0.65f, 0.22f), Color.white, 1.55f, 6f, 0.28f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(lanceTip, new Color(1f, 0.35f, 0.22f), 2.1f);
+            CombatVFXManager.Instance.SpawnHitSparks(lanceTip, true, 9);
         }
 
         if (kaelTarget != null && Mathf.Abs(kaelTarget.position.x - transform.position.x) <= enemy.attackRange + 0.9f)
@@ -1067,11 +1074,11 @@ public class SovereignBossAI : MonoBehaviour
             if (PlayerStats.Instance != null) PlayerStats.Instance.TakeDamage(enemy.damage, enemy);
         }
 
-        yield return new WaitForSeconds(0.10f);
+        yield return new WaitForSeconds(0.18f);
         ApplyBossFrame(animAttackFrames, 6);
-        yield return new WaitForSeconds(0.10f);
+        yield return new WaitForSeconds(0.16f);
         ApplyBossFrame(animAttackFrames, 7);
-        nextPrimaryCooldown = Time.time + (1.0f / Mathf.Max(0.4f, enemy.attackRate));
+        nextPrimaryCooldown = Time.time + Mathf.Max(1.25f, 1.1f / Mathf.Max(0.4f, enemy.attackRate));
         isActingExternally = false;
     }
 
@@ -1165,6 +1172,8 @@ public class SovereignBossAI : MonoBehaviour
             CombatVFXManager.Instance.ShakeCamera(0.45f, 0.25f);
             CombatVFXManager.Instance.SpawnShockwaveRing(targetGroundPos + Vector3.up * 0.3f, new Color(1f, 0.35f, 0.15f), 4.2f);
             CombatVFXManager.Instance.SpawnEnergyPillar(targetGroundPos, new Color(0.95f, 0.25f, 0.45f));
+            CombatVFXManager.Instance.SpawnGroundDustWave(targetGroundPos, 1f, new Color(1f, 0.35f, 0.18f), 4, 0.65f);
+            CombatVFXManager.Instance.SpawnGroundDustWave(targetGroundPos, -1f, new Color(1f, 0.35f, 0.18f), 4, 0.65f);
             CombatVFXManager.Instance.SpawnHitSparks(targetGroundPos + Vector3.up * 0.4f, true, 16);
         }
 
@@ -1274,14 +1283,16 @@ public class SovereignBossAI : MonoBehaviour
         ApplyBossFrame(swingSet, 0);
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.SpawnHitSparks(transform.position + new Vector3(dirToKael * 0.9f, 0.85f, 0f), false, 5);
+            Vector3 bladeChargePos = transform.position + new Vector3(dirToKael * 0.9f, 0.92f, 0f);
+            CombatVFXManager.Instance.SpawnChargeTelegraph(bladeChargePos, new Color(0.86f, 0.25f, 1f), 0.44f, 1.15f);
+            CombatVFXManager.Instance.SpawnHitSparks(bladeChargePos, false, 5);
         }
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.24f);
         ApplyBossFrame(swingSet, 1);
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.20f);
         if (defeatTriggered || enemy.IsDead || enemy.isStunned) { EndAction(); yield break; }
 
-        // Doble estocada rápida
+        // Doble estocada marcial con arcos de plasma
         for (int s = 0; s < 2; s++)
         {
             if (defeatTriggered || enemy.IsDead || enemy.isStunned) { EndAction(); yield break; }
@@ -1289,9 +1300,9 @@ public class SovereignBossAI : MonoBehaviour
             Vector3 dashFrom = transform.position;
             Vector3 dashTo = new Vector3(dashFrom.x + dirToKael * 1.1f, groundY, 0f);
             float t = 0f;
-            while (t < 0.09f)
+            while (t < 0.14f)
             {
-                transform.position = Vector3.Lerp(dashFrom, dashTo, t / 0.09f);
+                transform.position = Vector3.Lerp(dashFrom, dashTo, t / 0.14f);
                 ApplyBossFrame(swingSet, (s == 0) ? 2 : 5);
                 t += Time.deltaTime;
                 yield return null;
@@ -1301,17 +1312,28 @@ public class SovereignBossAI : MonoBehaviour
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
             if (CombatVFXManager.Instance != null)
             {
-                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + new Vector3(dirToKael * 0.9f, 0.7f, 0f), new Color(0.84f, 0.25f, 1f), 1.6f);
+                Vector3 slashPos = transform.position + new Vector3(dirToKael * 0.95f, 0.85f, 0f);
+                CombatVFXManager.Instance.SpawnSlashArcVFX(
+                    slashPos,
+                    dirToKael,
+                    (s == 0) ? new Color(0.84f, 0.25f, 1f) : new Color(1f, 0.25f, 0.65f),
+                    Color.white,
+                    1.55f,
+                    (s == 0) ? 18f : -22f,
+                    0.26f
+                );
+                CombatVFXManager.Instance.SpawnShockwaveRing(slashPos, new Color(0.84f, 0.25f, 1f), 1.8f);
             }
             if (kaelTarget != null && Mathf.Abs(kaelTarget.position.x - transform.position.x) <= enemy.attackRange + 0.85f)
             {
                 if (PlayerStats.Instance != null) PlayerStats.Instance.TakeDamage(enemy.damage * 0.82f, enemy);
             }
-            yield return new WaitForSeconds(0.14f);
+            yield return new WaitForSeconds(0.24f);
         }
         ApplyBossFrame(swingSet, 7);
+        yield return new WaitForSeconds(0.18f);
 
-        nextPrimaryCooldown = Time.time + (currentPhase == 3 ? 0.85f : 1.05f);
+        nextPrimaryCooldown = Time.time + (currentPhase == 3 ? 1.15f : 1.40f);
         isActingExternally = false;
     }
 
@@ -1329,7 +1351,7 @@ public class SovereignBossAI : MonoBehaviour
 
         // Desvanecimiento cuántico lateral al otro lado de Kael
         if (sr != null) sr.color = new Color(0.75f, 0.25f, 1f, 0.22f);
-        yield return new WaitForSeconds(0.18f);
+        yield return new WaitForSeconds(0.24f);
         if (defeatTriggered || enemy.IsDead) { EndAction(); yield break; }
 
         if (kaelTarget != null)
@@ -1354,22 +1376,23 @@ public class SovereignBossAI : MonoBehaviour
         if (CombatVFXManager.Instance != null)
         {
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.1f, "[!] ¡RÁFAGA CORTANTE EN ARCO!", new Color(0.86f, 0.35f, 1f), 19, 0.85f);
+            CombatVFXManager.Instance.SpawnChargeTelegraph(transform.position + new Vector3(dirToKael * 0.8f, 0.9f, 0f), new Color(0.90f, 0.26f, 1f), 0.32f, 1.25f);
         }
 
-        yield return new WaitForSeconds(0.24f);
+        yield return new WaitForSeconds(0.34f);
         if (defeatTriggered || enemy.IsDead || enemy.isStunned) { EndAction(); yield break; }
 
-        // Disparar 2 ondas cortantes en arco hacia Kael
+        // Disparar 2 ondas cortantes reales con rastro luminoso hacia Kael
         for (int w = 0; w < 2; w++)
         {
             ApplyBossFrame(animEnrageFrames ?? animAttackFrames, 3 + w * 2);
-            SpawnArcSlashWave(transform.position + new Vector3(dirToKael * 0.85f, 0.75f, 0f), dirToKael, enemy.damage * 0.90f);
-            yield return new WaitForSeconds(0.20f);
+            SpawnArcSlashWave(transform.position + new Vector3(dirToKael * 0.85f, 0.78f, 0f), dirToKael, enemy.damage * 0.90f);
+            yield return new WaitForSeconds(0.30f);
         }
 
         if (sr != null) sr.color = Color.white;
-        nextSpecialCooldown = Time.time + (currentPhase == 1 ? 3.8f : 4.2f);
-        nextPrimaryCooldown = Time.time + 0.55f;
+        nextSpecialCooldown = Time.time + (currentPhase == 1 ? 4.2f : 4.6f);
+        nextPrimaryCooldown = Time.time + 0.75f;
         isActingExternally = false;
     }
 
@@ -1515,6 +1538,10 @@ public class SovereignBossAI : MonoBehaviour
         }
 
         Vector3 chestPos = transform.position + Vector3.up * 1.08f + Vector3.right * (dirToKael * 0.45f);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(chestPos, new Color(0.92f, 0.26f, 1f), 0.62f, 1.35f);
+        }
         for (int f = 0; f < 2; f++)
         {
             if (defeatTriggered || enemy.IsDead || enemy.isStunned) { EndAction(); yield break; }
@@ -1524,17 +1551,27 @@ public class SovereignBossAI : MonoBehaviour
                 CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(0.86f, 0.25f, 1f));
                 CombatVFXManager.Instance.SpawnHitSparks(chestPos, false, 4);
             }
-            yield return new WaitForSeconds(0.24f);
+            yield return new WaitForSeconds(0.32f);
         }
 
+        float beamReach = 7.2f;
         if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayUltimateLaser();
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, new Color(0.88f, 0.24f, 1f), 2.8f);
-            CombatVFXManager.Instance.ShakeCamera(0.32f, 0.20f);
+            CombatVFXManager.Instance.SpawnCustomColoredBeam(
+                chestPos,
+                dirToKael * beamReach,
+                0.66f,
+                new Color(0.55f, 0.08f, 0.92f, 0.72f),
+                new Color(0.95f, 0.25f, 1.00f, 0.96f),
+                Color.white,
+                thickness: 1.15f,
+                withLightning: true
+            );
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.86f, 0.22f, 1f), 0.40f);
+            CombatVFXManager.Instance.ShakeCamera(0.38f, 0.24f);
         }
 
-        float beamReach = 4.35f;
         for (int f = 2; f < 6; f++)
         {
             if (defeatTriggered || enemy.IsDead || enemy.isStunned) { EndAction(); yield break; }
@@ -1550,16 +1587,16 @@ public class SovereignBossAI : MonoBehaviour
                         CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 12);
                 }
             }
-            yield return new WaitForSeconds(0.13f);
+            yield return new WaitForSeconds(0.18f);
         }
 
         ApplyBossFrame(animLaserFrames, 6);
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.18f);
         ApplyBossFrame(animLaserFrames, 7);
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.18f);
 
-        nextSpecialCooldown = Time.time + 3.8f;
-        nextPrimaryCooldown = Time.time + 0.55f;
+        nextSpecialCooldown = Time.time + 4.2f;
+        nextPrimaryCooldown = Time.time + 0.75f;
         isActingExternally = false;
     }
 
@@ -1664,6 +1701,22 @@ public class SovereignBossAI : MonoBehaviour
     // =========================================================================
     void SpawnArcSlashWave(Vector3 origin, float dirSign, float dmg)
     {
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnEnemyProjectile(
+                origin,
+                new Vector3(Mathf.Sign(dirSign) * 9.4f, 0f, 0f),
+                EnemyProjectileStyle.CyberBladeWave,
+                new Color(0.92f, 0.24f, 1f),
+                Color.white,
+                scale: 1.35f,
+                damage: dmg,
+                owner: enemy,
+                lifetime: 2.6f
+            );
+            return;
+        }
+
         GameObject obj = new GameObject("SovereignArcSlash");
         obj.transform.position = origin;
         SpriteRenderer srWave = obj.AddComponent<SpriteRenderer>();

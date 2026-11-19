@@ -29,6 +29,14 @@ public class CombatVFXManager : MonoBehaviour
     private float ultFlashAlpha = 0f;
     private Color customFlashColor = new Color(0.55f, 0.95f, 1f, 1f);
     private Sprite softBeamSprite;
+    private Sprite slashArcSprite;
+    private Sprite projectileBoltSprite;
+    private Sprite softHaloSprite;
+
+    public Sprite SoftHaloSprite => GetSoftHaloSprite();
+    public Sprite SlashArcSprite => GetSlashArcSprite();
+    public Sprite ProjectileBoltSprite => GetProjectileBoltSprite();
+    public Sprite RingSpritePublic => ringSprite;
 
     // Variables de Contador de Combo (Sincronizadas con PlayerStats)
     private int comboHits = 0;
@@ -375,65 +383,129 @@ public class CombatVFXManager : MonoBehaviour
     /// </summary>
     public void SpawnBossLaserBeam(Vector3 originPos, float length, float duration)
     {
-        StartCoroutine(BossLaserBeamRoutine(originPos, length, duration));
+        SpawnCustomColoredBeam(
+            originPos,
+            length,
+            duration,
+            new Color(0.957f, 0.082f, 0.510f, 0.72f),
+            new Color(0.149f, 0.941f, 1.000f, 0.95f),
+            Color.white,
+            thickness: 1.0f,
+            withLightning: true
+        );
     }
 
-    private IEnumerator BossLaserBeamRoutine(Vector3 originPos, float length, float duration)
+    /// <summary>
+    /// Rayo de plasma multicapa configurable para jefes y tiradores de élite con halo, núcleo,
+    /// boquilla giratoria, arco eléctrico y chispas en la trayectoria.
+    /// </summary>
+    public void SpawnCustomColoredBeam(
+        Vector3 originPos,
+        float length,
+        float duration,
+        Color outerCol,
+        Color midCol,
+        Color coreCol,
+        float thickness = 1.0f,
+        bool withLightning = true)
     {
-        GameObject beamRoot = new GameObject("VortexChestLaserBeam");
+        StartCoroutine(CustomColoredBeamRoutine(originPos, length, duration, outerCol, midCol, coreCol, thickness, withLightning));
+    }
+
+    private IEnumerator CustomColoredBeamRoutine(
+        Vector3 originPos,
+        float length,
+        float duration,
+        Color outerCol,
+        Color midCol,
+        Color coreCol,
+        float thickness,
+        bool withLightning)
+    {
+        GameObject beamRoot = new GameObject("CustomNeonLaserBeam");
         beamRoot.transform.position = originPos;
 
-        // Multi-layer procedural laser beam: outer magenta glow (#F41582), mid cyan beam (#26F0FF), core white beam
-        Color outerCol = new Color(0.957f, 0.082f, 0.510f, 0.70f);
-        Color midCol   = new Color(0.149f, 0.941f, 1.000f, 0.95f);
-        Color coreCol  = Color.white;
+        float dirSign = (length < 0f) ? -1f : 1f;
+        SpawnMuzzleFlash(originPos, dirSign, midCol, Mathf.Clamp(thickness, 0.65f, 1.5f));
 
-        SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "BossOuterGlow", outerCol, 21);
-        SpriteRenderer midBeam   = CreateBeamLayer(beamRoot.transform, "BossMidBeam",   midCol,   22);
-        SpriteRenderer coreBeam  = CreateBeamLayer(beamRoot.transform, "BossCoreBeam",  coreCol,  23);
+        SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "BeamOuterGlow", outerCol, 21);
+        SpriteRenderer midBeam   = CreateBeamLayer(beamRoot.transform, "BeamMidCore",   midCol,   22);
+        SpriteRenderer coreBeam  = CreateBeamLayer(beamRoot.transform, "BeamInnerCore", coreCol,  23);
 
-        GameObject bossMuzzle = new GameObject("BossMuzzleFlare");
+        GameObject bossMuzzle = new GameObject("BeamMuzzleFlare");
         bossMuzzle.transform.SetParent(beamRoot.transform, false);
         SpriteRenderer bMuzzleSr = bossMuzzle.AddComponent<SpriteRenderer>();
-        bMuzzleSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bMuzzleSr.sprite = GetSoftHaloSprite();
         bMuzzleSr.color = coreCol;
         bMuzzleSr.sortingOrder = 24;
 
-        GameObject bossTip = new GameObject("BossTipFlare");
+        GameObject muzzleRingObj = new GameObject("BeamMuzzleRing");
+        muzzleRingObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer muzzleRingSr = muzzleRingObj.AddComponent<SpriteRenderer>();
+        muzzleRingSr.sprite = ringSprite;
+        muzzleRingSr.color = midCol;
+        muzzleRingSr.sortingOrder = 24;
+
+        GameObject bossTip = new GameObject("BeamTipFlare");
         bossTip.transform.SetParent(beamRoot.transform, false);
         SpriteRenderer bTipSr = bossTip.AddComponent<SpriteRenderer>();
-        bTipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bTipSr.sprite = GetSoftHaloSprite();
         bTipSr.color = midCol;
         bTipSr.sortingOrder = 24;
 
+        LineRenderer crackleLr = withLightning
+            ? CreateUltArcLine(beamRoot.transform, "BeamLightningArc", 18, 0.055f * thickness, coreCol, midCol, 24)
+            : null;
+
         float absLen = Mathf.Abs(length);
-        float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
+        Gradient beamGrad = BuildTwoColorGradient(coreCol, midCol);
 
         while (elapsed < duration)
         {
-            float pulse = 1f + Mathf.Sin(Time.time * 60f) * 0.22f;
-            float fadeOut = (elapsed > duration * 0.70f) ? Mathf.InverseLerp(duration, duration * 0.70f, elapsed) : 1f;
-            float currentThickness = pulse * fadeOut;
+            float shootProgress = Mathf.Clamp01(elapsed / 0.06f);
+            float curLen = length * shootProgress;
+            float curAbsLen = Mathf.Abs(curLen);
 
-            outerBeam.transform.localScale    = new Vector3(absLen, 1.65f * currentThickness, 1f);
-            outerBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            float pulse = 1f + Mathf.Sin(Time.time * 54f) * 0.20f;
+            float fadeOut = (elapsed > duration * 0.72f) ? Mathf.InverseLerp(duration, duration * 0.72f, elapsed) : 1f;
+            float currentThickness = pulse * fadeOut * thickness;
 
-            midBeam.transform.localScale      = new Vector3(absLen, 0.88f * currentThickness, 1f);
-            midBeam.transform.localPosition   = new Vector3(length / 2f, 0f, 0f);
+            outerBeam.transform.localScale    = new Vector3(curAbsLen, 1.65f * currentThickness, 1f);
+            outerBeam.transform.localPosition = new Vector3(curLen * 0.5f, 0f, 0f);
 
-            coreBeam.transform.localScale     = new Vector3(absLen, 0.35f * currentThickness, 1f);
-            coreBeam.transform.localPosition  = new Vector3(length / 2f, 0f, 0f);
+            midBeam.transform.localScale      = new Vector3(curAbsLen, 0.88f * currentThickness, 1f);
+            midBeam.transform.localPosition   = new Vector3(curLen * 0.5f, 0f, 0f);
 
-            float tipScale = 1.25f * currentThickness;
+            coreBeam.transform.localScale     = new Vector3(curAbsLen, 0.34f * currentThickness, 1f);
+            coreBeam.transform.localPosition  = new Vector3(curLen * 0.5f, 0f, 0f);
+
+            float tipScale = 1.35f * currentThickness;
             bossMuzzle.transform.localScale = new Vector3(tipScale, tipScale, 1f);
-            bossTip.transform.localPosition = new Vector3(length, 0f, 0f);
-            bossTip.transform.localScale = new Vector3(tipScale * 0.95f, tipScale * 1.15f, 1f);
+            muzzleRingObj.transform.localScale = new Vector3(tipScale * 0.45f, tipScale * 1.45f, 1f);
+            muzzleRingObj.transform.Rotate(0f, 0f, 320f * Time.deltaTime);
 
-            if (Random.value > 0.25f)
+            bossTip.transform.localPosition = new Vector3(curLen, 0f, 0f);
+            bossTip.transform.localScale = new Vector3(tipScale * 1.05f, tipScale * 1.25f, 1f);
+
+            if (crackleLr != null)
             {
-                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.6f, absLen * 0.90f), Random.Range(-0.45f, 0.45f), 0f);
-                SpawnHitSparks(sparkPos, true, 3);
+                Vector3 startPt = originPos;
+                Vector3 endPt = originPos + new Vector3(curLen, 0f, 0f);
+                for (int i = 0; i < crackleLr.positionCount; i++)
+                {
+                    float u = i / (float)(crackleLr.positionCount - 1);
+                    float env = Mathf.Sin(u * Mathf.PI);
+                    float jig = (Mathf.Sin(Time.time * 62f + i * 2.5f) * 0.24f + Mathf.Cos(Time.time * 45f - i * 3.1f) * 0.14f) * env * currentThickness;
+                    crackleLr.SetPosition(i, Vector3.Lerp(startPt, endPt, u) + new Vector3(0f, jig, 0f));
+                }
+                crackleLr.widthMultiplier = fadeOut;
+            }
+
+            if (Random.value > 0.35f && curAbsLen > 0.5f)
+            {
+                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.4f, curAbsLen * 0.92f), Random.Range(-0.35f, 0.35f) * thickness, 0f);
+                SpawnHitSparks(sparkPos, true, 2, beamGrad);
             }
 
             elapsed += Time.deltaTime;
@@ -441,6 +513,374 @@ public class CombatVFXManager : MonoBehaviour
         }
 
         Destroy(beamRoot);
+    }
+
+    public Gradient BuildTwoColorGradient(Color innerCol, Color outerCol)
+    {
+        Gradient g = new Gradient();
+        g.SetKeys(
+            new GradientColorKey[]
+            {
+                new GradientColorKey(innerCol, 0.0f),
+                new GradientColorKey(outerCol, 0.55f),
+                new GradientColorKey(Color.Lerp(outerCol, Color.black, 0.25f), 1.0f)
+            },
+            new GradientAlphaKey[]
+            {
+                new GradientAlphaKey(1f, 0.0f),
+                new GradientAlphaKey(0.85f, 0.55f),
+                new GradientAlphaKey(0f, 1.0f)
+            }
+        );
+        return g;
+    }
+
+    public void SpawnMuzzleFlash(Vector3 pos, float dirX, Color color, float scale = 1.0f)
+    {
+        GameObject root = new GameObject("EnemyMuzzleFlash");
+        root.transform.position = pos;
+
+        SpriteRenderer coreSr = root.AddComponent<SpriteRenderer>();
+        coreSr.sprite = GetSoftHaloSprite();
+        coreSr.color = Color.Lerp(color, Color.white, 0.55f);
+        coreSr.sortingOrder = 25;
+        root.transform.localScale = Vector3.one * (0.95f * scale);
+
+        MuzzleFlashFade fade = root.AddComponent<MuzzleFlashFade>();
+        fade.Init(0.18f, scale);
+
+        SpawnShockwaveRing(pos, color, 1.25f * scale);
+        Gradient grad = BuildTwoColorGradient(Color.white, color);
+        for (int i = 0; i < 6; i++)
+        {
+            GameObject sp = new GameObject("MuzzleSpark");
+            sp.transform.position = pos;
+            SpriteRenderer sr = sp.AddComponent<SpriteRenderer>();
+            sr.sprite = sparkSprite;
+            sr.color = (i % 2 == 0) ? Color.white : color;
+            sr.sortingOrder = 25;
+            SparkParticle p = sp.AddComponent<SparkParticle>();
+            p.Init(i < 2, grad);
+        }
+    }
+
+    public void SpawnChargeTelegraph(Vector3 pos, Color color, float duration = 0.45f, float maxRadius = 1.05f)
+    {
+        StartCoroutine(ChargeTelegraphRoutine(pos, color, duration, maxRadius));
+    }
+
+    private IEnumerator ChargeTelegraphRoutine(Vector3 pos, Color color, float duration, float maxRadius)
+    {
+        GameObject ringObj = new GameObject("ChargeTelegraphRing");
+        ringObj.transform.position = pos;
+        SpriteRenderer rSr = ringObj.AddComponent<SpriteRenderer>();
+        rSr.sprite = ringSprite;
+        rSr.color = color;
+        rSr.sortingOrder = 24;
+
+        GameObject coreObj = new GameObject("ChargeTelegraphCore");
+        coreObj.transform.SetParent(ringObj.transform, false);
+        SpriteRenderer cSr = coreObj.AddComponent<SpriteRenderer>();
+        cSr.sprite = GetSoftHaloSprite();
+        cSr.color = Color.Lerp(color, Color.white, 0.45f);
+        cSr.sortingOrder = 25;
+
+        Gradient grad = BuildTwoColorGradient(Color.white, color);
+        float elapsed = 0f;
+        float orbTimer = 0f;
+
+        while (elapsed < duration)
+        {
+            float p = Mathf.Clamp01(elapsed / duration);
+            float shrinkScale = Mathf.Lerp(maxRadius, 0.18f, p * p);
+            ringObj.transform.localScale = Vector3.one * shrinkScale;
+            ringObj.transform.Rotate(0f, 0f, 240f * Time.deltaTime);
+            rSr.color = new Color(color.r, color.g, color.b, 0.35f + p * 0.65f);
+
+            float corePulse = Mathf.Lerp(0.18f, 0.72f, p) * (1f + Mathf.Sin(Time.time * 40f) * 0.15f);
+            coreObj.transform.localScale = Vector3.one * corePulse;
+
+            orbTimer -= Time.deltaTime;
+            if (orbTimer <= 0f)
+            {
+                orbTimer = 0.08f;
+                Vector2 dir = Random.insideUnitCircle.normalized * Random.Range(0.95f, 1.55f);
+                GameObject orb = new GameObject("TelegraphInwardOrb");
+                orb.transform.position = pos + (Vector3)dir;
+                SpriteRenderer osr = orb.AddComponent<SpriteRenderer>();
+                osr.sprite = neutralOrbSprite;
+                osr.color = grad.Evaluate(Random.value);
+                osr.sortingOrder = 25;
+                ChargeParticle cp = orb.AddComponent<ChargeParticle>();
+                cp.Init(pos, 0.18f);
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        Destroy(ringObj);
+    }
+
+    public void SpawnSniperLaserSight(Vector3 origin, float dirX, float length, Color color, float duration = 0.55f)
+    {
+        StartCoroutine(SniperLaserSightRoutine(origin, dirX, length, color, duration));
+    }
+
+    private IEnumerator SniperLaserSightRoutine(Vector3 origin, float dirX, float length, Color color, float duration)
+    {
+        GameObject go = new GameObject("SniperTargetingLine");
+        LineRenderer lr = go.AddComponent<LineRenderer>();
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.positionCount = 2;
+        lr.sortingOrder = 21;
+        lr.SetPosition(0, origin);
+        lr.SetPosition(1, origin + new Vector3(dirX * length, 0f, 0f));
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float p = Mathf.Clamp01(elapsed / duration);
+            float w = Mathf.Lerp(0.08f, 0.022f, p);
+            float alpha = (p > 0.75f && Mathf.FloorToInt(elapsed * 26f) % 2 == 0) ? 1.0f : Mathf.Lerp(0.45f, 0.92f, p);
+            Color c = Color.Lerp(color, Color.white, p * p * 0.85f);
+            c.a = alpha;
+            lr.startWidth = w;
+            lr.endWidth = w;
+            lr.startColor = c;
+            lr.endColor = new Color(c.r, c.g, c.b, c.a * 0.45f);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        Destroy(go);
+    }
+
+    public void SpawnEnemyProjectile(
+        Vector3 origin,
+        Vector3 velocity,
+        EnemyProjectileStyle style,
+        Color primaryColor,
+        Color coreColor,
+        float scale,
+        float damage,
+        EnemyDummy owner,
+        float lifetime = 2.4f,
+        float arcGravity = 0f)
+    {
+        SpawnMuzzleFlash(origin, velocity.x >= 0f ? 1f : -1f, primaryColor, scale * 0.85f);
+
+        GameObject go = new GameObject($"EnemyProj_{style}");
+        go.transform.position = origin;
+        EnemyEnergyProjectile proj = go.AddComponent<EnemyEnergyProjectile>();
+        proj.Init(this, velocity, style, primaryColor, coreColor, scale, damage, owner, lifetime, arcGravity);
+    }
+
+    public void SpawnSlashArcVFX(Vector3 pos, float dirX, Color primaryCol, Color coreCol, float scale = 1.35f, float tiltDeg = 0f, float duration = 0.24f)
+    {
+        GameObject root = new GameObject("EnemySlashArc");
+        root.transform.position = pos;
+        root.transform.localScale = new Vector3((dirX < 0f ? -scale : scale), scale, 1f);
+        root.transform.localRotation = Quaternion.Euler(0f, 0f, tiltDeg);
+
+        SpriteRenderer outerSr = root.AddComponent<SpriteRenderer>();
+        outerSr.sprite = GetSlashArcSprite();
+        outerSr.color = primaryCol;
+        outerSr.sortingOrder = 23;
+
+        GameObject coreObj = new GameObject("SlashCore");
+        coreObj.transform.SetParent(root.transform, false);
+        coreObj.transform.localScale = new Vector3(0.82f, 0.78f, 1f);
+        SpriteRenderer coreSr = coreObj.AddComponent<SpriteRenderer>();
+        coreSr.sprite = GetSlashArcSprite();
+        coreSr.color = coreCol;
+        coreSr.sortingOrder = 24;
+
+        SlashArcEffect eff = root.AddComponent<SlashArcEffect>();
+        eff.Init(outerSr, coreSr, dirX, duration, scale);
+    }
+
+    public void SpawnCrossXSlashVFX(Vector3 pos, Color primaryCol, Color coreCol, float scale = 1.85f)
+    {
+        SpawnSlashArcVFX(pos, 1f, primaryCol, coreCol, scale, 38f, 0.28f);
+        SpawnSlashArcVFX(pos, -1f, primaryCol, coreCol, scale, -38f, 0.28f);
+        SpawnShockwaveRing(pos, primaryCol, scale * 1.3f);
+        SpawnHitSparks(pos, true, 10, BuildTwoColorGradient(coreCol, primaryCol));
+    }
+
+    public void SpawnSwirlingTornadoVortex(Transform followTarget, Vector3 localOffset, Color primaryCol, Color secondaryCol, float duration = 1.5f, float maxRadius = 1.65f)
+    {
+        StartCoroutine(SwirlingTornadoVortexRoutine(followTarget, localOffset, primaryCol, secondaryCol, duration, maxRadius));
+    }
+
+    private IEnumerator SwirlingTornadoVortexRoutine(Transform followTarget, Vector3 localOffset, Color primaryCol, Color secondaryCol, float duration, float maxRadius)
+    {
+        GameObject root = new GameObject("TornadoVortexVFX");
+        if (followTarget != null) root.transform.position = followTarget.position + localOffset;
+
+        const int ringCount = 5;
+        SpriteRenderer[] rings = new SpriteRenderer[ringCount];
+        for (int i = 0; i < ringCount; i++)
+        {
+            GameObject rObj = new GameObject($"VortexRing_{i}");
+            rObj.transform.SetParent(root.transform, false);
+            float u = i / (float)(ringCount - 1);
+            rObj.transform.localPosition = new Vector3(0f, Mathf.Lerp(-0.35f, 1.05f, u), 0f);
+            float baseW = Mathf.Lerp(maxRadius * 0.55f, maxRadius * 1.25f, u);
+            rObj.transform.localScale = new Vector3(baseW, baseW * 0.28f, 1f);
+
+            SpriteRenderer rSr = rObj.AddComponent<SpriteRenderer>();
+            rSr.sprite = ringSprite;
+            rSr.color = Color.Lerp(primaryCol, secondaryCol, u);
+            rSr.sortingOrder = (i % 2 == 0) ? 22 : 18;
+            rings[i] = rSr;
+        }
+
+        Gradient grad = BuildTwoColorGradient(primaryCol, secondaryCol);
+        float elapsed = 0f;
+        float orbTimer = 0f;
+
+        while (elapsed < duration)
+        {
+            if (followTarget != null)
+            {
+                root.transform.position = followTarget.position + localOffset;
+            }
+
+            float p = elapsed / duration;
+            float env = (p < 0.15f) ? (p / 0.15f) : (p > 0.80f ? (1f - (p - 0.80f) / 0.20f) : 1f);
+
+            for (int i = 0; i < ringCount; i++)
+            {
+                float u = i / (float)(ringCount - 1);
+                float baseW = Mathf.Lerp(maxRadius * 0.55f, maxRadius * 1.25f, u) * (0.85f + Mathf.Sin(Time.time * 16f + i) * 0.16f) * Mathf.Max(0.25f, env);
+                float xSway = Mathf.Sin(Time.time * 18f + i * 1.4f) * 0.18f;
+                rings[i].transform.localPosition = new Vector3(xSway, Mathf.Lerp(-0.35f, 1.05f, u), 0f);
+                rings[i].transform.localScale = new Vector3(baseW, baseW * 0.28f, 1f);
+                rings[i].transform.Rotate(0f, 0f, ((i % 2 == 0) ? 420f : -420f) * Time.deltaTime);
+                Color c = Color.Lerp(primaryCol, secondaryCol, u);
+                c.a = 0.88f * env;
+                rings[i].color = c;
+            }
+
+            orbTimer -= Time.deltaTime;
+            if (orbTimer <= 0f)
+            {
+                orbTimer = 0.06f;
+                float ang = Time.time * 14f;
+                Vector3 sparkPos = root.transform.position + new Vector3(Mathf.Cos(ang) * maxRadius * 0.52f, Random.Range(-0.25f, 0.9f), 0f);
+                GameObject sp = new GameObject("VortexSpark");
+                sp.transform.position = sparkPos;
+                SpriteRenderer sr = sp.AddComponent<SpriteRenderer>();
+                sr.sprite = sparkSprite;
+                sr.color = grad.Evaluate(Random.value);
+                sr.sortingOrder = 23;
+                RisingParticle rp = sp.AddComponent<RisingParticle>();
+                rp.Init(Random.Range(2.2f, 3.8f), 0.30f);
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        Destroy(root);
+    }
+
+    public void SpawnGroundDustWave(Vector3 origin, float dirX, Color color, int puffCount = 5, float spacing = 0.55f)
+    {
+        StartCoroutine(GroundDustWaveRoutine(origin, dirX, color, puffCount, spacing));
+    }
+
+    private IEnumerator GroundDustWaveRoutine(Vector3 origin, float dirX, Color color, int puffCount, float spacing)
+    {
+        Gradient grad = BuildTwoColorGradient(Color.white, color);
+        for (int i = 0; i < puffCount; i++)
+        {
+            Vector3 pPos = origin + new Vector3(dirX * (i * spacing), 0.12f, 0f);
+            SpawnShockwaveRing(pPos, color, 1.1f + i * 0.25f);
+            SpawnHitSparks(pPos, i == 0, 4, grad);
+            yield return new WaitForSeconds(0.045f);
+        }
+    }
+
+    Sprite GetSoftHaloSprite()
+    {
+        if (softHaloSprite != null) return softHaloSprite;
+        const int size = 64;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        float half = (size - 1) * 0.5f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), new Vector2(half, half)) / half;
+                float a = (d >= 1f) ? 0f : Mathf.Pow(1f - d, 2.0f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        softHaloSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+        return softHaloSprite;
+    }
+
+    Sprite GetProjectileBoltSprite()
+    {
+        if (projectileBoltSprite != null) return projectileBoltSprite;
+        const int w = 64;
+        const int h = 24;
+        Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        for (int y = 0; y < h; y++)
+        {
+            float dy = (y - (h - 1) * 0.5f) / ((h - 1) * 0.5f);
+            for (int x = 0; x < w; x++)
+            {
+                float u = x / (float)(w - 1);
+                // Cola larga atrás (u=0), cabeza afilada al frente (u=1)
+                float headX = (u > 0.72f) ? (u - 0.72f) / 0.28f : (0.72f - u) / 0.72f * 0.85f;
+                float d = Mathf.Sqrt(headX * headX + dy * dy);
+                float alpha = (d >= 1f) ? 0f : Mathf.Pow(1f - d, 1.55f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        tex.Apply();
+        projectileBoltSprite = Sprite.Create(tex, new Rect(0f, 0f, w, h), new Vector2(0.5f, 0.5f), 48f);
+        return projectileBoltSprite;
+    }
+
+    Sprite GetSlashArcSprite()
+    {
+        if (slashArcSprite != null) return slashArcSprite;
+        const int size = 96;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        float half = (size - 1) * 0.5f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float nx = (x - half) / half;
+                float ny = (y - half) / half;
+                // Medialuna curva orientada hacia la derecha (x > 0)
+                float rOuter = Mathf.Sqrt(nx * nx + ny * ny);
+                float rInner = Mathf.Sqrt((nx + 0.28f) * (nx + 0.28f) + ny * ny * 1.15f);
+                float a = 0f;
+                if (nx > -0.15f && rOuter <= 0.96f && rInner >= 0.62f)
+                {
+                    float arcFade = Mathf.Clamp01((nx + 0.15f) / 0.45f);
+                    float edgeOuter = Mathf.Clamp01((0.96f - rOuter) / 0.14f);
+                    float edgeInner = Mathf.Clamp01((rInner - 0.62f) / 0.14f);
+                    a = arcFade * edgeOuter * edgeInner;
+                }
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        slashArcSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 64f);
+        return slashArcSprite;
     }
 
     Sprite GetSoftBeamSprite()
@@ -1191,5 +1631,220 @@ public class UltBeamTravelRing : MonoBehaviour
             sr.color = new Color(baseCol.r, baseCol.g, baseCol.b, baseCol.a * (1f - p));
         }
         if (elapsed >= duration) Destroy(gameObject);
+    }
+}
+
+public enum EnemyProjectileStyle
+{
+    PlasmaBolt,
+    VoidDart,
+    PsionicOrb,
+    SniperSlug,
+    CyberBladeWave
+}
+
+public class MuzzleFlashFade : MonoBehaviour
+{
+    private float duration = 0.18f;
+    private float elapsed = 0f;
+    private float baseScale = 1f;
+    private SpriteRenderer sr;
+    private Color baseCol;
+
+    public void Init(float dur, float scale)
+    {
+        duration = Mathf.Max(0.06f, dur);
+        baseScale = scale;
+        sr = GetComponent<SpriteRenderer>();
+        if (sr != null) baseCol = sr.color;
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(elapsed / duration);
+        transform.localScale = Vector3.one * Mathf.Lerp(0.95f * baseScale, 1.85f * baseScale, t);
+        if (sr != null)
+        {
+            sr.color = new Color(baseCol.r, baseCol.g, baseCol.b, baseCol.a * (1f - t));
+        }
+        if (t >= 1f) Destroy(gameObject);
+    }
+}
+
+public class SlashArcEffect : MonoBehaviour
+{
+    private SpriteRenderer outerSr;
+    private SpriteRenderer coreSr;
+    private Color outerCol;
+    private Color coreCol;
+    private float duration;
+    private float baseScale;
+    private float dirX;
+    private float elapsed = 0f;
+
+    public void Init(SpriteRenderer outer, SpriteRenderer core, float dir, float dur, float scale)
+    {
+        outerSr = outer;
+        coreSr = core;
+        outerCol = outer != null ? outer.color : Color.cyan;
+        coreCol = core != null ? core.color : Color.white;
+        dirX = (dir < 0f) ? -1f : 1f;
+        duration = Mathf.Max(0.08f, dur);
+        baseScale = scale;
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(elapsed / duration);
+        float s = Mathf.Lerp(0.72f * baseScale, 1.38f * baseScale, 1f - (1f - t) * (1f - t));
+        transform.localScale = new Vector3(dirX * s, s, 1f);
+        transform.position += new Vector3(dirX * 1.4f * Time.deltaTime, 0f, 0f);
+        float alpha = 1f - t * t;
+        if (outerSr != null) outerSr.color = new Color(outerCol.r, outerCol.g, outerCol.b, outerCol.a * alpha);
+        if (coreSr != null) coreSr.color = new Color(coreCol.r, coreCol.g, coreCol.b, coreCol.a * alpha);
+        if (t >= 1f) Destroy(gameObject);
+    }
+}
+
+public class EnemyEnergyProjectile : MonoBehaviour
+{
+    private CombatVFXManager vfx;
+    private Vector3 velocity;
+    private EnemyProjectileStyle style;
+    private Color primaryCol;
+    private Color coreCol;
+    private float baseScale;
+    private float dmg;
+    private EnemyDummy owner;
+    private float lifeRemaining;
+    private float gravity;
+    private float elapsed = 0f;
+    private float trailTimer = 0f;
+    private Gradient trailGrad;
+    private SpriteRenderer haloSr;
+
+    public void Init(
+        CombatVFXManager manager,
+        Vector3 vel,
+        EnemyProjectileStyle projStyle,
+        Color primary,
+        Color core,
+        float scale,
+        float damage,
+        EnemyDummy attacker,
+        float lifetime,
+        float arcGravity)
+    {
+        vfx = manager;
+        velocity = vel;
+        style = projStyle;
+        primaryCol = primary;
+        coreCol = core;
+        baseScale = Mathf.Max(0.3f, scale);
+        dmg = damage;
+        owner = attacker;
+        lifeRemaining = lifetime;
+        gravity = arcGravity;
+        trailGrad = (vfx != null) ? vfx.BuildTwoColorGradient(coreCol, primaryCol) : null;
+
+        GameObject halo = new GameObject("ProjHalo");
+        halo.transform.SetParent(transform, false);
+        haloSr = halo.AddComponent<SpriteRenderer>();
+        haloSr.sortingOrder = 22;
+
+        SpriteRenderer coreSr = gameObject.AddComponent<SpriteRenderer>();
+        coreSr.sortingOrder = 23;
+        coreSr.color = coreCol;
+
+        if (style == EnemyProjectileStyle.PsionicOrb)
+        {
+            haloSr.sprite = (vfx != null) ? vfx.RingSpritePublic : null;
+            haloSr.color = primaryCol;
+            halo.transform.localScale = Vector3.one * (0.95f * baseScale);
+            coreSr.sprite = (vfx != null) ? vfx.SoftHaloSprite : null;
+            transform.localScale = Vector3.one * (0.72f * baseScale);
+        }
+        else if (style == EnemyProjectileStyle.CyberBladeWave)
+        {
+            haloSr.sprite = (vfx != null) ? vfx.SlashArcSprite : null;
+            haloSr.color = primaryCol;
+            halo.transform.localScale = new Vector3(1.25f, 1.25f, 1f);
+            coreSr.sprite = (vfx != null) ? vfx.SlashArcSprite : null;
+            float dirSign = (velocity.x < 0f) ? -1f : 1f;
+            transform.localScale = new Vector3(dirSign * 0.95f * baseScale, 1.15f * baseScale, 1f);
+        }
+        else
+        {
+            haloSr.sprite = (vfx != null) ? vfx.SoftHaloSprite : null;
+            haloSr.color = new Color(primaryCol.r, primaryCol.g, primaryCol.b, 0.72f);
+            halo.transform.localScale = new Vector3(1.55f, 1.15f, 1f);
+            coreSr.sprite = (vfx != null) ? vfx.ProjectileBoltSprite : null;
+            float sx = (style == EnemyProjectileStyle.SniperSlug) ? 1.85f : 1.05f;
+            float sy = (style == EnemyProjectileStyle.SniperSlug) ? 0.55f : 0.85f;
+            transform.localScale = new Vector3(sx * baseScale, sy * baseScale, 1f);
+            float ang = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0f, 0f, ang);
+        }
+    }
+
+    void Update()
+    {
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen) return;
+
+        float dt = Time.deltaTime;
+        elapsed += dt;
+        lifeRemaining -= dt;
+
+        if (gravity != 0f) velocity.y -= gravity * dt;
+        Vector3 step = velocity * dt;
+        if (style == EnemyProjectileStyle.VoidDart)
+        {
+            step.y += Mathf.Sin(elapsed * 22f) * 1.1f * dt;
+        }
+        transform.position += step;
+
+        if (style == EnemyProjectileStyle.PsionicOrb && haloSr != null)
+        {
+            haloSr.transform.Rotate(0f, 0f, 380f * dt);
+        }
+        else if (style != EnemyProjectileStyle.CyberBladeWave && velocity.sqrMagnitude > 0.01f)
+        {
+            transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg);
+        }
+
+        trailTimer -= dt;
+        if (trailTimer <= 0f && vfx != null)
+        {
+            trailTimer = (style == EnemyProjectileStyle.SniperSlug) ? 0.025f : 0.045f;
+            vfx.SpawnHitSparks(transform.position, false, 1, trailGrad);
+        }
+
+        Transform kael = (KaelAutoController.Instance != null) ? KaelAutoController.Instance.transform : null;
+        if (kael != null)
+        {
+            float dx = Mathf.Abs(kael.position.x - transform.position.x);
+            float dy = Mathf.Abs((kael.position.y + 0.6f) - transform.position.y);
+            if (dx <= 0.65f && dy <= 1.25f)
+            {
+                if (PlayerStats.Instance != null && dmg > 0f)
+                {
+                    PlayerStats.Instance.TakeDamage(dmg, owner);
+                }
+                if (vfx != null)
+                {
+                    vfx.SpawnShockwaveRing(transform.position, primaryCol, 1.55f * baseScale);
+                    vfx.SpawnHitSparks(transform.position, true, 7, trailGrad);
+                }
+                Destroy(gameObject);
+                return;
+            }
+        }
+
+        if (lifeRemaining <= 0f)
+        {
+            Destroy(gameObject);
+        }
     }
 }

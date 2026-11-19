@@ -525,6 +525,7 @@ public class EnemyDummy : MonoBehaviour
         stunTimer = Mathf.Max(stunTimer, duration);
         isChargingHeavy = false;
         isPlayingAttackAnim = false;
+        if (anim != null) anim.speed = 1f;
         nextAttackTime = Time.time + duration + 0.25f;
         if (sr != null) sr.color = new Color(0.45f, 0.95f, 1f);
     }
@@ -648,17 +649,29 @@ public class EnemyDummy : MonoBehaviour
 
         if (distToKael > attackRange && !isChargingHeavy && !isPlayingAttackAnim)
         {
-            // Cañón Láser de Pecho a Media Distancia para BioHulk / Rayo de Francotirador Pretoriano:
+            // Cañón Láser de Pecho / Ráfagas a Distancia para enemigos tiradores y jefes:
             if (visualType == "BioHulk" && distToKael >= 3.2f && distToKael <= 7.5f && Time.time >= nextHulkLaserTime)
             {
-                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(5.5f, 8.0f);
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(5.0f, 7.2f);
                 StartCoroutine(BioHulkChestLaserRoutine());
                 return;
             }
-            if (visualType == "PraetorianMarksman" && distToKael >= 1.5f && distToKael <= 3.35f && Time.time >= nextHulkLaserTime)
+            if (visualType == "PraetorianMarksman" && distToKael >= 1.5f && distToKael <= 5.5f && Time.time >= nextHulkLaserTime)
             {
-                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(4.2f, 6.2f);
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(3.8f, 5.4f);
                 StartCoroutine(PraetorianMarksmanLaserRoutine());
+                return;
+            }
+            if (visualType == "Archon" && distToKael >= 2.2f && distToKael <= 7.2f && Time.time >= nextHulkLaserTime)
+            {
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(4.2f, 5.8f);
+                StartCoroutine(ArchonPsionicBarrageRoutine());
+                return;
+            }
+            if (!useCustomSprites && isBoss && distToKael >= 2.2f && distToKael <= 6.8f && Time.time >= nextHulkLaserTime)
+            {
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(4.4f, 6.2f);
+                StartCoroutine(PlayAnimatorAttackRoutine(rangedVolleyOnly: true));
                 return;
             }
 
@@ -679,7 +692,7 @@ public class EnemyDummy : MonoBehaviour
         }
         else
         {
-            if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", true);
+            if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", isPlayingAttackAnim || isChargingHeavy);
 
             if (!isChargingHeavy && !isPlayingAttackAnim && Time.time >= nextAttackTime)
             {
@@ -697,13 +710,34 @@ public class EnemyDummy : MonoBehaviour
                 else if (visualType == "BioHulk")
                 {
                     attackCounter++;
-                    StartCoroutine(BioHulkGroundSmashRoutine());
+                    if (attackCounter % 3 == 0)
+                        StartCoroutine(BioHulkChestLaserRoutine());
+                    else
+                        StartCoroutine(BioHulkGroundSmashRoutine());
                 }
                 else if (visualType == "BioLasher")
                 {
                     attackCounter++;
                     if (attackCounter % 2 == 0)
                         StartCoroutine(BioLasherTornadoRoutine());
+                    else
+                        StartCoroutine(PlayVisibleAttackRoutine());
+                }
+                else if (visualType == "PraetorianMarksman")
+                {
+                    attackCounter++;
+                    if (attackCounter % 2 == 0)
+                        StartCoroutine(PraetorianMarksmanLaserRoutine());
+                    else
+                        StartCoroutine(PlayVisibleAttackRoutine());
+                }
+                else if (visualType == "Archon")
+                {
+                    attackCounter++;
+                    if (attackCounter % 3 == 0)
+                        StartCoroutine(TelegraphedHeavyAttack());
+                    else if (attackCounter % 2 == 0)
+                        StartCoroutine(ArchonPsionicBarrageRoutine());
                     else
                         StartCoroutine(PlayVisibleAttackRoutine());
                 }
@@ -721,11 +755,7 @@ public class EnemyDummy : MonoBehaviour
                     }
                     else
                     {
-                        nextAttackTime = Time.time + (1f / attackRate);
-                        if (PlayerStats.Instance != null)
-                        {
-                            PlayerStats.Instance.TakeDamage(damage, this);
-                        }
+                        StartCoroutine(PlayAnimatorAttackRoutine(rangedVolleyOnly: false));
                     }
                 }
             }
@@ -751,8 +781,12 @@ public class EnemyDummy : MonoBehaviour
         }
 
         Vector3 handPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.45f);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(handPos, new Color(0.82f, 0.25f, 1f), 0.68f, 1.25f);
+        }
 
-        // Cuadros 0, 1, 2: Concentración de energía psiónica
+        // Cuadros 0, 1, 2: Concentración de energía psiónica legible
         int totalFrames = (customAttackFrames != null && customAttackFrames.Length >= 8) ? 8 : (customAttackFrames != null ? customAttackFrames.Length : 0);
         for (int f = 0; f < 3; f++)
         {
@@ -765,7 +799,7 @@ public class EnemyDummy : MonoBehaviour
                 CombatVFXManager.Instance.SpawnElectricArc(handPos, new Color(0.80f, 0.15f, 1f));
                 CombatVFXManager.Instance.SpawnHitSparks(handPos, false, 3);
             }
-            yield return new WaitForSeconds(0.16f);
+            yield return new WaitForSeconds(0.24f);
         }
 
         // Cuadro 3: Disparo psiónico a distancia
@@ -775,55 +809,63 @@ public class EnemyDummy : MonoBehaviour
         if (LevelAudioManager.Instance != null)
             LevelAudioManager.Instance.PlayBossAlert();
 
-        float beamLength = 8.5f;
+        float beamLength = 8.8f;
         if (isMiniBoss)
         {
-            // Mini-Jefe: Rayo continuo psiónico de plasma violeta a distancia
+            // Mini-Jefe: Rayo continuo psiónico de plasma violeta/cian de triple capa
             if (CombatVFXManager.Instance != null)
             {
-                CombatVFXManager.Instance.SpawnBossLaserBeam(handPos, dirToKael * beamLength, 0.50f);
-                CombatVFXManager.Instance.SpawnShockwaveRing(handPos, new Color(0.75f, 0.15f, 1f), 3.2f);
-                CombatVFXManager.Instance.ShakeCamera(0.28f, 0.18f);
+                CombatVFXManager.Instance.SpawnCustomColoredBeam(
+                    handPos,
+                    dirToKael * beamLength,
+                    0.62f,
+                    new Color(0.58f, 0.08f, 0.92f, 0.72f),
+                    new Color(0.88f, 0.22f, 1.00f, 0.96f),
+                    Color.white,
+                    thickness: 1.05f,
+                    withLightning: true
+                );
+                CombatVFXManager.Instance.ShakeCamera(0.32f, 0.20f);
                 CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.65f, 0.15f, 0.95f), 0.35f);
             }
+
+            if (kaelTarget != null)
+            {
+                float diffX = kaelTarget.position.x - transform.position.x;
+                bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+                if (isInFront && Mathf.Abs(diffX) <= beamLength)
+                {
+                    if (PlayerStats.Instance != null) PlayerStats.Instance.TakeDamage(damage * 1.25f, this);
+                    if (CombatVFXManager.Instance != null) CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+                }
+            }
+            yield return new WaitForSeconds(0.55f);
         }
         else
         {
-            // Inquisidor Regular: Disparo de 3 ondas/orbes psiónicos con arcos eléctricos
-            if (CombatVFXManager.Instance != null)
+            // Inquisidor Regular: Disparo real de 3 orbes psiónicos en abanico con estelas
+            for (int p = 0; p < 3; p++)
             {
-                for (int p = 1; p <= 3; p++)
-                {
-                    Vector3 burstPos = handPos + Vector3.right * (dirToKael * p * 1.9f);
-                    CombatVFXManager.Instance.SpawnElectricArc(burstPos, new Color(0.85f, 0.20f, 1f));
-                    CombatVFXManager.Instance.SpawnShockwaveRing(burstPos, new Color(0.80f, 0.15f, 0.95f), 1.6f + p * 0.4f);
-                }
-                CombatVFXManager.Instance.ShakeCamera(0.18f, 0.12f);
-            }
-        }
-
-        // Impacto a Kael si está en el sector frontal del ataque
-        if (kaelTarget != null)
-        {
-            float diffX = kaelTarget.position.x - transform.position.x;
-            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
-            float dist = Mathf.Abs(diffX);
-
-            if (isInFront && dist <= beamLength)
-            {
-                if (PlayerStats.Instance != null)
-                {
-                    float dmg = isMiniBoss ? damage * 1.25f : damage;
-                    PlayerStats.Instance.TakeDamage(dmg, this);
-                }
+                if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
                 if (CombatVFXManager.Instance != null)
                 {
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
+                    Vector3 projVel = new Vector3(dirToKael * 7.4f, (p - 1) * 0.65f, 0f);
+                    CombatVFXManager.Instance.SpawnEnemyProjectile(
+                        handPos,
+                        projVel,
+                        EnemyProjectileStyle.PsionicOrb,
+                        new Color(0.86f, 0.22f, 1f),
+                        new Color(0.75f, 0.96f, 1f),
+                        scale: 0.95f,
+                        damage: damage * 0.50f,
+                        owner: this,
+                        lifetime: 2.2f
+                    );
                 }
+                yield return new WaitForSeconds(0.14f);
             }
+            yield return new WaitForSeconds(0.22f);
         }
-
-        yield return new WaitForSeconds(0.26f);
 
         // Cuadros 4..7: Recuperación suave de la postura
         for (int f = 4; f < totalFrames; f++)
@@ -831,17 +873,17 @@ public class EnemyDummy : MonoBehaviour
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
                 sr.sprite = customAttackFrames[f];
-            yield return new WaitForSeconds(0.12f);
+            yield return new WaitForSeconds(0.17f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(2.5f, 3.4f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.8f, 3.6f);
         isPlayingAttackAnim = false;
     }
 
     /// <summary>
     /// Ataque de Bombardeo de Proyectiles Psiónicos del Inquisidor Vorst (Fila 0):
-    /// Carga orbes de plasma oscuro en ambas manos y dispara 5 dardos psiónicos en abanico telegrafiado.
+    /// Carga orbes de plasma oscuro en ambas manos y dispara 5 dardos psiónicos reales en ráfaga.
     /// </summary>
     private IEnumerator HiveInquisitorMissileBarrageRoutine()
     {
@@ -860,6 +902,11 @@ public class EnemyDummy : MonoBehaviour
         Vector3 handPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.45f);
         int totalFrames = (customMissileFrames != null && customMissileFrames.Length >= 8) ? 8 : (customMissileFrames != null ? customMissileFrames.Length : 0);
 
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(handPos, new Color(0.95f, 0.25f, 1f), 0.64f, 1.15f);
+        }
+
         // Cuadros 0, 1, 2: Concentración de energía en esferas gemelas
         for (int f = 0; f < 3; f++)
         {
@@ -872,48 +919,44 @@ public class EnemyDummy : MonoBehaviour
                 CombatVFXManager.Instance.SpawnElectricArc(handPos, new Color(0.85f, 0.20f, 1f));
                 CombatVFXManager.Instance.SpawnHitSparks(handPos, false, 2);
             }
-            yield return new WaitForSeconds(0.14f);
+            yield return new WaitForSeconds(0.22f);
         }
 
-        // Cuadro 3 y 4: Lanzamiento en abanico de 5 misiles psiónicos con estela
+        // Cuadros 3 y 4: Ráfaga escalonada de 5 dardos psiónicos reales volando hacia Kael
         if (customMissileFrames != null && customMissileFrames.Length > 3 && customMissileFrames[3] != null)
             sr.sprite = customMissileFrames[3];
 
         if (LevelAudioManager.Instance != null)
             LevelAudioManager.Instance.PlayEnemyAttack();
 
-        if (CombatVFXManager.Instance != null)
+        float dartDmg = (isMiniBoss ? damage * 0.42f : damage * 0.36f);
+        for (int m = 0; m < 5; m++)
         {
-            CombatVFXManager.Instance.ShakeCamera(0.24f, 0.16f);
-            for (int m = 1; m <= 5; m++)
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (m == 2 && customMissileFrames != null && customMissileFrames.Length > 4 && customMissileFrames[4] != null)
+                sr.sprite = customMissileFrames[4];
+
+            if (CombatVFXManager.Instance != null)
             {
-                Vector3 dartPos = handPos + Vector3.right * (dirToKael * m * 1.25f) + Vector3.up * (Mathf.Sin(m * 0.8f) * 0.35f);
-                CombatVFXManager.Instance.SpawnElectricArc(dartPos, new Color(0.85f, 0.25f, 1f));
-                CombatVFXManager.Instance.SpawnShockwaveRing(dartPos, new Color(0.95f, 0.25f, 0.85f), 1.2f + m * 0.2f);
+                float verticalSpread = (m - 2) * 0.65f;
+                Vector3 spawnAt = handPos + Vector3.up * ((m % 2 == 0) ? 0.14f : -0.10f);
+                Vector3 vel = new Vector3(dirToKael * (7.8f + m * 0.45f), verticalSpread, 0f);
+                CombatVFXManager.Instance.SpawnEnemyProjectile(
+                    spawnAt,
+                    vel,
+                    EnemyProjectileStyle.VoidDart,
+                    new Color(0.95f, 0.22f, 0.92f),
+                    new Color(1f, 0.85f, 1f),
+                    scale: 0.92f,
+                    damage: dartDmg,
+                    owner: this,
+                    lifetime: 2.2f
+                );
             }
+            yield return new WaitForSeconds(0.10f);
         }
 
         yield return new WaitForSeconds(0.22f);
-
-        if (customMissileFrames != null && customMissileFrames.Length > 4 && customMissileFrames[4] != null)
-            sr.sprite = customMissileFrames[4];
-
-        // Impacto frontal a Kael
-        if (kaelTarget != null)
-        {
-            float diffX = kaelTarget.position.x - transform.position.x;
-            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
-            float dist = Mathf.Abs(diffX);
-            if (isInFront && dist <= 7.2f && PlayerStats.Instance != null)
-            {
-                float hitDmg = isMiniBoss ? damage * 1.30f : damage * 1.10f;
-                PlayerStats.Instance.TakeDamage(hitDmg, this);
-                if (CombatVFXManager.Instance != null)
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
-            }
-        }
-
-        yield return new WaitForSeconds(0.20f);
 
         // Cuadros 5..7: Recuperación suave de la postura
         for (int f = 5; f < totalFrames; f++)
@@ -921,18 +964,18 @@ public class EnemyDummy : MonoBehaviour
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customMissileFrames != null && f < customMissileFrames.Length && customMissileFrames[f] != null)
                 sr.sprite = customMissileFrames[f];
-            yield return new WaitForSeconds(0.12f);
+            yield return new WaitForSeconds(0.17f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(2.2f, 3.0f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.6f, 3.4f);
         isPlayingAttackAnim = false;
     }
 
     /// <summary>
     /// Ataque de Torbellino Psiónico y Muro de Fuego Terrestre del Inquisidor Vorst (Fila 1):
-    /// Alza sus brazos canalizando un torbellino púrpura bajo sus pies y luego libera una ola de fuego
-    /// y relámpagos oscuros que avanza reptando por el piso hacia Kael.
+    /// Alza sus brazos canalizando un torbellino púrpura bajo sus pies y luego libera una ola secuencial
+    /// de pilares de plasma oscuro que avanza por el suelo hacia Kael.
     /// </summary>
     private IEnumerator HiveInquisitorVortexFlameRoutine()
     {
@@ -946,11 +989,19 @@ public class EnemyDummy : MonoBehaviour
         {
             string txt = isMiniBoss ? "[!] ¡TORBELLINO Y OLA DE PLASMA TERRESTRE!" : "[!] ¡LLAMA OSCURA TERRESTRE VORST!";
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.9f, txt, new Color(0.95f, 0.15f, 0.70f), 20, 1.0f);
+            CombatVFXManager.Instance.SpawnSwirlingTornadoVortex(
+                transform,
+                Vector3.up * 0.42f,
+                new Color(0.92f, 0.22f, 1f),
+                new Color(0.25f, 0.92f, 1f),
+                duration: 0.85f,
+                maxRadius: 1.65f
+            );
         }
 
         int totalFrames = (customVortexFlameFrames != null && customVortexFlameFrames.Length >= 8) ? 8 : (customVortexFlameFrames != null ? customVortexFlameFrames.Length : 0);
 
-        // Cuadros 0, 1, 2: Torbellino giratorio en los pies
+        // Cuadros 0, 1, 2: Torbellino giratorio visible en los pies
         for (int f = 0; f < 3; f++)
         {
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
@@ -963,47 +1014,61 @@ public class EnemyDummy : MonoBehaviour
                 CombatVFXManager.Instance.SpawnShockwaveRing(feetPos, new Color(0.85f, 0.15f, 0.95f), 1.6f + f * 0.5f);
                 CombatVFXManager.Instance.SpawnElectricArc(feetPos, new Color(0.90f, 0.20f, 1f));
             }
-            yield return new WaitForSeconds(0.18f);
+            yield return new WaitForSeconds(0.26f);
         }
 
-        // Cuadro 3: DESPLIEGUE MASIVO DE LLAMA Y RELÁMPAGOS TERRESTRES
+        // Cuadro 3: DESPLIEGUE PROGRESIVO DE PILARES DE LLAMA Y ONDA TERRESTRE
         if (customVortexFlameFrames != null && customVortexFlameFrames.Length > 3 && customVortexFlameFrames[3] != null)
             sr.sprite = customVortexFlameFrames[3];
 
         if (LevelAudioManager.Instance != null)
             LevelAudioManager.Instance.PlayBossAlert();
 
-        float waveLength = 8.0f;
+        float waveLength = 8.4f;
+        bool hitKaelAlready = false;
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.ShakeCamera(0.36f, 0.24f);
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.70f, 0.10f, 0.85f), 0.40f);
-
-            // Muro de fuego reptante por el suelo hacia Kael
-            for (int p = 1; p <= 4; p++)
-            {
-                Vector3 pillarPos = new Vector3(baseX + dirToKael * (p * 1.85f), baseGroundY, 0f);
-                CombatVFXManager.Instance.SpawnEnergyPillar(pillarPos, (p % 2 == 0) ? new Color(0.85f, 0.15f, 1f) : new Color(0.45f, 0.10f, 0.95f));
-                CombatVFXManager.Instance.SpawnElectricArc(pillarPos + Vector3.up * 0.5f, new Color(1f, 0.35f, 0.90f));
-            }
+            CombatVFXManager.Instance.ShakeCamera(0.38f, 0.24f);
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.70f, 0.10f, 0.85f), 0.38f);
+            CombatVFXManager.Instance.SpawnGroundDustWave(transform.position, dirToKael, new Color(0.88f, 0.20f, 1f), 6, 1.35f);
         }
 
-        // Impacto a Kael si se encuentra en el suelo en el rango de la ola
-        if (kaelTarget != null)
+        for (int p = 1; p <= 5; p++)
         {
-            float diffX = kaelTarget.position.x - transform.position.x;
-            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
-            float dist = Mathf.Abs(diffX);
-            if (isInFront && dist <= waveLength && kaelTarget.position.y <= baseGroundY + 1.2f && PlayerStats.Instance != null)
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            Vector3 pillarPos = new Vector3(baseX + dirToKael * (p * 1.55f), baseGroundY, 0f);
+            if (CombatVFXManager.Instance != null)
             {
-                float hitDmg = isMiniBoss ? damage * 1.45f : damage * 1.20f;
-                PlayerStats.Instance.TakeDamage(hitDmg, this);
+                CombatVFXManager.Instance.SpawnEnergyPillar(pillarPos, (p % 2 == 0) ? new Color(0.95f, 0.22f, 0.85f) : new Color(0.55f, 0.15f, 1f));
+                CombatVFXManager.Instance.SpawnElectricArc(pillarPos + Vector3.up * 0.55f, new Color(1f, 0.35f, 0.90f));
+            }
+
+            if (!hitKaelAlready && kaelTarget != null && Mathf.Abs(kaelTarget.position.x - pillarPos.x) <= 1.25f && kaelTarget.position.y <= baseGroundY + 1.2f)
+            {
+                hitKaelAlready = true;
+                if (PlayerStats.Instance != null)
+                {
+                    float hitDmg = isMiniBoss ? damage * 1.45f : damage * 1.20f;
+                    PlayerStats.Instance.TakeDamage(hitDmg, this);
+                }
                 if (CombatVFXManager.Instance != null)
                     CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.5f, true, 10);
             }
+            yield return new WaitForSeconds(0.10f);
         }
 
-        yield return new WaitForSeconds(0.32f);
+        if (!hitKaelAlready && kaelTarget != null)
+        {
+            float diffX = kaelTarget.position.x - transform.position.x;
+            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+            if (isInFront && Mathf.Abs(diffX) <= waveLength && kaelTarget.position.y <= baseGroundY + 1.2f && PlayerStats.Instance != null)
+            {
+                float hitDmg = isMiniBoss ? damage * 1.45f : damage * 1.20f;
+                PlayerStats.Instance.TakeDamage(hitDmg, this);
+            }
+        }
+
+        yield return new WaitForSeconds(0.24f);
 
         // Cuadros 4..7: Recuperación de la postura
         for (int f = 4; f < totalFrames; f++)
@@ -1011,11 +1076,11 @@ public class EnemyDummy : MonoBehaviour
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customVortexFlameFrames != null && f < customVortexFlameFrames.Length && customVortexFlameFrames[f] != null)
                 sr.sprite = customVortexFlameFrames[f];
-            yield return new WaitForSeconds(0.14f);
+            yield return new WaitForSeconds(0.18f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(2.4f, 3.2f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.6f, 3.5f);
         isPlayingAttackAnim = false;
     }
 
@@ -1032,19 +1097,23 @@ public class EnemyDummy : MonoBehaviour
         if (sr != null) sr.flipX = (dirToKael > 0f);
 
         int totalFrames = (customAttackFrames != null && customAttackFrames.Length >= 8) ? 8 : (customAttackFrames != null ? customAttackFrames.Length : 0);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(transform.position + Vector3.up * 1.4f, new Color(0.20f, 0.95f, 0.40f), 0.68f, 1.35f);
+        }
 
-        // Cuadros 0, 1, 2: Alza los brazos y los tanques brillan
+        // Cuadros 0, 1, 2: Alza los brazos y los tanques brillan de forma legible
         for (int f = 0; f < 3; f++)
         {
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
                 sr.sprite = customAttackFrames[f];
 
-            if (f == 1 && CombatVFXManager.Instance != null)
+            if (f >= 1 && CombatVFXManager.Instance != null)
             {
                 CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 1.5f, new Color(0.15f, 0.95f, 0.35f));
             }
-            yield return new WaitForSeconds(0.16f);
+            yield return new WaitForSeconds(0.24f);
         }
 
         // Cuadro 3: IMPACTO BRUTAL CONTRA EL SUELO
@@ -1059,10 +1128,11 @@ public class EnemyDummy : MonoBehaviour
         if (CombatVFXManager.Instance != null)
         {
             Vector3 impactPos = transform.position + Vector3.right * (dirToKael * 0.7f) + Vector3.up * 0.1f;
-            CombatVFXManager.Instance.SpawnShockwaveRing(impactPos, new Color(0.75f, 0.15f, 0.95f), 2.9f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(impactPos, new Color(0.20f, 0.95f, 0.40f), 1.9f);
-            CombatVFXManager.Instance.ShakeCamera(0.32f, 0.22f);
-            CombatVFXManager.Instance.SpawnHitSparks(impactPos, true, 8);
+            CombatVFXManager.Instance.SpawnShockwaveRing(impactPos, new Color(0.75f, 0.15f, 0.95f), 3.1f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(impactPos, new Color(0.20f, 0.95f, 0.40f), 2.1f);
+            CombatVFXManager.Instance.SpawnGroundDustWave(impactPos, dirToKael, new Color(0.20f, 0.95f, 0.40f), 5, 0.62f);
+            CombatVFXManager.Instance.ShakeCamera(0.35f, 0.24f);
+            CombatVFXManager.Instance.SpawnHitSparks(impactPos, true, 10);
         }
 
         bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.65f);
@@ -1071,7 +1141,7 @@ public class EnemyDummy : MonoBehaviour
             PlayerStats.Instance.TakeDamage(damage * 1.35f, this);
         }
 
-        yield return new WaitForSeconds(0.25f);
+        yield return new WaitForSeconds(0.38f);
 
         // Cuadros 4..7: Recuperación pesada
         for (int f = 4; f < totalFrames; f++)
@@ -1079,11 +1149,11 @@ public class EnemyDummy : MonoBehaviour
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
                 sr.sprite = customAttackFrames[f];
-            yield return new WaitForSeconds(0.14f);
+            yield return new WaitForSeconds(0.18f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(1.2f, 1.8f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(1.6f, 2.2f);
         isPlayingAttackAnim = false;
     }
 
@@ -1109,10 +1179,10 @@ public class EnemyDummy : MonoBehaviour
     {
         return ExecuteCustomLaserRoutine(
             "[!] ¡DISPARO DE FRANCOTIRADOR!",
-            new Color(0.85f, 0.30f, 1.0f),
+            new Color(0.95f, 0.25f, 1.0f),
             0.96f,
             0.62f,
-            3.35f,
+            5.8f,
             1.25f,
             spawnOverlayBeam: false
         );
@@ -1147,6 +1217,16 @@ public class EnemyDummy : MonoBehaviour
         Vector3 chestPos = transform.position + Vector3.up * emitterY + Vector3.right * (dirToKael * emitterForwardX);
         int totalFrames = (customLaserFrames != null && customLaserFrames.Length >= 8) ? 8 : (customLaserFrames != null ? customLaserFrames.Length : 0);
 
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(chestPos, fxColor, 0.72f, 1.25f);
+            if (!spawnOverlayBeam)
+            {
+                // Láser telegrafiado de mira de francotirador antes del disparo
+                CombatVFXManager.Instance.SpawnSniperLaserSight(chestPos, dirToKael, beamLength + 1.2f, fxColor, 0.72f);
+            }
+        }
+
         // Cuadros 0, 1, 2: Carga energética antes del disparo
         for (int f = 0; f < 3; f++)
         {
@@ -1159,10 +1239,10 @@ public class EnemyDummy : MonoBehaviour
                 CombatVFXManager.Instance.SpawnElectricArc(chestPos, fxColor);
                 CombatVFXManager.Instance.SpawnHitSparks(chestPos, false, 3);
             }
-            yield return new WaitForSeconds(0.16f);
+            yield return new WaitForSeconds(0.25f);
         }
 
-        // Cuadros 3..4: DISPARO DE RAYO LÁSER (manteniendo la punta pixel-art continua)
+        // Cuadros 3..4: DISPARO DE RAYO LÁSER + DESTELLO DE BOCA + TRAZADORA
         int beamEndFrame = (spawnOverlayBeam || totalFrames < 5) ? 4 : 5;
         for (int f = 3; f < beamEndFrame; f++)
         {
@@ -1178,9 +1258,45 @@ public class EnemyDummy : MonoBehaviour
                 if (CombatVFXManager.Instance != null)
                 {
                     if (spawnOverlayBeam)
-                        CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, 0.45f);
-                    CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, fxColor, spawnOverlayBeam ? 3.0f : 1.9f);
-                    CombatVFXManager.Instance.ShakeCamera(spawnOverlayBeam ? 0.36f : 0.18f, spawnOverlayBeam ? 0.22f : 0.12f);
+                    {
+                        CombatVFXManager.Instance.SpawnCustomColoredBeam(
+                            chestPos,
+                            dirToKael * beamLength,
+                            0.58f,
+                            new Color(0.55f, 0.08f, 0.85f, 0.70f),
+                            fxColor,
+                            Color.white,
+                            thickness: 1.05f,
+                            withLightning: true
+                        );
+                    }
+                    else
+                    {
+                        // Francotirador: Haz láser delgado de hiper-velocidad + proyectil trazador visual
+                        CombatVFXManager.Instance.SpawnCustomColoredBeam(
+                            chestPos,
+                            dirToKael * beamLength,
+                            0.36f,
+                            new Color(0.65f, 0.12f, 0.95f, 0.65f),
+                            fxColor,
+                            Color.white,
+                            thickness: 0.42f,
+                            withLightning: true
+                        );
+                        CombatVFXManager.Instance.SpawnEnemyProjectile(
+                            chestPos,
+                            new Vector3(dirToKael * 16.5f, 0f, 0f),
+                            EnemyProjectileStyle.SniperSlug,
+                            fxColor,
+                            Color.white,
+                            scale: 1.05f,
+                            damage: 0f,
+                            owner: this,
+                            lifetime: 0.45f
+                        );
+                    }
+                    CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, fxColor, spawnOverlayBeam ? 3.2f : 2.1f);
+                    CombatVFXManager.Instance.ShakeCamera(spawnOverlayBeam ? 0.36f : 0.22f, spawnOverlayBeam ? 0.22f : 0.14f);
                     if (spawnOverlayBeam)
                         CombatVFXManager.Instance.TriggerScreenFlash(fxColor, 0.35f);
                 }
@@ -1195,11 +1311,11 @@ public class EnemyDummy : MonoBehaviour
                     {
                         PlayerStats.Instance.TakeDamage(damage * damageMultiplier, this);
                         if (CombatVFXManager.Instance != null)
-                            CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+                            CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 12);
                     }
                 }
             }
-            yield return new WaitForSeconds(spawnOverlayBeam ? 0.30f : 0.16f);
+            yield return new WaitForSeconds(spawnOverlayBeam ? 0.42f : 0.26f);
         }
 
         // Cuadros restantes: Enfriamiento / recuperación
@@ -1208,17 +1324,17 @@ public class EnemyDummy : MonoBehaviour
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
                 sr.sprite = customLaserFrames[f];
-            yield return new WaitForSeconds(0.12f);
+            yield return new WaitForSeconds(0.18f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + 0.45f;
+        nextAttackTime = Time.time + 1.25f;
         isPlayingAttackAnim = false;
     }
 
     /// <summary>
     /// Ataque de Ciclón de Tentáculos de la Alienígena Neón Tentacular (BioLasher - Fila 2):
-    /// Hace girar violentamente sus tentáculos en un vórtice cortante con chispas de energía psiónica.
+    /// Hace girar violentamente sus tentáculos en un vórtice cortante con anillos giratorios y chispas.
     /// </summary>
     private IEnumerator BioLasherTornadoRoutine()
     {
@@ -1237,13 +1353,21 @@ public class EnemyDummy : MonoBehaviour
                 19,
                 0.9f
             );
+            CombatVFXManager.Instance.SpawnSwirlingTornadoVortex(
+                transform,
+                Vector3.up * 0.55f,
+                new Color(0.15f, 0.96f, 1f),
+                new Color(0.88f, 0.22f, 1f),
+                duration: 1.80f,
+                maxRadius: 1.85f
+            );
         }
 
         if (LevelAudioManager.Instance != null)
             LevelAudioManager.Instance.PlayEnemyAttack();
 
         int totalFrames = (customTornadoFrames != null && customTornadoFrames.Length >= 8) ? 8 : (customTornadoFrames != null ? customTornadoFrames.Length : 0);
-        float cycloneReach = 2.80f;
+        float cycloneReach = 2.85f;
 
         for (int f = 0; f < totalFrames; f++)
         {
@@ -1251,10 +1375,19 @@ public class EnemyDummy : MonoBehaviour
             if (customTornadoFrames != null && f < customTornadoFrames.Length && customTornadoFrames[f] != null)
                 sr.sprite = customTornadoFrames[f];
 
-            if (CombatVFXManager.Instance != null && (f == 2 || f == 4))
+            if (CombatVFXManager.Instance != null && (f == 2 || f == 4 || f == 6))
             {
-                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.15f, 0.95f, 1f), 2.4f);
+                CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.15f, 0.95f, 1f), 2.6f);
                 CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 0.9f, new Color(0.85f, 0.20f, 1f));
+                CombatVFXManager.Instance.SpawnSlashArcVFX(
+                    transform.position + Vector3.up * 0.85f,
+                    (f % 4 == 0) ? -dirToKael : dirToKael,
+                    new Color(0.20f, 0.96f, 1f),
+                    Color.white,
+                    scale: 1.55f,
+                    tiltDeg: (f == 4) ? -18f : 18f,
+                    duration: 0.26f
+                );
                 CombatVFXManager.Instance.ShakeCamera(0.18f, 0.12f);
             }
 
@@ -1266,28 +1399,190 @@ public class EnemyDummy : MonoBehaviour
                 {
                     PlayerStats.Instance.TakeDamage(damage * 0.75f, this);
                     if (CombatVFXManager.Instance != null && kaelTarget != null)
-                        CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 6);
+                        CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 7);
                 }
             }
 
-            yield return new WaitForSeconds(0.18f);
+            yield return new WaitForSeconds(0.23f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + UnityEngine.Random.Range(2.0f, 2.8f);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(2.4f, 3.2f);
         isPlayingAttackAnim = false;
     }
 
-    // Secuencia de ataque fluida en 8 cuadros (incluye salto parabólico en BioStalker y latigazo en BioLasher)
+    // Ráfaga de orbes psiónicos del Arconte (Nivel 2 Boss)
+    private IEnumerator ArchonPsionicBarrageRoutine()
+    {
+        isPlayingAttackAnim = true;
+        transform.localRotation = Quaternion.identity;
+        float baseX = transform.position.x;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        Vector3 handPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.45f);
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.9f, "[!] ¡DESCARGA ARCANO-PSIÓNICA!", new Color(0.86f, 0.28f, 1f), 20, 0.9f);
+            CombatVFXManager.Instance.SpawnChargeTelegraph(handPos, new Color(0.86f, 0.25f, 1f), 0.62f, 1.25f);
+        }
+
+        int totalFrames = (customAttackFrames != null && customAttackFrames.Length > 0) ? customAttackFrames.Length : 8;
+        for (int f = 0; f < 3; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
+                sr.sprite = customAttackFrames[f];
+            yield return new WaitForSeconds(0.21f);
+        }
+
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        for (int s = 0; s < 3; s++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && 3 < customAttackFrames.Length && customAttackFrames[3] != null)
+                sr.sprite = customAttackFrames[3];
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnEnemyProjectile(
+                    handPos,
+                    new Vector3(dirToKael * (7.2f + s * 0.6f), (s - 1) * 0.48f, 0f),
+                    EnemyProjectileStyle.PsionicOrb,
+                    new Color(0.88f, 0.22f, 1f),
+                    new Color(0.32f, 0.96f, 1f),
+                    scale: 1.05f,
+                    damage: damage * 0.55f,
+                    owner: this,
+                    lifetime: 2.4f
+                );
+            }
+            yield return new WaitForSeconds(0.18f);
+        }
+
+        for (int f = 4; f < totalFrames; f++)
+        {
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customAttackFrames != null && f < customAttackFrames.Length && customAttackFrames[f] != null)
+                sr.sprite = customAttackFrames[f];
+            yield return new WaitForSeconds(0.16f);
+        }
+
+        transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
+        nextAttackTime = Time.time + UnityEngine.Random.Range(1.8f, 2.5f);
+        isPlayingAttackAnim = false;
+    }
+
+    // Secuencia para enemigos del Nivel 1 basados en Animator (con cadencia legible, tajo neón y disparos del Comandante)
+    private IEnumerator PlayAnimatorAttackRoutine(bool rangedVolleyOnly)
+    {
+        isPlayingAttackAnim = true;
+        float dirToKael = (kaelTarget != null && kaelTarget.position.x > transform.position.x) ? 1f : -1f;
+        if (sr != null) sr.flipX = (dirToKael > 0f);
+
+        Vector3 muzzlePos = transform.position + Vector3.up * (isBoss ? 1.1f : 0.72f) + Vector3.right * (dirToKael * 0.5f);
+        if (anim != null)
+        {
+            anim.SetBool("IsAttacking", true);
+            anim.speed = 0.42f;
+        }
+
+        if ((isBoss || isMiniBoss) && CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(
+                muzzlePos,
+                isBoss ? new Color(1f, 0.25f, 0.65f) : new Color(1f, 0.60f, 0.20f),
+                0.36f,
+                isBoss ? 1.25f : 0.95f
+            );
+        }
+
+        if (sr != null) sr.color = Color.Lerp(originalColor, new Color(1f, 0.45f, 0.55f), 0.5f);
+        yield return new WaitForSeconds(0.36f);
+        if (sr != null) sr.color = originalColor;
+
+        if (isDead || isStunned)
+        {
+            if (anim != null)
+            {
+                anim.speed = 1f;
+                anim.SetBool("IsAttacking", false);
+            }
+            isPlayingAttackAnim = false;
+            yield break;
+        }
+
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+
+        if (rangedVolleyOnly || (isBoss && attackCounter % 2 == 0))
+        {
+            if (CombatVFXManager.Instance != null)
+            {
+                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.85f, "[!] ¡RÁFAGA DE PLASMA VORST!", new Color(1f, 0.30f, 0.65f), 19, 0.9f);
+                for (int b = 0; b < 2; b++)
+                {
+                    CombatVFXManager.Instance.SpawnEnemyProjectile(
+                        muzzlePos + Vector3.up * (b * 0.20f - 0.10f),
+                        new Vector3(dirToKael * (7.6f + b * 0.8f), 0f, 0f),
+                        EnemyProjectileStyle.PlasmaBolt,
+                        new Color(1f, 0.25f, 0.65f),
+                        Color.white,
+                        scale: 1.05f,
+                        damage: damage * 0.65f,
+                        owner: this,
+                        lifetime: 2.2f
+                    );
+                    yield return new WaitForSeconds(0.14f);
+                }
+            }
+        }
+        else
+        {
+            if (CombatVFXManager.Instance != null)
+            {
+                Color slashCol = isBoss ? new Color(1f, 0.24f, 0.62f) : (isMiniBoss ? new Color(1f, 0.62f, 0.18f) : new Color(0.88f, 0.25f, 1f));
+                CombatVFXManager.Instance.SpawnSlashArcVFX(muzzlePos, dirToKael, slashCol, Color.white, isBoss ? 1.55f : 1.05f, 12f, 0.24f);
+            }
+            bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.55f);
+            if (inReach && PlayerStats.Instance != null)
+            {
+                PlayerStats.Instance.TakeDamage(damage, this);
+                if (CombatVFXManager.Instance != null && kaelTarget != null)
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, isBoss || isMiniBoss, 5);
+            }
+        }
+
+        yield return new WaitForSeconds(0.32f);
+        if (anim != null)
+        {
+            anim.speed = 1f;
+            anim.SetBool("IsAttacking", false);
+        }
+        nextAttackTime = Time.time + Mathf.Max(1.05f, 1.0f / Mathf.Max(0.4f, attackRate));
+        isPlayingAttackAnim = false;
+    }
+
+    // Secuencia de ataque ralentizada y con efectos dedicados para apreciar todas las animaciones multi-cuadro
     IEnumerator PlayVisibleAttackRoutine()
     {
         isPlayingAttackAnim = true;
         transform.localRotation = Quaternion.identity;
         float baseX = transform.position.x;
         float dirToKael = (kaelTarget != null && kaelTarget.position.x > baseX) ? 1f : -1f;
-        float lungeMax = (visualType == "Archon" || visualType == "HiveInquisitor") ? 0.16f : ((visualType == "BioStalker") ? 0.62f : 0.34f);
+        float lungeMax = (visualType == "Archon" || visualType == "HiveInquisitor") ? 0.16f : ((visualType == "BioStalker") ? 0.68f : 0.38f);
         float leapMaxY = (visualType == "BioStalker") ? 0.48f : 0f;
         int totalFrames = (customAttackFrames != null && customAttackFrames.Length > 0) ? customAttackFrames.Length : 8;
+
+        Color primaryFxCol = new Color(0.85f, 0.25f, 1f);
+        if (visualType == "BioStalker") primaryFxCol = new Color(0.25f, 1f, 0.55f);
+        else if (visualType == "BioLasher") primaryFxCol = new Color(0.22f, 0.94f, 1f);
+        else if (visualType == "PraetorianAegis") primaryFxCol = new Color(1f, 0.72f, 0.25f);
+        else if (visualType == "PraetorianBlade") primaryFxCol = new Color(1f, 0.25f, 0.55f);
+
+        if (CombatVFXManager.Instance != null && (visualType == "Brute" || visualType == "PraetorianAegis" || visualType == "BioLasher"))
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(transform.position + Vector3.up * 0.9f + Vector3.right * (dirToKael * 0.45f), primaryFxCol, 0.42f, 1.0f);
+        }
 
         for (int f = 0; f < totalFrames; f++)
         {
@@ -1307,10 +1602,49 @@ public class EnemyDummy : MonoBehaviour
                 transform.position.z
             );
 
+            if (visualType == "BioStalker" && f >= 2 && f <= 5 && CombatVFXManager.Instance != null && sr != null && sr.sprite != null)
+            {
+                CombatVFXManager.Instance.SpawnAfterimageGhost(sr.sprite, transform.position, transform.localScale, sr.flipX, new Color(0.28f, 1f, 0.55f, 0.40f));
+            }
+
             if (f == 3 || (visualType == "BioStalker" && f == 5))
             {
                 if (LevelAudioManager.Instance != null)
                     LevelAudioManager.Instance.PlayEnemyAttack();
+
+                Vector3 strikeOrigin = transform.position + Vector3.up * 0.85f + Vector3.right * (dirToKael * 0.65f);
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnSlashArcVFX(
+                        strikeOrigin,
+                        dirToKael,
+                        primaryFxCol,
+                        Color.white,
+                        (visualType == "Brute" || visualType == "PraetorianAegis") ? 1.55f : 1.25f,
+                        (f == 5) ? -22f : 16f,
+                        0.26f
+                    );
+
+                    if (visualType == "BioLasher" && f == 3)
+                    {
+                        // Látigo proyectado de media distancia
+                        CombatVFXManager.Instance.SpawnEnemyProjectile(
+                            strikeOrigin,
+                            new Vector3(dirToKael * 7.5f, 0f, 0f),
+                            EnemyProjectileStyle.CyberBladeWave,
+                            primaryFxCol,
+                            Color.white,
+                            scale: 0.90f,
+                            damage: 0f,
+                            owner: this,
+                            lifetime: 0.45f
+                        );
+                    }
+                    else if ((visualType == "Brute" || visualType == "PraetorianAegis") && f == 3)
+                    {
+                        CombatVFXManager.Instance.SpawnGroundDustWave(transform.position + Vector3.right * (dirToKael * 0.6f), dirToKael, primaryFxCol, 4, 0.50f);
+                    }
+                }
 
                 bool inStrikeReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.72f);
                 if (inStrikeReach && PlayerStats.Instance != null)
@@ -1320,15 +1654,20 @@ public class EnemyDummy : MonoBehaviour
                 }
 
                 if (inStrikeReach && CombatVFXManager.Instance != null && kaelTarget != null)
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 7);
             }
 
-            float frameWait = (visualType == "VortexOmega") ? 0.14f : ((visualType == "BioLasher") ? 0.16f : 0.088f);
+            float frameWait;
+            if (visualType == "BioLasher") frameWait = 0.19f;
+            else if (visualType == "VortexOmega") frameWait = 0.17f;
+            else if (visualType == "BioStalker") frameWait = (f < 3) ? 0.145f : 0.125f;
+            else if (visualType == "Brute" || visualType == "PraetorianAegis") frameWait = 0.175f;
+            else frameWait = 0.155f;
             yield return new WaitForSeconds(frameWait);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + (0.50f / attackRate);
+        nextAttackTime = Time.time + Mathf.Max(1.05f, 0.85f / Mathf.Max(0.4f, attackRate));
         isPlayingAttackAnim = false;
     }
 
@@ -1442,6 +1781,10 @@ public class EnemyDummy : MonoBehaviour
         }
 
         // ETAPA 1: APERTURA MECÁNICA DE PLACAS PECTORALES (Sheet 3, Fila 1)
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnChargeTelegraph(chestPos, new Color(1f, 0.20f, 0.55f), 0.58f, 1.45f);
+        }
         int openCount = (customChestOpenFrames != null && customChestOpenFrames.Length > 0) ? customChestOpenFrames.Length : 0;
         if (openCount > 0)
         {
@@ -1455,7 +1798,7 @@ public class EnemyDummy : MonoBehaviour
                     CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(0.2f, 0.95f, 1f));
                     CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(1f, 0.20f, 0.55f));
                 }
-                yield return new WaitForSeconds(0.08f);
+                yield return new WaitForSeconds(0.14f);
             }
         }
         else
@@ -1469,12 +1812,12 @@ public class EnemyDummy : MonoBehaviour
                 if (CombatVFXManager.Instance != null)
                     CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(1f, 0.20f, 0.55f));
 
-                yield return new WaitForSeconds(isEnraged ? 0.14f : 0.18f);
+                yield return new WaitForSeconds(isEnraged ? 0.18f : 0.22f);
             }
         }
 
         // ETAPA 2: DISPARO DEL RAYO DE BIO-PLASMA DE 3 CAPAS
-        float beamDuration = isEnraged ? 0.65f : 0.52f;
+        float beamDuration = isEnraged ? 0.72f : 0.62f;
         float beamLength = 8.8f;
         float recoilDist = 0.42f;
 
@@ -1684,6 +2027,8 @@ public class EnemyDummy : MonoBehaviour
             CombatVFXManager.Instance.SpawnShockwaveRing(landPos + Vector3.up * 0.4f, new Color(1f, 0.15f, 0.45f), 3.4f);
             CombatVFXManager.Instance.SpawnEnergyPillar(landPos + Vector3.left * 2.2f, Color.cyan);
             CombatVFXManager.Instance.SpawnEnergyPillar(landPos + Vector3.right * 2.2f, new Color(1f, 0.20f, 0.55f));
+            CombatVFXManager.Instance.SpawnGroundDustWave(landPos, 1f, new Color(0.25f, 0.95f, 1f), 4, 0.75f);
+            CombatVFXManager.Instance.SpawnGroundDustWave(landPos, -1f, new Color(1f, 0.25f, 0.45f), 4, 0.75f);
             CombatVFXManager.Instance.SpawnHitSparks(landPos + Vector3.up * 0.5f, true, 20);
         }
         if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
@@ -1732,8 +2077,9 @@ public class EnemyDummy : MonoBehaviour
                 20,
                 0.8f
             );
+            CombatVFXManager.Instance.SpawnChargeTelegraph(transform.position + Vector3.up * 1.1f + Vector3.right * (dirToKael * 0.7f), new Color(1f, 0.45f, 0.15f), 0.28f, 1.35f);
         }
-        yield return new WaitForSeconds(0.16f);
+        yield return new WaitForSeconds(0.28f);
         if (sr != null) sr.color = originalColor;
 
         Sprite[] slashFrames = (customAttackFrames != null && customAttackFrames.Length > 0)
@@ -1756,10 +2102,15 @@ public class EnemyDummy : MonoBehaviour
             float stepCurve = Mathf.Sin((f / (float)Mathf.Max(1, totalFrames - 1)) * Mathf.PI);
             transform.position = new Vector3(baseX + dirToKael * lungeDist * stepCurve, baseGroundY, transform.position.z);
 
-            // Primer corte diagonal
+            // Primer corte diagonal con arco visual carmesí-naranja
             if (f == 2)
             {
                 if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+                Vector3 slashPos = transform.position + Vector3.up * 0.95f + Vector3.right * (dirToKael * 0.9f);
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnSlashArcVFX(slashPos, dirToKael, new Color(1f, 0.42f, 0.12f), Color.white, 1.65f, 34f, 0.26f);
+                }
                 bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 0.85f);
                 if (inReach && PlayerStats.Instance != null)
                 {
@@ -1770,14 +2121,15 @@ public class EnemyDummy : MonoBehaviour
                     CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, false, 6);
                 }
             }
-            // Segundo corte en X con estelas carmesí
+            // Segundo corte en X devastador
             else if (f == 5)
             {
                 if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayEnemyAttack();
+                Vector3 crossPos = transform.position + Vector3.up * 0.95f + Vector3.right * (dirToKael * 0.95f);
                 if (CombatVFXManager.Instance != null)
                 {
-                    CombatVFXManager.Instance.ShakeCamera(0.28f, 0.16f);
-                    CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(1f, 0.15f, 0.40f), 2.2f);
+                    CombatVFXManager.Instance.ShakeCamera(0.30f, 0.18f);
+                    CombatVFXManager.Instance.SpawnCrossXSlashVFX(crossPos, new Color(1f, 0.16f, 0.36f), Color.white, 1.95f);
                 }
                 bool inReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 1.05f);
                 if (inReach && PlayerStats.Instance != null)
@@ -1786,15 +2138,15 @@ public class EnemyDummy : MonoBehaviour
                 }
                 if (inReach && CombatVFXManager.Instance != null && kaelTarget != null)
                 {
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 8);
+                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
                 }
             }
 
-            yield return new WaitForSeconds(0.11f);
+            yield return new WaitForSeconds(0.16f);
         }
 
         transform.position = new Vector3(baseX, baseGroundY, transform.position.z);
-        nextAttackTime = Time.time + (0.65f / attackRate);
+        nextAttackTime = Time.time + Mathf.Max(0.95f, 0.65f / attackRate);
         isPlayingAttackAnim = false;
     }
 
@@ -2050,6 +2402,7 @@ public class EnemyDummy : MonoBehaviour
             else if (isBoss) warnTxt = "[!] ¡DESCARGA PSIÓNICA!";
 
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.5f, warnTxt, new Color(1f, 0.55f, 0.1f), 19, 1.0f);
+            CombatVFXManager.Instance.SpawnChargeTelegraph(transform.position + Vector3.up * 1.15f, new Color(1f, 0.55f, 0.14f), 0.85f, 1.45f);
         }
 
         float elapsed = 0f;
@@ -2100,7 +2453,13 @@ public class EnemyDummy : MonoBehaviour
                         CombatVFXManager.Instance.SpawnEnergyPillar(pillarPos, (p % 2 == 0) ? new Color(0f, 0.95f, 1f) : new Color(1f, 0.20f, 0.55f));
                     }
                 }
-                CombatVFXManager.Instance.ShakeCamera(0.26f, 0.16f);
+                else
+                {
+                    Vector3 slamPos = transform.position + Vector3.right * (dirToKael * 0.8f) + Vector3.up * 0.7f;
+                    CombatVFXManager.Instance.SpawnSlashArcVFX(slamPos, dirToKael, new Color(1f, 0.45f, 0.15f), Color.white, 1.75f, 14f, 0.28f);
+                    CombatVFXManager.Instance.SpawnGroundDustWave(transform.position + Vector3.right * (dirToKael * 0.6f), dirToKael, new Color(1f, 0.52f, 0.18f), 4, 0.62f);
+                }
+                CombatVFXManager.Instance.ShakeCamera(0.28f, 0.18f);
             }
 
             bool inHeavyReach = (kaelTarget == null) || (Mathf.Abs(transform.position.x - kaelTarget.position.x) <= attackRange + 1.15f);
@@ -2205,6 +2564,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (anim != null && !useCustomSprites)
         {
+            anim.speed = 1f;
             anim.SetTrigger("Die");
             Destroy(gameObject, 0.5f);
         }

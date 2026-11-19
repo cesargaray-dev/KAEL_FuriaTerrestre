@@ -554,14 +554,14 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        Texture2D port = (idx == 0) ? portKaelShout : portNexaNormal;
+        Texture2D port = (idx == 0 || idx == 2) ? portKaelShout : portNexaNormal;
         float textStartX = 180f;
         float textWidth = 1236f;
 
         if (port != null)
         {
             Rect pFrame = ScaleRect(176f, 825f, 198f, 198f);
-            Color portBorder = (idx == 0) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
+            Color portBorder = (idx == 0 || idx == 2) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
             GUI.color = portBorder;
             GUI.DrawTexture(pFrame, Texture2D.whiteTexture);
             Rect pRect = new Rect(pFrame.x + 2f, pFrame.y + 2f, pFrame.width - 4f, pFrame.height - 4f);
