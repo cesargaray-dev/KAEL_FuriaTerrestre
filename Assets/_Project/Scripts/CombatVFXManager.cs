@@ -28,6 +28,7 @@ public class CombatVFXManager : MonoBehaviour
     private bool ultCinematicActive = false;
     private float ultFlashAlpha = 0f;
     private Color customFlashColor = new Color(0.55f, 0.95f, 1f, 1f);
+    private Sprite softBeamSprite;
 
     // Variables de Contador de Combo (Sincronizadas con PlayerStats)
     private int comboHits = 0;
@@ -249,27 +250,100 @@ public class CombatVFXManager : MonoBehaviour
         SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidBeam", midCol, 21);
         SpriteRenderer coreBeam = CreateBeamLayer(beamRoot.transform, "CoreBeam", coreCol, 22);
 
+        // Boca de energía en el guantelete (Muzzle Flare + Anillo)
+        GameObject muzzleObj = new GameObject("UltMuzzleFlare");
+        muzzleObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer muzzleSr = muzzleObj.AddComponent<SpriteRenderer>();
+        muzzleSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        muzzleSr.color = coreCol;
+        muzzleSr.sortingOrder = 24;
+
+        GameObject muzzleRingObj = new GameObject("UltMuzzleRing");
+        muzzleRingObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer muzzleRingSr = muzzleRingObj.AddComponent<SpriteRenderer>();
+        muzzleRingSr.sprite = ringSprite;
+        muzzleRingSr.color = midCol;
+        muzzleRingSr.sortingOrder = 23;
+
+        // Punta redondeada luminosa al final del rayo
+        GameObject tipObj = new GameObject("UltTipFlare");
+        tipObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer tipSr = tipObj.AddComponent<SpriteRenderer>();
+        tipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        tipSr.color = coreCol;
+        tipSr.sortingOrder = 24;
+
+        // Hélice de plasma y arco eléctrico de alta tensión recorriendo el cañón
+        LineRenderer helixLr = CreateUltArcLine(beamRoot.transform, "UltPlasmaHelix", 24, 0.14f, midCol, coreCol, 23);
+        LineRenderer crackleLr = CreateUltArcLine(beamRoot.transform, "UltLightningArc", 26, 0.065f, coreCol, outerCol, 24);
+
         float absLen = Mathf.Abs(length);
         float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
+        float ringSpawnTimer = 0f;
         while (elapsed < duration)
         {
-            float pulse = 1f + Mathf.Sin(Time.time * 55f) * 0.25f;
+            float shootProgress = Mathf.Clamp01(elapsed / 0.07f);
+            float currentLen = length * shootProgress;
+            float currentAbsLen = Mathf.Abs(currentLen);
+
+            float pulse = 1f + Mathf.Sin(Time.time * 58f) * 0.22f;
             float fadeOut = (elapsed > duration * 0.75f) ? Mathf.InverseLerp(duration, duration * 0.75f, elapsed) : 1f;
             float currentThickness = pulse * fadeOut;
 
-            outerBeam.transform.localScale = new Vector3(absLen, 1.95f * currentThickness, 1f);
-            outerBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            outerBeam.transform.localScale = new Vector3(currentAbsLen, 2.35f * currentThickness, 1f);
+            outerBeam.transform.localPosition = new Vector3(currentLen * 0.5f, 0f, 0f);
 
-            midBeam.transform.localScale = new Vector3(absLen, 1.10f * currentThickness, 1f);
-            midBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            midBeam.transform.localScale = new Vector3(currentAbsLen, 1.20f * currentThickness, 1f);
+            midBeam.transform.localPosition = new Vector3(currentLen * 0.5f, 0f, 0f);
 
-            coreBeam.transform.localScale = new Vector3(absLen, 0.48f * currentThickness, 1f);
-            coreBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            coreBeam.transform.localScale = new Vector3(currentAbsLen, 0.46f * currentThickness, 1f);
+            coreBeam.transform.localPosition = new Vector3(currentLen * 0.5f, 0f, 0f);
 
-            if (Random.value > 0.28f)
+            float mScale = (1.65f + Mathf.Sin(Time.time * 42f) * 0.30f) * fadeOut;
+            muzzleObj.transform.localScale = new Vector3(mScale, mScale * 1.25f, 1f);
+            muzzleRingObj.transform.localScale = new Vector3(mScale * 0.55f, mScale * 1.55f, 1f);
+            muzzleRingObj.transform.Rotate(0f, 0f, 360f * Time.deltaTime);
+            tipObj.transform.localPosition = new Vector3(currentLen, 0f, 0f);
+            tipObj.transform.localScale = new Vector3(mScale * 1.05f, mScale * 1.25f, 1f);
+
+            Vector3 startPt = originPos;
+            Vector3 endPt = originPos + new Vector3(currentLen, 0f, 0f);
+            for (int i = 0; i < helixLr.positionCount; i++)
             {
-                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, absLen * 0.85f), Random.Range(-0.55f, 0.55f), 0f);
+                float u = i / (float)(helixLr.positionCount - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float wave = Mathf.Sin(Time.time * 32f - u * 14f) * 0.52f * env * currentThickness;
+                helixLr.SetPosition(i, Vector3.Lerp(startPt, endPt, u) + new Vector3(0f, wave, 0f));
+            }
+            for (int i = 0; i < crackleLr.positionCount; i++)
+            {
+                float u = i / (float)(crackleLr.positionCount - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float jagged = (Mathf.Sin(Time.time * 65f + i * 2.4f) * 0.34f + Mathf.Cos(Time.time * 48f - i * 3.1f) * 0.22f) * env * currentThickness;
+                crackleLr.SetPosition(i, Vector3.Lerp(startPt, endPt, u) + new Vector3(0f, jagged, 0f));
+            }
+            helixLr.widthMultiplier = fadeOut;
+            crackleLr.widthMultiplier = fadeOut;
+
+            ringSpawnTimer -= Time.deltaTime;
+            if (ringSpawnTimer <= 0f && shootProgress >= 0.8f && fadeOut > 0.35f)
+            {
+                ringSpawnTimer = 0.095f;
+                GameObject trObj = new GameObject("UltTravelRing");
+                trObj.transform.position = originPos + new Vector3(dirSign * 0.4f, 0f, 0f);
+                SpriteRenderer trSr = trObj.AddComponent<SpriteRenderer>();
+                trSr.sprite = ringSprite;
+                trSr.color = midCol;
+                trSr.sortingOrder = 23;
+                trObj.transform.localScale = new Vector3(0.32f, 1.85f, 1f);
+                UltBeamTravelRing tr = trObj.AddComponent<UltBeamTravelRing>();
+                tr.Init(dirSign, absLen, 0.24f);
+            }
+
+            if (Random.value > 0.22f)
+            {
+                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, Mathf.Max(0.6f, currentAbsLen * 0.90f)), Random.Range(-0.65f, 0.65f), 0f);
                 SpawnHitSparks(sparkPos, true, 3);
             }
 
@@ -278,6 +352,21 @@ public class CombatVFXManager : MonoBehaviour
         }
 
         Destroy(beamRoot);
+    }
+
+    LineRenderer CreateUltArcLine(Transform parent, string objName, int pts, float width, Color cStart, Color cEnd, int sortOrder)
+    {
+        GameObject obj = new GameObject(objName);
+        obj.transform.SetParent(parent, false);
+        LineRenderer lr = obj.AddComponent<LineRenderer>();
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.positionCount = pts;
+        lr.startWidth = width;
+        lr.endWidth = width * 0.7f;
+        lr.startColor = cStart;
+        lr.endColor = cEnd;
+        lr.sortingOrder = sortOrder;
+        return lr;
     }
 
     /// <summary>
@@ -303,6 +392,20 @@ public class CombatVFXManager : MonoBehaviour
         SpriteRenderer midBeam   = CreateBeamLayer(beamRoot.transform, "BossMidBeam",   midCol,   22);
         SpriteRenderer coreBeam  = CreateBeamLayer(beamRoot.transform, "BossCoreBeam",  coreCol,  23);
 
+        GameObject bossMuzzle = new GameObject("BossMuzzleFlare");
+        bossMuzzle.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer bMuzzleSr = bossMuzzle.AddComponent<SpriteRenderer>();
+        bMuzzleSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bMuzzleSr.color = coreCol;
+        bMuzzleSr.sortingOrder = 24;
+
+        GameObject bossTip = new GameObject("BossTipFlare");
+        bossTip.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer bTipSr = bossTip.AddComponent<SpriteRenderer>();
+        bTipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bTipSr.color = midCol;
+        bTipSr.sortingOrder = 24;
+
         float absLen = Mathf.Abs(length);
         float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
@@ -322,6 +425,11 @@ public class CombatVFXManager : MonoBehaviour
             coreBeam.transform.localScale     = new Vector3(absLen, 0.35f * currentThickness, 1f);
             coreBeam.transform.localPosition  = new Vector3(length / 2f, 0f, 0f);
 
+            float tipScale = 1.25f * currentThickness;
+            bossMuzzle.transform.localScale = new Vector3(tipScale, tipScale, 1f);
+            bossTip.transform.localPosition = new Vector3(length, 0f, 0f);
+            bossTip.transform.localScale = new Vector3(tipScale * 0.95f, tipScale * 1.15f, 1f);
+
             if (Random.value > 0.25f)
             {
                 Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.6f, absLen * 0.90f), Random.Range(-0.45f, 0.45f), 0f);
@@ -335,12 +443,42 @@ public class CombatVFXManager : MonoBehaviour
         Destroy(beamRoot);
     }
 
+    Sprite GetSoftBeamSprite()
+    {
+        if (softBeamSprite != null) return softBeamSprite;
+        const int size = 128;
+        const float cap = 0.14f;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < size; y++)
+        {
+            float v = (y + 0.5f) / size;
+            float dy = (v - 0.5f) * 2f; // [-1, 1]
+            for (int x = 0; x < size; x++)
+            {
+                float u = (x + 0.5f) / size;
+                float dx = 0f;
+                if (u < cap) dx = (cap - u) / cap;
+                else if (u > 1f - cap) dx = (u - (1f - cap)) / cap;
+
+                // Cápsula elíptica con extremos completamente redondeados (sin esquinas cuadradas)
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                float alpha = (r >= 1f) ? 0f : Mathf.Pow(1f - r * r, 1.45f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        tex.Apply();
+        softBeamSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+        return softBeamSprite;
+    }
+
     SpriteRenderer CreateBeamLayer(Transform parent, string name, Color col, int sortOrder)
     {
         GameObject go = new GameObject(name);
         go.transform.SetParent(parent, false);
         SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = whitePixelSprite;
+        sr.sprite = GetSoftBeamSprite();
         sr.color = col;
         sr.sortingOrder = sortOrder;
         return sr;
@@ -1022,5 +1160,36 @@ public class FloatingPopup : MonoBehaviour
 
         style.normal.textColor = new Color(color.r, color.g, color.b, alpha);
         GUI.Label(rect, text, style);
+    }
+}
+
+public class UltBeamTravelRing : MonoBehaviour
+{
+    private float dir;
+    private float speed;
+    private float duration;
+    private float elapsed = 0f;
+    private SpriteRenderer sr;
+    private Color baseCol;
+
+    public void Init(float moveDir, float totalLen, float lifeTime)
+    {
+        dir = moveDir;
+        duration = Mathf.Max(0.08f, lifeTime);
+        speed = totalLen / duration;
+        sr = GetComponent<SpriteRenderer>();
+        if (sr != null) baseCol = sr.color;
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        transform.position += new Vector3(dir * speed * Time.deltaTime, 0f, 0f);
+        float p = Mathf.Clamp01(elapsed / duration);
+        if (sr != null)
+        {
+            sr.color = new Color(baseCol.r, baseCol.g, baseCol.b, baseCol.a * (1f - p));
+        }
+        if (elapsed >= duration) Destroy(gameObject);
     }
 }
