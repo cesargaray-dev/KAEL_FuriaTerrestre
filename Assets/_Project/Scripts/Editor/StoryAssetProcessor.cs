@@ -1,9 +1,52 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Collections.Generic;
 
 public class StoryAssetProcessor
 {
+    private static readonly string[] CanonicalScenePaths = new string[]
+    {
+        "Assets/_Project/Scenes/00_MainMenu.unity",
+        "Assets/_Project/Scenes/Lab_Cesar.unity",
+        "Assets/_Project/Scenes/Lab_Zahir.unity",
+        "Assets/_Project/Scenes/03_Nivel3_Colmena.unity",
+        "Assets/_Project/Scenes/04_Final_NexusThroneroom.unity"
+    };
+
+    [InitializeOnLoadMethod]
+    public static void EnsureAllScenesInBuildSettings()
+    {
+        EditorBuildSettingsScene[] current = EditorBuildSettings.scenes;
+        List<EditorBuildSettingsScene> updated = new List<EditorBuildSettingsScene>();
+        bool needsUpdate = false;
+
+        foreach (string path in CanonicalScenePaths)
+        {
+            if (!File.Exists(path)) continue;
+            bool found = false;
+            if (current != null)
+            {
+                foreach (var s in current)
+                {
+                    if (s != null && s.path == path)
+                    {
+                        found = true;
+                        if (!s.enabled) needsUpdate = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) needsUpdate = true;
+            updated.Add(new EditorBuildSettingsScene(path, true));
+        }
+
+        if (needsUpdate && updated.Count > 0)
+        {
+            EditorBuildSettings.scenes = updated.ToArray();
+        }
+    }
+
     [MenuItem("KAEL Tools/1. Forzar Procesamiento de Historia a Resources")]
     public static void ProcessAllStoryAssets()
     {

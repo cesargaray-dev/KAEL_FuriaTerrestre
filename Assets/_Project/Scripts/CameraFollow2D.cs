@@ -60,6 +60,11 @@ public class CameraFollow2D : MonoBehaviour
         currentOffsetX = Mathf.Lerp(currentOffsetX, desiredOffset, 4.5f * Time.deltaTime);
 
         float targetX = target.position.x + currentOffsetX;
+        if (NexusThroneroomEnvironment.Instance != null && NexusThroneroomEnvironment.Instance.IsBossArenaLocked)
+        {
+            float sanctumCenter = (NexusThroneroomEnvironment.Instance.ArenaMinX + NexusThroneroomEnvironment.Instance.ArenaMaxX) * 0.5f;
+            targetX = Mathf.Clamp(target.position.x + currentOffsetX * 0.35f, sanctumCenter - 1.6f, sanctumCenter + 1.6f);
+        }
         float newX = Mathf.Lerp(transform.position.x, targetX, smoothSpeed * Time.deltaTime);
 
         Vector2 shakeOffset = Vector2.zero;

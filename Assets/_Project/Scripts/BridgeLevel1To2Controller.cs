@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 /// <summary>
@@ -81,7 +82,7 @@ public class BridgeLevel1To2Controller : MonoBehaviour
         {
             launchBridgeOnSceneLoad = true;
             Time.timeScale = 1f;
-            SceneManager.LoadScene("Lab_Cesar");
+            EndingsManager.LoadSceneSafe("Lab_Cesar");
             return;
         }
 
@@ -102,6 +103,11 @@ public class BridgeLevel1To2Controller : MonoBehaviour
         }
         Instance = this;
         InitSparks();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private void InitSparks()
@@ -256,8 +262,18 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             if (fadeAlpha > 0f)
                 fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, dt * 1.8f);
 
+            bool escPressed = (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame);
+            if (!escPressed) { try { escPressed = Input.GetKeyDown(KeyCode.Escape); } catch { } }
+            if (escPressed)
+            {
+                BeginPhase2PlayableInfiltration();
+                return;
+            }
+
             // Avance SOLO manual cuando el jugador presiona Espacio o Enter (nunca se salta solo por tiempo)
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+            bool advancePressed = (Keyboard.current != null && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame));
+            if (!advancePressed) { try { advancePressed = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return); } catch { } }
+            if (advancePressed)
             {
                 string fullTxt = GetActNarration(currentAct);
                 int chars = Mathf.Clamp(Mathf.FloorToInt(actTimer * 45f), 0, fullTxt.Length);
@@ -414,7 +430,7 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             PlayerStats.Instance.SaveProgressForNextLevel();
         }
         Time.timeScale = 1f;
-        SceneManager.LoadScene("Lab_Zahir");
+        EndingsManager.LoadSceneSafe("Lab_Zahir");
     }
 
     private string GetActTitle(int act)
@@ -663,6 +679,11 @@ public class BridgeLevel1To2Controller : MonoBehaviour
                 TextAnchor.MiddleCenter,
                 new Color(0.25f, 1f, 0.58f)
             );
+        }
+
+        if (DrawCyberButton(2, new Rect(1495f, 118f, 380f, 52f), "⏭ ENTRAR DIRECTO AL NIVEL 2 ▶", btnGoldTex, new Color(1f, 0.84f, 0.24f), true))
+        {
+            CompleteBridgeAndLoadLevel2();
         }
 
         if (fadeOutAlpha > 0.01f)

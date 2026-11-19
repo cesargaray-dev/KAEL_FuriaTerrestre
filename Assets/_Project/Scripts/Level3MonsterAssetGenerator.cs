@@ -20,6 +20,15 @@ public static class Level3MonsterAssetGenerator
     /// <summary>
     /// Devuelve los Pixels Per Unit (PPU) calibrados para cada monstruo exclusivo del Nivel 3.
     /// </summary>
+    private static bool IsLevel4Prefix(string prefix)
+    {
+        return prefix == "PraetorianBlade"
+            || prefix == "PraetorianMarksman"
+            || prefix == "PraetorianAegis"
+            || prefix == "PraetorianCustodian"
+            || prefix == "SupremeSovereign";
+    }
+
     public static float GetDefaultPPU(string prefix)
     {
         switch (prefix)
@@ -29,6 +38,11 @@ public static class Level3MonsterAssetGenerator
             case "BioHulk": return 122f;
             case "HiveInquisitor": return 122f;
             case "VortexOmega": return 118f;
+            case "PraetorianBlade": return 124f;
+            case "PraetorianMarksman": return 124f;
+            case "PraetorianAegis": return 120f;
+            case "PraetorianCustodian": return 112f;
+            case "SupremeSovereign": return 112f;
             default: return 128f;
         }
     }
@@ -45,6 +59,11 @@ public static class Level3MonsterAssetGenerator
             case "BioHulk": return new Vector2(1.75f, 1.70f);
             case "HiveInquisitor": return new Vector2(1.20f, 1.72f);
             case "VortexOmega": return new Vector2(2.00f, 1.35f);
+            case "PraetorianBlade": return new Vector2(1.25f, 1.58f);
+            case "PraetorianMarksman": return new Vector2(1.20f, 1.58f);
+            case "PraetorianAegis": return new Vector2(1.45f, 1.68f);
+            case "PraetorianCustodian": return new Vector2(1.55f, 1.90f);
+            case "SupremeSovereign": return new Vector2(1.50f, 1.98f);
             default: return new Vector2(1.30f, 1.20f);
         }
     }
@@ -59,7 +78,7 @@ public static class Level3MonsterAssetGenerator
     }
 
     /// <summary>
-    /// Nombre narrativo oficial para cada enemigo neón del Nivel 3.
+    /// Nombre narrativo oficial para cada enemigo neón del Nivel 3 y élite pretoriana del Nivel 4.
     /// </summary>
     public static string GetMonsterDisplayName(string prefix)
     {
@@ -70,16 +89,22 @@ public static class Level3MonsterAssetGenerator
             case "BioHulk": return "Coloso Blindado Neón";
             case "HiveInquisitor": return "Inquisidor Psiónico Neón";
             case "VortexOmega": return "Mecha Berserker VORTEX-OMEGA";
+            case "PraetorianBlade": return "Hoja Pretoriana Vorst";
+            case "PraetorianMarksman": return "Francotirador Pretoriano Vorst";
+            case "PraetorianAegis": return "Baluarte Aegis Pretoriano";
+            case "PraetorianCustodian": return "Custodio Pretoriano Vorst";
+            case "SupremeSovereign": return "Soberano Supremo Vorst";
             default: return "Monstruo Biomecánico";
         }
     }
 
     /// <summary>
     /// Devuelve el pivote normalizado adecuado para el fotograma del monstruo según el ancho de textura.
-    /// Para anchos estándar (<= 256) o estado Walk se mantiene exactamente (0.500f, 0.025f).
+    /// Para anchos estándar (<= 256) o estado Walk se mantiene exactamente (0.500f, 0.02734f).
     /// Para estados con ataques extensos hacia la izquierda (Láser, Torbellino, Fuego Terrestre),
     /// ancla el cuerpo a (texWidth - 128) para que la espina dorsal coincida exactamente con transform.position.x
     /// y el rayo/efecto se proyecte hacia Kael sin desplazar al monstruo.
+    /// En Nivel 4 solo se anclan a espina derecha Laser y PraetorianMarksman Attack (>256px); el resto es centrado.
     /// </summary>
     public static Vector2 GetMonsterPivot(string prefix, string state, int texWidth, int texHeight)
     {
@@ -88,12 +113,20 @@ public static class Level3MonsterAssetGenerator
         {
             return new Vector2(0.5f, footY);
         }
+        if (IsLevel4Prefix(prefix))
+        {
+            bool rightSpineL4 = (state == "Laser") || (prefix == "PraetorianMarksman" && state == "Attack");
+            if (!rightSpineL4)
+            {
+                return new Vector2(0.5f, footY);
+            }
+        }
         float spineX = texWidth - 128f;
         return new Vector2(spineX / texWidth, footY);
     }
 
     /// <summary>
-    /// Carga los 8 fotogramas de animación desde Resources/Level3/ o genera un fallback procedural nítido.
+    /// Carga los 8 fotogramas de animación desde Resources/Level3/ o Resources/Level4/, o genera un fallback procedural nítido.
     /// </summary>
     public static Sprite[] GetMonsterAnimationFrames(string prefix, string state, float pixelsPerUnit = 0f)
     {
@@ -106,10 +139,11 @@ public static class Level3MonsterAssetGenerator
         if (spriteCache.TryGetValue(key, out Sprite[] cached) && cached != null && cached.Length > 0)
             return cached;
 
+        string folder = IsLevel4Prefix(prefix) ? "Level4" : "Level3";
         List<Sprite> list = new List<Sprite>();
         for (int i = 0; i < 8; i++)
         {
-            string resPath = $"Level3/{prefix}_{state}_{i}";
+            string resPath = $"{folder}/{prefix}_{state}_{i}";
             Texture2D tex = Resources.Load<Texture2D>(resPath);
             if (tex != null)
             {

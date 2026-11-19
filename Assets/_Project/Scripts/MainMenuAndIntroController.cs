@@ -138,9 +138,34 @@ public class MainMenuAndIntroController : MonoBehaviour
 
         if (inCinematic)
         {
-            slideTimer += Time.deltaTime;
+            slideTimer += dt;
             if (fadeAlpha > 0f)
-                fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, Time.deltaTime * 1.8f);
+                fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, dt * 1.8f);
+
+            bool escPressed = (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame);
+            if (!escPressed) { try { escPressed = Input.GetKeyDown(KeyCode.Escape); } catch { } }
+            if (escPressed)
+            {
+                LoadLevel1();
+                return;
+            }
+
+            bool advancePressed = (Keyboard.current != null && (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame));
+            if (!advancePressed) { try { advancePressed = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return); } catch { } }
+            if (advancePressed)
+            {
+                string fullTxt = slideNarrations[Mathf.Clamp(currentSlide, 0, slideNarrations.Length - 1)];
+                int chars = Mathf.Clamp(Mathf.FloorToInt(slideTimer * 45f), 0, fullTxt.Length);
+                if (chars < fullTxt.Length)
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    slideTimer = 10f;
+                }
+                else
+                {
+                    NextSlideOrStartGame();
+                }
+            }
         }
         else if (VorstCodexUI.Instance == null || !VorstCodexUI.Instance.isOpen)
         {
@@ -196,14 +221,8 @@ public class MainMenuAndIntroController : MonoBehaviour
         {
             case 0: StartCinematic(); break;
             case 1: LoadLevel1(); break;
-            case 2:
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("Lab_Zahir");
-                break;
-            case 3:
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("03_Nivel3_Colmena");
-                break;
+            case 2: LoadSceneFromMenu("Lab_Zahir"); break;
+            case 3: LoadSceneFromMenu("03_Nivel3_Colmena"); break;
             case 4: OpenVorstCodexFromMenu(); break;
             case 5:
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -254,13 +273,28 @@ public class MainMenuAndIntroController : MonoBehaviour
         }
     }
 
+    void LoadSceneFromMenu(string targetScene)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        inCinematic = false;
+        showChapterSelect = false;
+        showCredits = false;
+        Time.timeScale = 1f;
+        EndingsManager.LoadSceneSafe(targetScene);
+    }
+
     void LoadLevel1()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        inCinematic = false;
+        showChapterSelect = false;
+        showCredits = false;
+        Time.timeScale = 1f;
 
-        if (Application.CanStreamedLevelBeLoaded(gameplaySceneName))
+        string target = string.IsNullOrEmpty(gameplaySceneName) ? "Lab_Cesar" : gameplaySceneName;
+        if (EndingsManager.CanLoadSceneSafe(target))
         {
-            SceneManager.LoadScene(gameplaySceneName);
+            EndingsManager.LoadSceneSafe(target);
         }
         else if (SceneManager.sceneCountInBuildSettings > 1)
         {
@@ -268,7 +302,7 @@ public class MainMenuAndIntroController : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Agrega la escena '{gameplaySceneName}' en File -> Build Profiles / Build Settings -> Scene List.");
+            EndingsManager.LoadSceneSafe("Lab_Cesar");
         }
     }
 
@@ -366,19 +400,17 @@ public class MainMenuAndIntroController : MonoBehaviour
         if (DrawMenuButton(2, new Rect(btnX, 406, btnW, btnH), "⚡  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.15f, 0.08f, 0.28f), new Color(0.85f, 0.38f, 1f), false))
         {
             keyboardMenuFocus = 2;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-            SceneManager.LoadScene("Lab_Zahir");
+            LoadSceneFromMenu("Lab_Zahir");
         }
 
         if (DrawMenuButton(7, new Rect(btnX, 468, btnW, btnH), "☣  NIVEL 3: COLMENA NAVE NÚCLEO", new Color(0.14f, 0.07f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
         {
             keyboardMenuFocus = 3;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-            SceneManager.LoadScene("03_Nivel3_Colmena");
+            LoadSceneFromMenu("03_Nivel3_Colmena");
         }
 
         int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
-        if (DrawMenuButton(17, new Rect(btnX, 530, btnW, btnH), $"📘  CÓDICE VORST — BESTIARIO TÁCTICO ({unlockedCodex}/6) [C]", new Color(0.06f, 0.22f, 0.36f), new Color(0.24f, 0.96f, 1f), true))
+        if (DrawMenuButton(17, new Rect(btnX, 530, btnW, btnH), $"📘  CÓDICE VORST — BESTIARIO TÁCTICO ({unlockedCodex}/{VorstCodexUI.Catalog.Length}) [C]", new Color(0.06f, 0.22f, 0.36f), new Color(0.24f, 0.96f, 1f), true))
         {
             keyboardMenuFocus = 4;
             OpenVorstCodexFromMenu();
@@ -413,57 +445,60 @@ public class MainMenuAndIntroController : MonoBehaviour
         // 6.5 Ventana Modal de Selección de Capítulo / Puente Jugable / 3 Finales
         if (showChapterSelect)
         {
-            Rect chapBox = ScaleRect(65, 290, 950, 680);
+            Rect chapBox = ScaleRect(65, 250, 950, 740);
             DrawCyberPanelDouble(chapBox, new Color(0.02f, 0.05f, 0.11f, 0.97f), new Color(0.22f, 0.92f, 1f), new Color(1f, 0.82f, 0.22f, 0.55f), 2.5f);
-            DrawStyledText(ScaleRect(65, 308, 950, 38), "❖ SELECTOR DE CAPÍTULOS, PUENTE JUGABLE Y 3 FINALES ❖", 24, TextAnchor.MiddleCenter, new Color(1f, 0.84f, 0.24f));
-            DrawStyledText(ScaleRect(90, 346, 900, 28), "Acceso rápido para prueba y evaluación de niveles, transición narrativa y desenlaces morales:", 16, TextAnchor.MiddleCenter, new Color(0.75f, 0.90f, 1f));
+            DrawStyledText(ScaleRect(65, 268, 950, 38), "❖ SELECTOR DE CAPÍTULOS, PUENTE JUGABLE Y 3 FINALES ❖", 24, TextAnchor.MiddleCenter, new Color(1f, 0.84f, 0.24f));
+            DrawStyledText(ScaleRect(90, 306, 900, 28), "Acceso rápido para prueba y evaluación de niveles, transición narrativa y desenlaces morales:", 16, TextAnchor.MiddleCenter, new Color(0.75f, 0.90f, 1f));
 
             float cBtnX1 = 105f;
             float cBtnX2 = 545f;
             float cBtnW = 430f;
-            float cBtnH = 64f;
+            float cBtnH = 60f;
 
-            if (DrawMenuButton(9, new Rect(cBtnX1, 395, cBtnW, cBtnH), "⚔ CAPÍTULO 1: SECTOR 7 (CESAR)", new Color(0.08f, 0.18f, 0.30f), new Color(0.22f, 0.92f, 1f), false))
+            if (DrawMenuButton(9, new Rect(cBtnX1, 350, cBtnW, cBtnH), "⚔ CAPÍTULO 1: SECTOR 7 (CESAR)", new Color(0.08f, 0.18f, 0.30f), new Color(0.22f, 0.92f, 1f), false))
             {
                 LoadLevel1();
             }
-            if (DrawMenuButton(10, new Rect(cBtnX2, 395, cBtnW, cBtnH), "🌉 PUENTE JUGABLE NV.1 ➔ NV.2", new Color(0.14f, 0.12f, 0.28f), new Color(1f, 0.82f, 0.24f), false))
+            if (DrawMenuButton(10, new Rect(cBtnX2, 350, cBtnW, cBtnH), "🌉 PUENTE JUGABLE NV.1 ➔ NV.2", new Color(0.14f, 0.12f, 0.28f), new Color(1f, 0.82f, 0.24f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 BridgeLevel1To2Controller.StartBridgeSequence("Lab_Zahir");
             }
 
-            if (DrawMenuButton(11, new Rect(cBtnX1, 478, cBtnW, cBtnH), "⚡ CAPÍTULO 2: BASE VORST (ZAHIR)", new Color(0.14f, 0.08f, 0.26f), new Color(0.85f, 0.38f, 1f), false))
+            if (DrawMenuButton(11, new Rect(cBtnX1, 424, cBtnW, cBtnH), "⚡ CAPÍTULO 2: BASE VORST (ZAHIR)", new Color(0.14f, 0.08f, 0.26f), new Color(0.85f, 0.38f, 1f), false))
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("Lab_Zahir");
+                LoadSceneFromMenu("Lab_Zahir");
             }
-            if (DrawMenuButton(12, new Rect(cBtnX2, 478, cBtnW, cBtnH), "☣ CAPÍTULO 3: COLMENA BIO-CABLES", new Color(0.06f, 0.22f, 0.24f), new Color(0.22f, 0.96f, 0.82f), true))
+            if (DrawMenuButton(12, new Rect(cBtnX2, 424, cBtnW, cBtnH), "☣ CAPÍTULO 3: COLMENA BIO-CABLES", new Color(0.06f, 0.22f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                SceneManager.LoadScene("03_Nivel3_Colmena");
+                LoadSceneFromMenu("03_Nivel3_Colmena");
             }
 
-            DrawStyledText(ScaleRect(90, 562, 900, 32), "── DESENLACES CINEMÁTICOS DINÁMICOS (SEGÚN COMPASIÓN VS RIGOR) ──", 17, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f));
+            if (DrawMenuButton(18, new Rect(165f, 498f, 750f, 64f), "👑 CAPÍTULO 4 (FINAL): TRONO DE LA DISONANCIA — RESCATE DE LÍA", new Color(0.24f, 0.07f, 0.34f), new Color(0.88f, 0.32f, 1f), true))
+            {
+                LoadSceneFromMenu("04_Final_NexusThroneroom");
+            }
 
-            if (DrawMenuButton(13, new Rect(cBtnX1, 606, cBtnW, cBtnH), "☀ FINAL 1: LUMINOSO (COMPASIÓN)", new Color(0.06f, 0.24f, 0.34f), new Color(0.25f, 0.95f, 1f), false))
+            DrawStyledText(ScaleRect(90, 582, 900, 32), "── DESENLACES CINEMÁTICOS DINÁMICOS (SEGÚN COMPASIÓN VS RIGOR) ──", 17, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f));
+
+            if (DrawMenuButton(13, new Rect(cBtnX1, 624, cBtnW, cBtnH), "☀ FINAL 1: LUMINOSO (COMPASIÓN)", new Color(0.06f, 0.24f, 0.34f), new Color(0.25f, 0.95f, 1f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Luminoso);
             }
-            if (DrawMenuButton(14, new Rect(cBtnX2, 606, cBtnW, cBtnH), "🩸 FINAL 2: OSCURO (RIGOR / VORST)", new Color(0.24f, 0.06f, 0.14f), new Color(1f, 0.22f, 0.38f), false))
+            if (DrawMenuButton(14, new Rect(cBtnX2, 624, cBtnW, cBtnH), "🩸 FINAL 2: OSCURO (RIGOR / VORST)", new Color(0.24f, 0.06f, 0.14f), new Color(1f, 0.22f, 0.38f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Oscuro);
             }
 
-            if (DrawMenuButton(15, new Rect(220, 690, 640, cBtnH), "⚖ FINAL 3: NEUTRAL (EL ÚLTIMO LEGADO DE N.E.X.A.)", new Color(0.16f, 0.14f, 0.06f), new Color(1f, 0.82f, 0.24f), false))
+            if (DrawMenuButton(15, new Rect(220, 700, 640, cBtnH), "⚖ FINAL 3: NEUTRAL (EL ÚLTIMO LEGADO DE N.E.X.A.)", new Color(0.16f, 0.14f, 0.06f), new Color(1f, 0.82f, 0.24f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Neutral);
             }
 
-            if (DrawMenuButton(16, new Rect(395, 780, 290, 52), "✖ CERRAR SELECTOR", new Color(0.18f, 0.08f, 0.14f), new Color(1f, 0.40f, 0.48f), false))
+            if (DrawMenuButton(16, new Rect(395, 782, 290, 52), "✖ CERRAR SELECTOR", new Color(0.18f, 0.08f, 0.14f), new Color(1f, 0.40f, 0.48f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 showChapterSelect = false;

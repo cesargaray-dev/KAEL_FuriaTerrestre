@@ -65,6 +65,7 @@ public class EnemyDummy : MonoBehaviour
 
     // Sprites 256x256 alineados para Nivel 2 y Nivel 3
     private string visualType = "";
+    public string VisualTypePublic => visualType;
     private Sprite[] customWalkFrames;
     private Sprite[] customAttackFrames;
     private Sprite[] customDieFrames;
@@ -332,6 +333,25 @@ public class EnemyDummy : MonoBehaviour
             if (customJumpLandFrames == null || customJumpLandFrames.Length == 0)
                 customJumpLandFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorImpact", ppu);
             customChestOpenFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "ChestOpen", ppu);
+        }
+        else if (resourcePrefix == "PraetorianMarksman")
+        {
+            customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianMarksman", "Laser", ppu);
+        }
+        else if (resourcePrefix == "PraetorianCustodian")
+        {
+            customJumpTakeoffFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianCustodian", "JumpTakeoff", ppu);
+            customJumpDiveFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianCustodian", "JumpDive", ppu);
+            customJumpLandFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianCustodian", "JumpLand", ppu);
+        }
+        else if (resourcePrefix == "SupremeSovereign")
+        {
+            customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "Laser", ppu);
+            customPhaseTransFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "PhaseTrans", ppu);
+            customEnrageAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "EnrageAttack", ppu);
+            customIdleFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "Idle", ppu);
+            customVortexFlameFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "VortexFlame", ppu);
+            customChestOpenFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "ChestOpen", ppu);
         }
 
         if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
@@ -609,6 +629,12 @@ public class EnemyDummy : MonoBehaviour
         float distToKael = Mathf.Abs(diffX);
         float dirToKael = (Mathf.Abs(diffX) > 0.02f) ? Mathf.Sign(diffX) : -1f;
 
+        SovereignBossAI sovereignAI = GetComponent<SovereignBossAI>();
+        if (sovereignAI != null && sovereignAI.OverridesMovementAndAttacks)
+        {
+            return;
+        }
+
         if (visualType == "VortexOmega")
         {
             UpdateVortexOmegaBoss(distToKael, dirToKael);
@@ -622,12 +648,17 @@ public class EnemyDummy : MonoBehaviour
 
         if (distToKael > attackRange && !isChargingHeavy && !isPlayingAttackAnim)
         {
-            // Cañón Láser de Pecho a Media Distancia para BioHulk:
-            // Si marcha hacia Kael y está entre 3.2m y 7.5m, se detiene y desata su rayo verde neón pesado.
+            // Cañón Láser de Pecho a Media Distancia para BioHulk / Rayo de Francotirador Pretoriano:
             if (visualType == "BioHulk" && distToKael >= 3.2f && distToKael <= 7.5f && Time.time >= nextHulkLaserTime)
             {
                 nextHulkLaserTime = Time.time + UnityEngine.Random.Range(5.5f, 8.0f);
                 StartCoroutine(BioHulkChestLaserRoutine());
+                return;
+            }
+            if (visualType == "PraetorianMarksman" && distToKael >= 1.5f && distToKael <= 3.35f && Time.time >= nextHulkLaserTime)
+            {
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(4.2f, 6.2f);
+                StartCoroutine(PraetorianMarksmanLaserRoutine());
                 return;
             }
 
@@ -1063,6 +1094,39 @@ public class EnemyDummy : MonoBehaviour
     /// </summary>
     private IEnumerator BioHulkChestLaserRoutine()
     {
+        return ExecuteCustomLaserRoutine(
+            "⚠ ¡CAÑÓN LÁSER DE CRISÁLIDA!",
+            new Color(0.20f, 0.95f, 0.40f),
+            1.15f,
+            0.50f,
+            7.5f,
+            1.50f,
+            spawnOverlayBeam: true
+        );
+    }
+
+    private IEnumerator PraetorianMarksmanLaserRoutine()
+    {
+        return ExecuteCustomLaserRoutine(
+            "⚠ ¡DISPARO DE FRANCOTIRADOR!",
+            new Color(0.85f, 0.30f, 1.0f),
+            0.96f,
+            0.62f,
+            3.35f,
+            1.25f,
+            spawnOverlayBeam: false
+        );
+    }
+
+    private IEnumerator ExecuteCustomLaserRoutine(
+        string warningText,
+        Color fxColor,
+        float emitterY,
+        float emitterForwardX,
+        float beamLength,
+        float damageMultiplier,
+        bool spawnOverlayBeam)
+    {
         isPlayingAttackAnim = true;
         transform.localRotation = Quaternion.identity;
         float baseX = transform.position.x;
@@ -1073,17 +1137,17 @@ public class EnemyDummy : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.0f,
-                "⚠ ¡CAÑÓN LÁSER DE CRISÁLIDA!",
-                new Color(0.20f, 0.95f, 0.40f),
+                warningText,
+                fxColor,
                 21,
                 1.0f
             );
         }
 
-        Vector3 chestPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.5f);
+        Vector3 chestPos = transform.position + Vector3.up * emitterY + Vector3.right * (dirToKael * emitterForwardX);
         int totalFrames = (customLaserFrames != null && customLaserFrames.Length >= 8) ? 8 : (customLaserFrames != null ? customLaserFrames.Length : 0);
 
-        // Cuadros 0, 1, 2: Sobrecarga de tanques dorsales y apertura de compuerta de pecho
+        // Cuadros 0, 1, 2: Carga energética antes del disparo
         for (int f = 0; f < 3; f++)
         {
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
@@ -1092,46 +1156,54 @@ public class EnemyDummy : MonoBehaviour
 
             if (CombatVFXManager.Instance != null)
             {
-                CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(0.20f, 0.95f, 0.35f));
+                CombatVFXManager.Instance.SpawnElectricArc(chestPos, fxColor);
                 CombatVFXManager.Instance.SpawnHitSparks(chestPos, false, 3);
             }
             yield return new WaitForSeconds(0.16f);
         }
 
-        // Cuadro 3: DISPARO MASIVO DEL RAYO LÁSER VERDE
-        if (customLaserFrames != null && customLaserFrames.Length > 3 && customLaserFrames[3] != null)
-            sr.sprite = customLaserFrames[3];
-
-        if (LevelAudioManager.Instance != null)
-            LevelAudioManager.Instance.PlayUltimateLaser();
-
-        float beamLength = 7.5f;
-        if (CombatVFXManager.Instance != null)
+        // Cuadros 3..4: DISPARO DE RAYO LÁSER (manteniendo la punta pixel-art continua)
+        int beamEndFrame = (spawnOverlayBeam || totalFrames < 5) ? 4 : 5;
+        for (int f = 3; f < beamEndFrame; f++)
         {
-            CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, 0.45f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, new Color(0.20f, 0.95f, 0.40f), 3.0f);
-            CombatVFXManager.Instance.ShakeCamera(0.36f, 0.22f);
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.15f, 0.95f, 0.35f), 0.35f);
-        }
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
 
-        // Impacto a Kael si se encuentra en la trayectoria del haz
-        if (kaelTarget != null)
-        {
-            float diffX = kaelTarget.position.x - transform.position.x;
-            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
-            float dist = Mathf.Abs(diffX);
-            if (isInFront && dist <= beamLength && PlayerStats.Instance != null)
+            if (f == 3)
             {
-                PlayerStats.Instance.TakeDamage(damage * 1.50f, this);
+                if (LevelAudioManager.Instance != null)
+                    LevelAudioManager.Instance.PlayUltimateLaser();
+
                 if (CombatVFXManager.Instance != null)
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+                {
+                    if (spawnOverlayBeam)
+                        CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, 0.45f);
+                    CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, fxColor, spawnOverlayBeam ? 3.0f : 1.9f);
+                    CombatVFXManager.Instance.ShakeCamera(spawnOverlayBeam ? 0.36f : 0.18f, spawnOverlayBeam ? 0.22f : 0.12f);
+                    if (spawnOverlayBeam)
+                        CombatVFXManager.Instance.TriggerScreenFlash(fxColor, 0.35f);
+                }
+
+                // Impacto a Kael si se encuentra en la trayectoria del haz
+                if (kaelTarget != null)
+                {
+                    float diffX = kaelTarget.position.x - transform.position.x;
+                    bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+                    float dist = Mathf.Abs(diffX);
+                    if (isInFront && dist <= beamLength && PlayerStats.Instance != null)
+                    {
+                        PlayerStats.Instance.TakeDamage(damage * damageMultiplier, this);
+                        if (CombatVFXManager.Instance != null)
+                            CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+                    }
+                }
             }
+            yield return new WaitForSeconds(spawnOverlayBeam ? 0.30f : 0.16f);
         }
 
-        yield return new WaitForSeconds(0.30f);
-
-        // Cuadros 4..7: Enfriamiento de ventilación de vapor
-        for (int f = 4; f < totalFrames; f++)
+        // Cuadros restantes: Enfriamiento / recuperación
+        for (int f = beamEndFrame; f < totalFrames; f++)
         {
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
@@ -1870,6 +1942,28 @@ public class EnemyDummy : MonoBehaviour
 
         if (isPlayingAttackAnim || isChargingHeavy) return;
 
+        SovereignBossAI sovereignAI = GetComponent<SovereignBossAI>();
+        if (sovereignAI != null)
+        {
+            transform.localRotation = Quaternion.identity;
+            if (!sovereignAI.IsActingExternally && customWalkFrames != null && customWalkFrames.Length > 0)
+            {
+                float dKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
+                if (dKael > attackRange)
+                {
+                    walkAnimTimer += Time.deltaTime * 6.5f;
+                    int frame = Mathf.FloorToInt(walkAnimTimer) % customWalkFrames.Length;
+                    if (customWalkFrames[frame] != null) sr.sprite = customWalkFrames[frame];
+                }
+                else if (customWalkFrames[0] != null)
+                {
+                    walkAnimTimer = 0f;
+                    sr.sprite = customWalkFrames[0];
+                }
+            }
+            return;
+        }
+
         transform.localRotation = Quaternion.identity;
         float distToKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
         // En sincronía con la decisión de Update(): si está en rango de ataque se detiene y adopta postura firme
@@ -2026,6 +2120,17 @@ public class EnemyDummy : MonoBehaviour
     {
         if (isDead || isInvulnerable) return;
 
+        SovereignBossAI sovereignAI = GetComponent<SovereignBossAI>();
+        if (sovereignAI != null)
+        {
+            sovereignAI.ProcessIncomingDamage(ref dmg, ref isCrit);
+            if (dmg <= 0f)
+            {
+                if (sr != null && !isChargingHeavy) StartCoroutine(HitFlash());
+                return;
+            }
+        }
+
         // BLOQUE 5 (Issue #23 & Milestone M3): Transición de Fase 2 de VORTEX-OMEGA al 50% de HP
         if (visualType == "VortexOmega" && !hasEnteredRagePhase && (currentHP - dmg) <= (maxHP * 0.50f))
         {
@@ -2056,7 +2161,14 @@ public class EnemyDummy : MonoBehaviour
 
         if (currentHP <= 0f)
         {
-            if (isBoss)
+            if (sovereignAI != null && sovereignAI.role == SovereignBossAI.BossRole.SupremeSovereign)
+            {
+                isDead = true;
+                Collider2D c = GetComponent<Collider2D>();
+                if (c != null) c.enabled = false;
+                sovereignAI.TriggerFinalDefeatSequence();
+            }
+            else if (isBoss)
                 StartCoroutine(BossDramaticDeathRoutine());
             else
                 DieNormal();

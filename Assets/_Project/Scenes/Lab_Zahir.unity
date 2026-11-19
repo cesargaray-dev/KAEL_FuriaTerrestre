@@ -289,7 +289,7 @@ MonoBehaviour:
   healthBarOffsetY: 1.95
   levelNumber: 2
   zoneName: "BASE VORST \u2014 N\xDACLEO CENTRAL"
-  nextLevelSceneName: 
+  nextLevelSceneName: 03_Nivel3_Colmena
   isPaused: 0
   isGameOver: 0
   isChoosingDilemma: 0
