@@ -2105,7 +2105,7 @@ public class PlayerStats : MonoBehaviour
             if (hasLevel4Scene)
             {
                 if (DrawSkinnedCyberButton(
-                    new Rect(424f, 612f, 520f, 82f),
+                    new Rect(424f, 612f, 620f, 82f),
                     texBtnEmerald,
                     "► AVANZAR AL NIVEL 4 (TRONO FINAL)",
                     "VIÑETA II: DESCUBRIMIENTO DE LA CÁPSULA DE LÍA",
@@ -2117,30 +2117,32 @@ public class PlayerStats : MonoBehaviour
                 }
 
                 if (DrawSkinnedCyberButton(
-                    new Rect(964f, 612f, 532f, 82f),
-                    texBtnGold,
-                    "♦ EPÍLOGO FINAL DE CAMPAÑA",
-                    "VER LOS 3 FINALES DE RESCATE DE LÍA",
-                    18, 12, Color.white, colGoldYel, colGoldYel, true))
+                    new Rect(1066f, 612f, 430f, 82f),
+                    texBtnCyan,
+                    "⌂ MENÚ PRINCIPAL",
+                    "GUARDAR Y VOLVER AL INICIO",
+                    19, 12, Color.white, colCyanNexo, colCyanNexo, true))
                 {
                     if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                     SaveProgressForNextLevel();
-                    EndingCinematicController.LaunchEndingFromMoralState();
+                    Time.timeScale = 1f;
+                    SceneManager.LoadScene(0);
                 }
             }
             else
             {
-                // Si estamos en el Nivel 4 Final (o el Nivel 4 de Zahir aún no está integrado en Build Settings), permite disparar el Epílogo Final de Campaña (Issue #24)
+                // Nivel 4 Final: resolver directamente el desenlace correspondiente a la campaña (sin mostrar los otros finales)
                 if (DrawSkinnedCyberButton(
                     new Rect(424f, 612f, 640f, 82f),
                     texBtnEmerald,
-                    "► VER DESENLACE FINAL (RESCATE DE LÍA)",
-                    "EVALUAR COMPASIÓN VS RIGOR (3 FINALES DE CAMPAÑA)",
+                    "► PROCEDER AL DESENLACE DEL TRONO",
+                    "RESOLVER EL DESTINO DE LÍA SEGÚN TU TRAYECTORIA",
                     18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
                 {
                     if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                    isLevelCompleted = false;
                     SaveProgressForNextLevel();
-                    EndingCinematicController.LaunchEndingFromMoralState();
+                    EndingsManager.TriggerEndingFromFinalBoss();
                 }
 
                 if (DrawSkinnedCyberButton(

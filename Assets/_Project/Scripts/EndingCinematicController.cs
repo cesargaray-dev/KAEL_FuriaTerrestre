@@ -21,6 +21,9 @@ public class EndingCinematicController : MonoBehaviour
     public bool isActive = false;
     public bool isEndingActive => isActive;
     public EndingType activeEnding = EndingType.Luminoso;
+    public bool isReplayFromMenu = false;
+    private int resolvedCompassion = 0;
+    private int resolvedRigor = 0;
     private int currentSlide = 0;
     private float slideTimer = 0f;
     private const float CHARS_PER_SEC = 52f;
@@ -28,6 +31,19 @@ public class EndingCinematicController : MonoBehaviour
     private Texture2D texLight;
     private Texture2D texDark;
     private Texture2D texNeutral;
+
+    public static bool IsEndingUnlocked(EndingType type)
+    {
+        return PlayerPrefs.GetInt($"KAEL_ENDING_UNLOCKED_{type}", 0) == 1;
+    }
+
+    public static void UnlockEnding(EndingType type)
+    {
+        PlayerPrefs.SetInt($"KAEL_ENDING_UNLOCKED_{type}", 1);
+        PlayerPrefs.SetString("KAEL_LAST_ENDING", type.ToString());
+        PlayerPrefs.SetInt("KAEL_GAME_COMPLETED", 1);
+        PlayerPrefs.Save();
+    }
 
     public static void LaunchEndingFromMoralState()
     {
@@ -43,18 +59,22 @@ public class EndingCinematicController : MonoBehaviour
         if (comp > rig) chosen = EndingType.Luminoso;
         else if (rig > comp) chosen = EndingType.Oscuro;
 
-        LaunchEnding(chosen);
+        LaunchEnding(chosen, fromMenuReplay: false);
     }
 
-    public static void LaunchEnding(EndingType type)
+    public static void LaunchEnding(EndingType type, bool fromMenuReplay = false)
     {
+        if (!fromMenuReplay)
+        {
+            UnlockEnding(type);
+        }
         if (Instance == null)
         {
             GameObject go = new GameObject("EndingCinematicController");
             DontDestroyOnLoad(go);
             Instance = go.AddComponent<EndingCinematicController>();
         }
-        Instance.ShowEnding(type);
+        Instance.ShowEnding(type, fromMenuReplay);
     }
 
     void Awake()
@@ -104,10 +124,21 @@ public class EndingCinematicController : MonoBehaviour
             texNeutral = LoadEndingTex("StoryUI/Cinematics/Ending_2_SpaceSilhouette", "StoryUI/Ending_Neutral");
     }
 
-    public void ShowEnding(EndingType type)
+    public void ShowEnding(EndingType type, bool fromMenuReplay = false)
     {
         LoadEndingIllustrations();
         activeEnding = type;
+        isReplayFromMenu = fromMenuReplay;
+        if (PlayerStats.Instance != null)
+        {
+            resolvedCompassion = PlayerStats.Instance.compassionPoints;
+            resolvedRigor = PlayerStats.Instance.rigorPoints;
+        }
+        else
+        {
+            resolvedCompassion = PlayerPrefs.GetInt("KAEL_Compassion", 0);
+            resolvedRigor = PlayerPrefs.GetInt("KAEL_Rigor", 0);
+        }
         currentSlide = 0;
         slideTimer = 0f;
         isActive = true;
@@ -155,11 +186,22 @@ public class EndingCinematicController : MonoBehaviour
             }
             if (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame)
             {
-                currentSlide = (currentSlide + 1) % 3;
-                slideTimer = 0f;
-                if (CompanionDialogueManager.Instance != null)
+                if (slideTimer < 1.8f)
                 {
-                    CompanionDialogueManager.Instance.PlayCinematicTransitionEffect();
+                    slideTimer = 999f;
+                }
+                else if (currentSlide < 2)
+                {
+                    currentSlide++;
+                    slideTimer = 0f;
+                    if (CompanionDialogueManager.Instance != null)
+                    {
+                        CompanionDialogueManager.Instance.PlayCinematicTransitionEffect();
+                    }
+                }
+                else
+                {
+                    SkipEndingToMenu();
                 }
             }
         }
@@ -424,10 +466,13 @@ public class EndingCinematicController : MonoBehaviour
             SkipEndingToMenu();
         }
 
-        // Botón principal de avance de página
+        // Botón principal de avance de página (al terminar página 3/3 cierra campaña al menú)
+        string advanceLabel = (visibleChars < fullText.Length)
+            ? $"COMPLETAR TEXTO ({currentSlide + 1}/3) ►"
+            : ((currentSlide < 2) ? $"SIGUIENTE PÁGINA ({currentSlide + 1}/3) ►" : "FINALIZAR Y VOLVER AL MENÚ ►");
         if (DrawEndingCyberButton(
-            new Rect(250f * sx, 902f * sy, 320f * sx, 58f * sy),
-            $"SIGUIENTE PÁGINA ({currentSlide + 1}/3) ►",
+            new Rect(250f * sx, 902f * sy, 390f * sx, 58f * sy),
+            advanceLabel,
             "StoryUI/Btn_Cyber_Cyan",
             new Color(0.2f, 0.95f, 1f),
             btnFont))
@@ -436,43 +481,45 @@ public class EndingCinematicController : MonoBehaviour
             {
                 slideTimer = 999f;
             }
+            else if (currentSlide < 2)
+            {
+                currentSlide++;
+                slideTimer = 0f;
+                if (CompanionDialogueManager.Instance != null)
+                {
+                    CompanionDialogueManager.Instance.PlayCinematicTransitionEffect();
+                }
+            }
             else
             {
-                currentSlide = (currentSlide + 1) % 3;
-                slideTimer = 0f;
+                SkipEndingToMenu();
             }
         }
 
-        // Botones para previsualizar cualquiera de los 3 finales en vivo
-        if (DrawEndingCyberButton(
-            new Rect(586f * sx, 902f * sy, 244f * sx, 58f * sy),
-            "♦ FINAL LUMINOSO",
-            "StoryUI/Btn_Cyber_Gold",
-            new Color(1f, 0.82f, 0.25f),
-            btnFont))
-        {
-            ShowEnding(EndingType.Luminoso);
-        }
+        // Banda central informativa que muestra únicamente el porqué del desenlace obtenido (sin mostrar los otros finales)
+        string reasonBadge = isReplayFromMenu
+            ? $"♦ ARCHIVO DESBLOQUEADO — {activeEnding.ToString().ToUpper()}"
+            : (activeEnding == EndingType.Luminoso
+                ? $"♦ FINAL OBTENIDO: LUMINOSO (COMPASIÓN {resolvedCompassion} > RIGOR {resolvedRigor})"
+                : (activeEnding == EndingType.Oscuro
+                    ? $"♦ FINAL OBTENIDO: OSCURO (RIGOR {resolvedRigor} > COMPASIÓN {resolvedCompassion})"
+                    : $"♦ FINAL OBTENIDO: NEUTRAL (EQUILIBRIO {resolvedCompassion} == {resolvedRigor})"));
 
-        if (DrawEndingCyberButton(
-            new Rect(844f * sx, 902f * sy, 244f * sx, 58f * sy),
-            "♦ FINAL OSCURO",
-            "StoryUI/Btn_Cyber_Crimson",
-            new Color(1f, 0.25f, 0.45f),
-            btnFont))
+        Rect reasonBox = new Rect(656f * sx, 902f * sy, 688f * sx, 58f * sy);
+        GUI.color = new Color(0.04f, 0.06f, 0.14f, 0.94f);
+        GUI.DrawTexture(reasonBox, Texture2D.whiteTexture);
+        GUI.color = themeCol;
+        GUI.DrawTexture(new Rect(reasonBox.x, reasonBox.y, reasonBox.width, 2f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(reasonBox.x, reasonBox.yMax - 2f, reasonBox.width, 2f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+        GUIStyle reasonSt = new GUIStyle(GUI.skin.label)
         {
-            ShowEnding(EndingType.Oscuro);
-        }
-
-        if (DrawEndingCyberButton(
-            new Rect(1102f * sx, 902f * sy, 244f * sx, 58f * sy),
-            "♦ FINAL NEUTRAL",
-            "StoryUI/Btn_Cyber_Purple",
-            new Color(0.75f, 0.35f, 1f),
-            btnFont))
-        {
-            ShowEnding(EndingType.Neutral);
-        }
+            fontSize = Mathf.Max(11, Mathf.RoundToInt(14f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        reasonSt.normal.textColor = themeCol;
+        GUI.Label(reasonBox, reasonBadge, reasonSt);
 
         if (DrawEndingCyberButton(
             new Rect(1360f * sx, 902f * sy, 310f * sx, 58f * sy),
@@ -481,9 +528,7 @@ public class EndingCinematicController : MonoBehaviour
             new Color(0.25f, 0.95f, 0.55f),
             btnFont))
         {
-            isActive = false;
-            Time.timeScale = 1f;
-            SceneManager.LoadScene("00_MainMenu");
+            SkipEndingToMenu();
         }
     }
 }

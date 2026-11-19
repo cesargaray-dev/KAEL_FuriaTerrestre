@@ -42,6 +42,8 @@ public class MainMenuAndIntroController : MonoBehaviour
     private float[] btnHoverAnim = new float[20];
     private int keyboardMenuFocus = 0;
     private float lastKeyNavTime = -10f;
+    private string lockedEndingHint = "";
+    private float lockedEndingHintTimer = 0f;
 
     private readonly string[] slideTitles = {
         "ACTO I — LA CAÍDA EN 90 MINUTOS",
@@ -123,6 +125,7 @@ public class MainMenuAndIntroController : MonoBehaviour
     void Update()
     {
         float dt = Time.unscaledDeltaTime;
+        if (lockedEndingHintTimer > 0f) lockedEndingHintTimer -= dt;
 
         // Actualizar partículas flotantes
         if (sparks != null)
@@ -251,9 +254,18 @@ public class MainMenuAndIntroController : MonoBehaviour
         if (codex != null) codex.OpenCodex();
     }
 
+    void ResetNewCampaignRunState()
+    {
+        PlayerPrefs.SetInt("KAEL_Saved", 0);
+        PlayerPrefs.SetInt("KAEL_Compassion", 0);
+        PlayerPrefs.SetInt("KAEL_Rigor", 0);
+        PlayerPrefs.Save();
+    }
+
     void StartCinematic()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        ResetNewCampaignRunState();
         inCinematic = true;
         currentSlide = 0;
         slideTimer = 0f;
@@ -288,6 +300,7 @@ public class MainMenuAndIntroController : MonoBehaviour
     void LoadLevel1()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        ResetNewCampaignRunState();
         inCinematic = false;
         showChapterSelect = false;
         showCredits = false;
@@ -481,26 +494,63 @@ public class MainMenuAndIntroController : MonoBehaviour
                 LoadSceneFromMenu("04_Final_NexusThroneroom");
             }
 
-            DrawStyledText(ScaleRect(90, 582, 900, 32), "── DESENLACES CINEMÁTICOS DINÁMICOS (SEGÚN COMPASIÓN VS RIGOR) ──", 17, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f), false);
+            DrawStyledText(ScaleRect(90, 582, 900, 32), "── ARCHIVO DE FINALES DESBLOQUEADOS (SEGÚN COMPASIÓN VS RIGOR EN NV.4) ──", 16, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f), false);
 
-            if (DrawMenuButton(13, new Rect(cBtnX1, 624, cBtnW, cBtnH), "♦ FINAL 1: LUMINOSO (COMPASIÓN)", new Color(0.06f, 0.24f, 0.34f), new Color(0.25f, 0.95f, 1f), false))
+            bool lumUnlocked = EndingCinematicController.IsEndingUnlocked(EndingCinematicController.EndingType.Luminoso);
+            bool oscUnlocked = EndingCinematicController.IsEndingUnlocked(EndingCinematicController.EndingType.Oscuro);
+            bool neuUnlocked = EndingCinematicController.IsEndingUnlocked(EndingCinematicController.EndingType.Neutral);
+
+            string lumLabel = lumUnlocked ? "♦ FINAL 1: LUMINOSO [VER]" : "[BLOQ] FINAL 1: LUMINOSO (C > R)";
+            if (DrawMenuButton(13, new Rect(cBtnX1, 624, cBtnW, cBtnH), lumLabel,
+                lumUnlocked ? new Color(0.06f, 0.24f, 0.34f) : new Color(0.07f, 0.09f, 0.14f),
+                lumUnlocked ? new Color(0.25f, 0.95f, 1f) : new Color(0.42f, 0.48f, 0.58f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Luminoso);
-            }
-            if (DrawMenuButton(14, new Rect(cBtnX2, 624, cBtnW, cBtnH), "♦ FINAL 2: OSCURO (RIGOR / VORST)", new Color(0.24f, 0.06f, 0.14f), new Color(1f, 0.22f, 0.38f), false))
-            {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Oscuro);
-            }
-
-            if (DrawMenuButton(15, new Rect(220, 700, 640, cBtnH), "♦ FINAL 3: NEUTRAL (EL ÚLTIMO LEGADO DE N.E.X.A.)", new Color(0.16f, 0.14f, 0.06f), new Color(1f, 0.82f, 0.24f), false))
-            {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-                EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Neutral);
+                if (lumUnlocked)
+                    EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Luminoso, fromMenuReplay: true);
+                else
+                {
+                    lockedEndingHint = "FINAL LUMINOSO: Completa la campaña / Nv.4 con más puntos de COMPASIÓN que de RIGOR.";
+                    lockedEndingHintTimer = 4.0f;
+                }
             }
 
-            if (DrawMenuButton(16, new Rect(395, 782, 290, 52), "× CERRAR SELECTOR", new Color(0.18f, 0.08f, 0.14f), new Color(1f, 0.40f, 0.48f), false))
+            string oscLabel = oscUnlocked ? "♦ FINAL 2: OSCURO [VER]" : "[BLOQ] FINAL 2: OSCURO (R > C)";
+            if (DrawMenuButton(14, new Rect(cBtnX2, 624, cBtnW, cBtnH), oscLabel,
+                oscUnlocked ? new Color(0.24f, 0.06f, 0.14f) : new Color(0.07f, 0.09f, 0.14f),
+                oscUnlocked ? new Color(1f, 0.22f, 0.38f) : new Color(0.42f, 0.48f, 0.58f), false))
+            {
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                if (oscUnlocked)
+                    EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Oscuro, fromMenuReplay: true);
+                else
+                {
+                    lockedEndingHint = "FINAL OSCURO: Completa la campaña / Nv.4 con más puntos de RIGOR que de COMPASIÓN.";
+                    lockedEndingHintTimer = 4.0f;
+                }
+            }
+
+            string neuLabel = neuUnlocked ? "♦ FINAL 3: NEUTRAL [VER]" : "[BLOQ] FINAL 3: NEUTRAL (EMPATE C == R)";
+            if (DrawMenuButton(15, new Rect(180, 700, 720, cBtnH), neuLabel,
+                neuUnlocked ? new Color(0.16f, 0.14f, 0.06f) : new Color(0.07f, 0.09f, 0.14f),
+                neuUnlocked ? new Color(1f, 0.82f, 0.24f) : new Color(0.42f, 0.48f, 0.58f), false))
+            {
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+                if (neuUnlocked)
+                    EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Neutral, fromMenuReplay: true);
+                else
+                {
+                    lockedEndingHint = "FINAL NEUTRAL: Equilibra COMPASIÓN y RIGOR al final del Nv.4 (ej. 2-2 o protocolo N.E.X.A.).";
+                    lockedEndingHintTimer = 4.0f;
+                }
+            }
+
+            if (lockedEndingHintTimer > 0f && !string.IsNullOrEmpty(lockedEndingHint))
+            {
+                DrawStyledText(ScaleRect(95, 760, 890, 24), lockedEndingHint, 13, TextAnchor.MiddleCenter, new Color(1f, 0.72f, 0.32f), false);
+            }
+
+            if (DrawMenuButton(16, new Rect(395, 790, 290, 52), "× CERRAR SELECTOR", new Color(0.18f, 0.08f, 0.14f), new Color(1f, 0.40f, 0.48f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 showChapterSelect = false;

@@ -26,7 +26,7 @@ public class EndingsManager : MonoBehaviour
     public static EndingsManager Instance { get; private set; }
 
     public bool hasTriggeredEnding { get; private set; } = false;
-    public bool isCinematicActive => activeVignette != CinematicVignetteType.None;
+    public bool isCinematicActive => activeVignette != CinematicVignetteType.None || isFinalChoiceActive || transitionBannerActive;
 
     private CinematicVignetteType activeVignette = CinematicVignetteType.None;
     private string pendingTargetScene = "";
@@ -40,7 +40,9 @@ public class EndingsManager : MonoBehaviour
     private Texture2D texEndingSpace;
     private Texture2D texEndingThrone;
 
+    private bool isFinalChoiceActive = false;
     private bool transitionBannerActive = false;
+    private EndingCinematicController.EndingType lockedCampaignEnding = EndingCinematicController.EndingType.Neutral;
     private string transitionTitle = "";
     private string transitionSubtitle = "";
     private Color transitionColor = new Color(0.25f, 0.95f, 1f);
@@ -273,7 +275,7 @@ public class EndingsManager : MonoBehaviour
         {
             StopAllCoroutines();
             transitionBannerActive = false;
-            EndingCinematicController.LaunchEnding(EvaluateMoralEnding());
+            EndingCinematicController.LaunchEnding(lockedCampaignEnding, fromMenuReplay: false);
         }
     }
 
@@ -414,8 +416,9 @@ public class EndingsManager : MonoBehaviour
             }
         }
 
-        // 2. Evaluar y guardar desenlace moral
-        EndingCinematicController.EndingType selectedEnding = EvaluateMoralEnding();
+        // 2. Abrir la Decisión Final del Trono para resolver de forma coherente los 3 desenlaces
+        isFinalChoiceActive = true;
+        transitionBannerActive = false;
 
         if (PlayerStats.Instance != null)
         {
@@ -424,21 +427,64 @@ public class EndingsManager : MonoBehaviour
             PlayerStats.Instance.isArsenalShopOpen = false;
             PlayerStats.Instance.isChoosingSkill = false;
             PlayerStats.Instance.isChoosingDilemma = false;
-            PlayerStats.Instance.SaveProgressForNextLevel();
         }
 
-        PlayerPrefs.SetInt("KAEL_GAME_COMPLETED", 1);
-        PlayerPrefs.SetString("KAEL_LAST_ENDING", selectedEnding.ToString());
-        PlayerPrefs.Save();
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayVictoryAndDilemmaMusic();
+        }
 
-        // 3. Liberar visualmente la cápsula de Lía en el domo si está presente
+        Time.timeScale = 0f;
+    }
+
+    private EndingCinematicController.EndingType PreviewEndingForDelta(int comp, int rig, int deltaComp, int deltaRigor)
+    {
+        int nextC = comp + deltaComp;
+        int nextR = rig + deltaRigor;
+        if (nextC > nextR) return EndingCinematicController.EndingType.Luminoso;
+        if (nextR > nextC) return EndingCinematicController.EndingType.Oscuro;
+        return EndingCinematicController.EndingType.Neutral;
+    }
+
+    private string GetEndingPreviewName(EndingCinematicController.EndingType type)
+    {
+        switch (type)
+        {
+            case EndingCinematicController.EndingType.Luminoso: return "FINAL LUMINOSO\n«El Héroe de la Tierra»";
+            case EndingCinematicController.EndingType.Oscuro:   return "FINAL OSCURO\n«El Señor de la Disonancia»";
+            default:                                            return "FINAL NEUTRAL\n«El Último Legado de N.E.X.A.»";
+        }
+    }
+
+    private void ConfirmFinalThroneChoice(int deltaComp, int deltaRigor)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+
+        if (PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.compassionPoints += deltaComp;
+            PlayerStats.Instance.rigorPoints += deltaRigor;
+            PlayerStats.Instance.RecalculateStats();
+            PlayerStats.Instance.SaveProgressForNextLevel();
+        }
+        else
+        {
+            PlayerPrefs.SetInt("KAEL_Compassion", PlayerPrefs.GetInt("KAEL_Compassion", 0) + deltaComp);
+            PlayerPrefs.SetInt("KAEL_Rigor", PlayerPrefs.GetInt("KAEL_Rigor", 0) + deltaRigor);
+        }
+
+        lockedCampaignEnding = EvaluateMoralEnding();
+        EndingCinematicController.UnlockEnding(lockedCampaignEnding);
+        isFinalChoiceActive = false;
+        Time.timeScale = 1f;
+
         NexusThroneroomEnvironment env = NexusThroneroomEnvironment.Instance;
         if (env != null)
         {
-            env.TriggerLiaLiberationVisual(selectedEnding);
+            env.TriggerLiaLiberationVisual(lockedCampaignEnding);
         }
 
-        StartCoroutine(ReleaseLiaAndLaunchEndingRoutine(selectedEnding));
+        StartCoroutine(ReleaseLiaAndLaunchEndingRoutine(lockedCampaignEnding));
     }
 
     private IEnumerator ReleaseLiaAndLaunchEndingRoutine(EndingCinematicController.EndingType selectedEnding)
@@ -484,7 +530,7 @@ public class EndingsManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(1.55f);
 
         transitionBannerActive = false;
-        EndingCinematicController.LaunchEnding(selectedEnding);
+        EndingCinematicController.LaunchEnding(selectedEnding, fromMenuReplay: false);
     }
 
     void OnGUI()
@@ -492,6 +538,12 @@ public class EndingsManager : MonoBehaviour
         if (activeVignette != CinematicVignetteType.None)
         {
             DrawWidescreenChapterVignette();
+            return;
+        }
+
+        if (isFinalChoiceActive)
+        {
+            DrawFinalThroneChoiceModal();
             return;
         }
 
@@ -758,5 +810,207 @@ public class EndingsManager : MonoBehaviour
         bool clicked = GUI.Button(drawRect, "");
         GUI.color = Color.white;
         return clicked;
+    }
+
+    private void DrawFinalThroneChoiceModal()
+    {
+        GUI.depth = -880;
+        float sx = Screen.width / 1920f;
+        float sy = Screen.height / 1080f;
+
+        GUI.color = new Color(0f, 0.01f, 0.05f, 0.86f);
+        GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+
+        int comp = (PlayerStats.Instance != null) ? PlayerStats.Instance.compassionPoints : PlayerPrefs.GetInt("KAEL_Compassion", 0);
+        int rig = (PlayerStats.Instance != null) ? PlayerStats.Instance.rigorPoints : PlayerPrefs.GetInt("KAEL_Rigor", 0);
+        bool canChooseNeutralDirectly = (comp == rig);
+
+        Rect modalRect = new Rect(canChooseNeutralDirectly ? 210f * sx : 340f * sx, 165f * sy, canChooseNeutralDirectly ? 1500f * sx : 1240f * sx, 720f * sy);
+        Texture2D panelCyan = PlayerStats.LoadResTex("StoryUI/Panel_Cyber_Cyan");
+        Texture2D panelCrim = PlayerStats.LoadResTex("StoryUI/Panel_Cyber_Crimson");
+        Texture2D panelGold = PlayerStats.LoadResTex("StoryUI/Panel_Cyber_Gold");
+
+        if (panelCyan != null)
+        {
+            GUI.DrawTexture(modalRect, panelCyan, ScaleMode.StretchToFill);
+        }
+        else
+        {
+            GUI.color = new Color(0.03f, 0.05f, 0.12f, 0.96f);
+            GUI.DrawTexture(modalRect, Texture2D.whiteTexture);
+            GUI.color = new Color(0.22f, 0.92f, 1f);
+            GUI.DrawTexture(new Rect(modalRect.x, modalRect.y, modalRect.width, 3f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+        }
+
+        GUIStyle hStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(16, Mathf.RoundToInt(27f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        hStyle.normal.textColor = new Color(0.26f, 0.96f, 1f);
+        GUI.Label(new Rect(modalRect.x + 30f * sx, modalRect.y + 24f * sy, modalRect.width - 60f * sx, 38f * sy),
+            "DECISIÓN FINAL DEL TRONO: EL REACTOR DE LA NAVE NÚCLEO", hStyle);
+
+        GUIStyle subStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(12, Mathf.RoundToInt(17f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter,
+            wordWrap = true
+        };
+        subStyle.normal.textColor = Color.white;
+        GUI.Label(new Rect(modalRect.x + 50f * sx, modalRect.y + 68f * sy, modalRect.width - 100f * sx, 54f * sy),
+            "El Soberano Supremo ha caído, pero el reactor del Trono está a punto de colapsar junto a la cápsula de Lía.\nElige cómo resolver la crisis final según tu trayectoria moral:", subStyle);
+
+        GUIStyle balStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        balStyle.normal.textColor = new Color(1f, 0.85f, 0.28f);
+        GUI.Label(new Rect(modalRect.x + 40f * sx, modalRect.y + 128f * sy, modalRect.width - 80f * sx, 30f * sy),
+            $"TRAYECTORIA ACUMULADA:   COMPASIÓN {comp}   |   RIGOR {rig}   (Mayoría define Luminoso / Oscuro • Empate activa Final Neutral)", balStyle);
+
+        int cardCount = canChooseNeutralDirectly ? 3 : 2;
+        float gap = 28f * sx;
+        float padX = 56f * sx;
+        float cardW = (modalRect.width - padX * 2f - gap * (cardCount - 1)) / cardCount;
+        float cardY = modalRect.y + 174f * sy;
+        float cardH = 492f * sy;
+
+        var resComp = PreviewEndingForDelta(comp, rig, 1, 0);
+        DrawFinalDecisionCard(
+            new Rect(modalRect.x + padX, cardY, cardW, cardH),
+            panelCyan,
+            new Color(0.24f, 0.96f, 1f),
+            "♦ COMPASIÓN (PUREZA NEXO)",
+            "+1 COMPASIÓN — CANALIZAR PUREZA",
+            "Purifica los conductos del reactor con la luz cian del Guantelete para despertar a Lía a salvo sin sucumbir al poder Vorst.",
+            $"► RESULTADO: {GetEndingPreviewName(resComp)}",
+            "♦ PURIFICAR NÚCLEO (+1 COMPASIÓN)",
+            "StoryUI/Btn_Cyber_Emerald",
+            sx, sy,
+            () => ConfirmFinalThroneChoice(1, 0)
+        );
+
+        var resRig = PreviewEndingForDelta(comp, rig, 0, 1);
+        DrawFinalDecisionCard(
+            new Rect(modalRect.x + padX + (cardW + gap), cardY, cardW, cardH),
+            panelCrim,
+            new Color(1f, 0.34f, 0.56f),
+            "♦ RIGOR (DISONANCIA VORST)",
+            "+1 RIGOR — ABSORBER REACTOR",
+            "Devora la energía abisal del Soberano Supremo para arrasar toda la flota Vorst en órbita, aun superando tu límite biológico.",
+            $"► RESULTADO: {GetEndingPreviewName(resRig)}",
+            "♦ ABSORBER NÚCLEO (+1 RIGOR)",
+            "StoryUI/Btn_Cyber_Crimson",
+            sx, sy,
+            () => ConfirmFinalThroneChoice(0, 1)
+        );
+
+        if (canChooseNeutralDirectly)
+        {
+            DrawFinalDecisionCard(
+                new Rect(modalRect.x + padX + (cardW + gap) * 2f, cardY, cardW, cardH),
+                panelGold,
+                new Color(1f, 0.85f, 0.30f),
+                "♦ SACRIFICIO NEXO (EQUILIBRIO)",
+                "EMPATE 0=0 — TRANSFERENCIA N.E.X.A.",
+                "Con pureza y furia en equilibrio, autoriza a N.E.X.A. a desacoplar su matriz hacia el reactor para estabilizar la evacuación.",
+                $"► RESULTADO: {GetEndingPreviewName(EndingCinematicController.EndingType.Neutral)}",
+                "♦ PROTOCOLO DE N.E.X.A. (NEUTRAL)",
+                "StoryUI/Btn_Cyber_Purple",
+                sx, sy,
+                () => ConfirmFinalThroneChoice(0, 0)
+            );
+        }
+    }
+
+    private void DrawFinalDecisionCard(
+        Rect rect,
+        Texture2D cardPanel,
+        Color accentCol,
+        string header,
+        string tagLine,
+        string body,
+        string outcomeLine,
+        string btnText,
+        string btnRes,
+        float sx,
+        float sy,
+        System.Action onClick)
+    {
+        if (cardPanel != null)
+        {
+            GUI.DrawTexture(rect, cardPanel, ScaleMode.StretchToFill);
+        }
+        else
+        {
+            GUI.color = new Color(0.05f, 0.08f, 0.16f, 0.96f);
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = accentCol;
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, 3f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+        }
+
+        float mX = 28f * sx;
+        GUIStyle hSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(13, Mathf.RoundToInt(19f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        hSt.normal.textColor = accentCol;
+        GUI.Label(new Rect(rect.x + mX, rect.y + 24f * sy, rect.width - mX * 2f, 34f * sy), header, hSt);
+
+        GUIStyle tagSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(11, Mathf.RoundToInt(14f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        tagSt.normal.textColor = new Color(0.84f, 0.94f, 1f);
+        GUI.Label(new Rect(rect.x + mX, rect.y + 64f * sy, rect.width - mX * 2f, 26f * sy), tagLine, tagSt);
+
+        GUIStyle bodySt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * sy)),
+            fontStyle = FontStyle.Normal,
+            wordWrap = true,
+            alignment = TextAnchor.UpperCenter
+        };
+        bodySt.normal.textColor = Color.white;
+        GUI.Label(new Rect(rect.x + mX, rect.y + 106f * sy, rect.width - mX * 2f, 160f * sy), body, bodySt);
+
+        Rect previewRect = new Rect(rect.x + mX, rect.y + 278f * sy, rect.width - mX * 2f, 68f * sy);
+        GUI.color = new Color(0.03f, 0.05f, 0.10f, 0.88f);
+        GUI.DrawTexture(previewRect, Texture2D.whiteTexture);
+        GUI.color = accentCol;
+        GUI.DrawTexture(new Rect(previewRect.x, previewRect.y, previewRect.width, 2f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+
+        GUIStyle outSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(11, Mathf.RoundToInt(14f * sy)),
+            fontStyle = FontStyle.Bold,
+            wordWrap = true,
+            alignment = TextAnchor.MiddleCenter
+        };
+        outSt.normal.textColor = accentCol;
+        GUI.Label(new Rect(previewRect.x + 10f * sx, previewRect.y + 4f * sy, previewRect.width - 20f * sx, previewRect.height - 8f * sy), outcomeLine, outSt);
+
+        if (DrawTacticalButton(
+            new Rect(rect.x + 32f * sx, rect.yMax - 94f * sy, rect.width - 64f * sx, 68f * sy),
+            btnText,
+            btnRes,
+            accentCol,
+            Mathf.Max(12, Mathf.RoundToInt(15f * sy))))
+        {
+            onClick?.Invoke();
+        }
     }
 }
