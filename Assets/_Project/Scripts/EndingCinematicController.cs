@@ -68,23 +68,40 @@ public class EndingCinematicController : MonoBehaviour
         LoadEndingIllustrations();
     }
 
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    private static Texture2D LoadEndingTex(string primaryPath, string fallbackPath)
+    {
+        Texture2D tex = Resources.Load<Texture2D>(primaryPath);
+        if (tex == null)
+        {
+            Sprite sp = Resources.Load<Sprite>(primaryPath);
+            if (sp != null) tex = sp.texture;
+        }
+        if (tex == null && !string.IsNullOrEmpty(fallbackPath))
+        {
+            tex = Resources.Load<Texture2D>(fallbackPath);
+            if (tex == null)
+            {
+                Sprite sp2 = Resources.Load<Sprite>(fallbackPath);
+                if (sp2 != null) tex = sp2.texture;
+            }
+        }
+        if (tex != null) tex.filterMode = FilterMode.Point;
+        return tex;
+    }
+
     private void LoadEndingIllustrations()
     {
         if (texLight == null)
-        {
-            texLight = Resources.Load<Texture2D>("StoryUI/Ending_Light");
-            if (texLight != null) texLight.filterMode = FilterMode.Point;
-        }
+            texLight = LoadEndingTex("StoryUI/Cinematics/Ending_1_EarthDawn", "StoryUI/Ending_Light");
         if (texDark == null)
-        {
-            texDark = Resources.Load<Texture2D>("StoryUI/Ending_Dark");
-            if (texDark != null) texDark.filterMode = FilterMode.Point;
-        }
+            texDark = LoadEndingTex("StoryUI/Cinematics/Ending_3_BiomechThrone", "StoryUI/Ending_Dark");
         if (texNeutral == null)
-        {
-            texNeutral = Resources.Load<Texture2D>("StoryUI/Ending_Neutral");
-            if (texNeutral != null) texNeutral.filterMode = FilterMode.Point;
-        }
+            texNeutral = LoadEndingTex("StoryUI/Cinematics/Ending_2_SpaceSilhouette", "StoryUI/Ending_Neutral");
     }
 
     public void ShowEnding(EndingType type)
@@ -102,6 +119,12 @@ public class EndingCinematicController : MonoBehaviour
             PlayerStats.Instance.isPaused = false;
         }
 
+        CompanionDialogueManager dlg = CompanionDialogueManager.EnsureExists();
+        if (dlg != null)
+        {
+            dlg.PlayCinematicTransitionEffect();
+        }
+
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayVictoryAndDilemmaMusic();
@@ -110,16 +133,35 @@ public class EndingCinematicController : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    public void SkipEndingToMenu()
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+        isActive = false;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("00_MainMenu");
+    }
+
     void Update()
     {
         if (!isActive) return;
 
         slideTimer += Time.unscaledDeltaTime;
-        if (Keyboard.current != null &&
-            (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame))
+        if (Keyboard.current != null)
         {
-            currentSlide = (currentSlide + 1) % 3;
-            slideTimer = 0f;
+            if (Keyboard.current.escapeKey.wasPressedThisFrame || Keyboard.current.tabKey.wasPressedThisFrame)
+            {
+                SkipEndingToMenu();
+                return;
+            }
+            if (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame)
+            {
+                currentSlide = (currentSlide + 1) % 3;
+                slideTimer = 0f;
+                if (CompanionDialogueManager.Instance != null)
+                {
+                    CompanionDialogueManager.Instance.PlayCinematicTransitionEffect();
+                }
+            }
         }
     }
 
@@ -323,6 +365,14 @@ public class EndingCinematicController : MonoBehaviour
         int visibleChars = Mathf.Clamp(Mathf.FloorToInt(slideTimer * CHARS_PER_SEC), 0, fullText.Length);
         string shownText = fullText.Substring(0, visibleChars);
 
+        if (visibleChars < fullText.Length && CompanionDialogueManager.Instance != null)
+        {
+            string voiceKey = activeEnding == EndingType.Luminoso ? "kael_normal"
+                            : activeEnding == EndingType.Oscuro ? "kael_shout"
+                            : "nexa_normal";
+            CompanionDialogueManager.Instance.PlaySyntheticVoiceTick(voiceKey, visibleChars);
+        }
+
         GUIStyle bodySt = new GUIStyle(GUI.skin.label)
         {
             fontSize = Mathf.Max(13, Mathf.RoundToInt(20f * sy)),
@@ -343,6 +393,17 @@ public class EndingCinematicController : MonoBehaviour
         GUI.Label(new Rect(narrativeBox.x + 190f * sx, narrativeBox.y + 148f * sy, 1160f * sx, 40f * sy), epilogueQuote, quoteSt);
 
         int btnFont = Mathf.Max(12, Mathf.RoundToInt(16f * sy));
+
+        // Botón superior derecho de Salto Táctico (Omitir cinemática)
+        if (DrawEndingCyberButton(
+            new Rect(1370f * sx, 26f * sy, 280f * sx, 44f * sy),
+            "⏭ SALTO TÁCTICO [ESC]",
+            "StoryUI/Btn_Cyber_Crimson",
+            new Color(1f, 0.35f, 0.45f),
+            Mathf.Max(11, Mathf.RoundToInt(14f * sy))))
+        {
+            SkipEndingToMenu();
+        }
 
         // Botón principal de avance de página
         if (DrawEndingCyberButton(

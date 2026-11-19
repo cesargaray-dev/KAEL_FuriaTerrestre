@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class WaveSpawner : MonoBehaviour
@@ -7,6 +8,7 @@ public class WaveSpawner : MonoBehaviour
     [Header("Referencias")]
     public Transform kaelTransform;
     public GameObject vorstWalkerPrefab;
+    public GameObject sovereignBossPrefab;
 
     [Header("Configuración de Hordas")]
     public int totalWaves = 10;
@@ -15,9 +17,10 @@ public class WaveSpawner : MonoBehaviour
     public float enemySpacing = 1.35f;
     public float groundY = -2.85f;     // Alineado con Kael por encima de la barra de botones
 
-    [Header("Configuración Nivel 2 y Nivel 3")]
+    [Header("Configuración Niveles 2, 3 y 4")]
     public bool isLevel2BaseVorst = false;
     public bool isLevel3Hive = false;
+    public bool isLevel4Throneroom = false;
     public float difficultyMultiplier = 1.0f;
 
     [Header("Estado Actual")]
@@ -26,10 +29,27 @@ public class WaveSpawner : MonoBehaviour
     private int enemiesAlive = 0;
     private bool spawningWave = false;
 
+    public static bool IsWaitingForSanctumBreach { get; private set; } = false;
+    public static float SanctumGateBlockX { get; private set; } = 0f;
+    private bool isBreachPromptActive = false;
+    private bool breachRequested = false;
+    private float sanctumGatePosX = 0f;
+
     void Start()
     {
         string sceneName = SceneManager.GetActiveScene().name;
-        if (sceneName == "03_Nivel3_Colmena" || (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3))
+        if (sceneName == "04_Final_NexusThroneroom" || (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 4))
+        {
+            isLevel4Throneroom = true;
+            isLevel3Hive = false;
+            isLevel2BaseVorst = false;
+            groundY = -2.95f;
+            EnemyDummy.PreloadLevel2Frames();
+            EnemyDummy.PreloadLevel3Frames();
+            NexusThroneroomEnvironment.EnsureExists();
+            EndingsManager.EnsureExists();
+        }
+        else if (sceneName == "03_Nivel3_Colmena" || (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3))
         {
             isLevel3Hive = true;
             isLevel2BaseVorst = false;
@@ -87,6 +107,14 @@ public class WaveSpawner : MonoBehaviour
         currentWave = 0;
         enemiesAlive = 0;
         spawningWave = false;
+        IsWaitingForSanctumBreach = false;
+        isBreachPromptActive = false;
+        breachRequested = false;
+
+        if (NexusThroneroomEnvironment.Instance != null)
+        {
+            NexusThroneroomEnvironment.Instance.ResetSanctumArena();
+        }
 
         if (kaelTransform != null)
         {
@@ -180,6 +208,229 @@ public class WaveSpawner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Invoca refuerzos de la Guardia Pretoriana Vorst dentro del Santuario durante la batalla del Soberano Supremo.
+    /// </summary>
+    public void SpawnSovereignReinforcements(Vector3 bossPos, int count = 2)
+    {
+        if (vorstWalkerPrefab == null) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            float offsetX = (i % 2 == 0) ? -2.2f - i * 0.7f : 2.2f + i * 0.7f;
+            float spawnX = bossPos.x + offsetX;
+            if (NexusThroneroomEnvironment.Instance != null)
+            {
+                spawnX = NexusThroneroomEnvironment.Instance.ClampXToBossArena(spawnX);
+            }
+            Vector3 spawnPos = new Vector3(spawnX, groundY, 0f);
+            GameObject obj = Instantiate(vorstWalkerPrefab, spawnPos, Quaternion.identity);
+            EnemyDummy enemy = obj.GetComponent<EnemyDummy>();
+            if (enemy != null)
+            {
+                SpriteRenderer sr = obj.GetComponent<SpriteRenderer>();
+                SetupLevel4PraetorianUnit(enemy, obj, sr, totalWaves, i + Random.Range(0, 3), count);
+                enemy.goldReward = 30;
+                enemy.expReward = 35;
+
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnShockwaveRing(spawnPos + Vector3.up * 0.6f, new Color(0.84f, 0.24f, 1f), 2.4f);
+                    CombatVFXManager.Instance.SpawnElectricArc(spawnPos + Vector3.up * 0.8f, new Color(0.28f, 0.96f, 1f));
+                }
+
+                enemiesAlive++;
+                enemy.OnEnemyDied += HandleEnemyDied;
+            }
+        }
+    }
+
+    IEnumerator PlaySanctumBreachTransitionRoutine()
+    {
+        if (kaelTransform == null) yield break;
+
+        float targetCenter = Mathf.Round((kaelTransform.position.x + 8.5f) / 10.24f) * 10.24f;
+        float gateX = targetCenter - 7.4f;
+        sanctumGatePosX = gateX;
+        Vector3 gatePos = new Vector3(gateX, groundY + 2.2f, 0f);
+
+        IsWaitingForSanctumBreach = true;
+        SanctumGateBlockX = gateX - 1.2f;
+        isBreachPromptActive = true;
+        breachRequested = false;
+
+        // Construir una Compuerta de Contención Vorst multicapa visible e inconfundible
+        GameObject gateObj = new GameObject("VorstSanctumContainmentGate");
+        gateObj.transform.position = gatePos;
+
+        Texture2D gateTex = Resources.Load<Texture2D>("Level4/SanctumGate_Level4");
+        if (gateTex != null)
+        {
+            gateTex.filterMode = FilterMode.Point;
+            GameObject gateArt = new GameObject("SanctumGateArt");
+            gateArt.transform.SetParent(gateObj.transform, false);
+            SpriteRenderer gsr = gateArt.AddComponent<SpriteRenderer>();
+            gsr.sprite = Sprite.Create(gateTex, new Rect(0f, 0f, gateTex.width, gateTex.height), new Vector2(0.5f, 0f), 100f);
+            float targetHeight = 6.1f;
+            float scale = targetHeight / Mathf.Max(0.1f, gsr.sprite.bounds.size.y);
+            gateArt.transform.localScale = new Vector3(scale, scale, 1f);
+            gateArt.transform.position = new Vector3(gateX, groundY - 0.15f, 0f);
+            gsr.sortingOrder = 15;
+        }
+        else
+        {
+            LineRenderer gateBeam = gateObj.AddComponent<LineRenderer>();
+            gateBeam.material = new Material(Shader.Find("Sprites/Default"));
+            gateBeam.positionCount = 2;
+            gateBeam.startWidth = 0.72f;
+            gateBeam.endWidth = 0.72f;
+            gateBeam.startColor = new Color(0.96f, 0.20f, 0.65f, 0.90f);
+            gateBeam.endColor = new Color(0.45f, 0.14f, 1f, 0.90f);
+            gateBeam.sortingOrder = 15;
+            gateBeam.SetPosition(0, new Vector3(gateX, groundY - 0.1f, 0f));
+            gateBeam.SetPosition(1, new Vector3(gateX, groundY + 5.8f, 0f));
+        }
+
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        // Esperar a que el jugador decida derrumbar la compuerta ([J], [Espacio], [E] o clic en el banner)
+        while (!breachRequested)
+        {
+            if (PlayerStats.Instance == null || !PlayerStats.Instance.IsAnyBlockingModalOpen)
+            {
+                bool keySmash = false;
+                if (Keyboard.current != null &&
+                    (Keyboard.current.jKey.wasPressedThisFrame ||
+                     Keyboard.current.spaceKey.wasPressedThisFrame ||
+                     Keyboard.current.eKey.wasPressedThisFrame))
+                {
+                    keySmash = true;
+                }
+                else
+                {
+                    try
+                    {
+                        keySmash = Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.E);
+                    }
+                    catch { }
+                }
+
+                // Permitir romperla al pulsar ataque/interactuar cuando está en el pasillo frente al Santuario
+                if (keySmash && kaelTransform.position.x >= gateX - 8.5f)
+                {
+                    breachRequested = true;
+                }
+            }
+            yield return null;
+        }
+
+        IsWaitingForSanctumBreach = false;
+        isBreachPromptActive = false;
+
+        // Kael carga con determinación hasta la compuerta del Santuario
+        Vector3 kaelStart = kaelTransform.position;
+        Vector3 kaelStrike = new Vector3(gateX - 1.15f, groundY, 0f);
+        KaelAutoController kaelCtrl = kaelTransform.GetComponent<KaelAutoController>();
+        SpriteRenderer kaelSr = kaelTransform.GetComponent<SpriteRenderer>();
+        if (kaelSr != null) kaelSr.flipX = (kaelStrike.x < kaelStart.x);
+
+        float moveT = 0f;
+        float moveDur = Mathf.Clamp(Mathf.Abs(kaelStrike.x - kaelStart.x) / 9.5f, 0.18f, 0.55f);
+        while (moveT < moveDur)
+        {
+            kaelTransform.position = Vector3.Lerp(kaelStart, kaelStrike, moveT / moveDur);
+            moveT += Time.deltaTime;
+            yield return null;
+        }
+        kaelTransform.position = kaelStrike;
+
+        // Golpe demoledor con breve hit-stop y explosión de barrera
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayHeavyHitSfx();
+        else if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        Time.timeScale = 0.35f;
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.35f, 0.96f, 1f), 0.92f);
+            CombatVFXManager.Instance.ShakeCamera(0.85f, 0.35f);
+            CombatVFXManager.Instance.SpawnBossExplosionBurst(gatePos);
+            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.28f, 0.98f, 1f), 5.2f);
+            CombatVFXManager.Instance.SpawnShockwaveRing(gatePos, new Color(0.92f, 0.25f, 1f), 3.8f);
+            CombatVFXManager.Instance.SpawnHitSparks(gatePos, true, 24);
+        }
+        yield return new WaitForSecondsRealtime(0.22f);
+        if (PlayerStats.Instance == null || !PlayerStats.Instance.IsAnyBlockingModalOpen)
+        {
+            Time.timeScale = 1f;
+        }
+
+        Destroy(gateObj);
+
+        // Al romperse la barrera, se revela y bloquea simétricamente el Santuario del Trono
+        NexusThroneroomEnvironment env = NexusThroneroomEnvironment.EnsureExists();
+        if (env != null)
+        {
+            env.LockBossArenaAround(targetCenter);
+        }
+
+        // Kael entra al borde izquierdo del Santuario listo para el duelo final
+        Vector3 insidePos = new Vector3(targetCenter - 5.0f, groundY, 0f);
+        if (kaelCtrl != null && kaelSr != null) kaelSr.flipX = false;
+        float enterT = 0f;
+        while (enterT < 0.42f)
+        {
+            kaelTransform.position = Vector3.Lerp(kaelStrike, insidePos, enterT / 0.42f);
+            enterT += Time.deltaTime;
+            yield return null;
+        }
+        kaelTransform.position = insidePos;
+    }
+
+    void OnGUI()
+    {
+        if (!isBreachPromptActive) return;
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen) return;
+
+        float sx = Screen.width / 1920f;
+        float sy = Screen.height / 1080f;
+        float w = 880f * sx;
+        float h = 92f * sy;
+        Rect banner = new Rect((Screen.width - w) * 0.5f, 130f * sy, w, h);
+
+        GUI.color = new Color(0.08f, 0.02f, 0.16f, 0.94f);
+        GUI.DrawTexture(banner, Texture2D.whiteTexture);
+        float pulse = 0.72f + Mathf.Sin(Time.unscaledTime * 6f) * 0.28f;
+        GUI.color = new Color(0.96f, 0.25f, 0.75f, pulse);
+        GUI.DrawTexture(new Rect(banner.x, banner.y, banner.width, 4f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(banner.x, banner.yMax - 4f, banner.width, 4f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+
+        GUIStyle titleSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(14, Mathf.RoundToInt(20f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.UpperCenter
+        };
+        titleSt.normal.textColor = new Color(1f, 0.48f, 0.85f);
+        GUI.Label(new Rect(banner.x + 12f, banner.y + 10f * sy, banner.width - 24f, 34f * sy),
+            "🚧 COMPUERTA DEL SANTUARIO DEL SOBERANO DETECTADA 🚧", titleSt);
+
+        GUIStyle subSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.LowerCenter
+        };
+        subSt.normal.textColor = new Color(0.32f, 0.98f, 1f);
+        GUI.Label(new Rect(banner.x + 12f, banner.y + 38f * sy, banner.width - 24f, 38f * sy),
+            "PULSA [J], [ESPACIO], [E] O HAZ CLIC AQUÍ PARA DERRIBAR LA BARRERA Y ENTRAR", subSt);
+
+        if (GUI.Button(banner, GUIContent.none, GUIStyle.none))
+        {
+            breachRequested = true;
+        }
+    }
+
     IEnumerator SpawnNextWaveRoutine()
     {
         spawningWave = true;
@@ -200,24 +451,37 @@ public class WaveSpawner : MonoBehaviour
         if (isMiniBossWave && CombatVFXManager.Instance != null)
         {
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
-            string warnTitle = isLevel3Hive
-                ? "⚠ ¡ANOMALÍA PSIÓNICA EN LA COLMENA! ⚠"
-                : (isLevel2BaseVorst ? "⚠ ¡COLOSO DE NÚCLEO ROJO! ⚠" : "⚠ ¡ALERTA DE TANQUE PESADO! ⚠");
-            string warnSub = isLevel3Hive
-                ? "MINI-JEFE DE OLEADA 5: INQUISIDOR PSIÓNICO SUPREMO"
-                : (isLevel2BaseVorst ? "PRIMER JEFE: BRUTO VORST EN LA OLEADA 5" : "BRUTO VORST DETECTADO EN LA OLEADA 5");
+            string warnTitle = isLevel4Throneroom
+                ? "⚠ ¡CUSTODIO PRETORIANO VORST! ⚠"
+                : (isLevel3Hive
+                    ? "⚠ ¡ANOMALÍA PSIÓNICA EN LA COLMENA! ⚠"
+                    : (isLevel2BaseVorst ? "⚠ ¡COLOSO DE NÚCLEO ROJO! ⚠" : "⚠ ¡ALERTA DE TANQUE PESADO! ⚠"));
+            string warnSub = isLevel4Throneroom
+                ? "MINI-JEFE DE OLEADA 5 — IMPACTO EN PICADA CON LANZA DE ENERGÍA [PARRY S]"
+                : (isLevel3Hive
+                    ? "MINI-JEFE DE OLEADA 5: INQUISIDOR PSIÓNICO SUPREMO"
+                    : (isLevel2BaseVorst ? "PRIMER JEFE: BRUTO VORST EN LA OLEADA 5" : "BRUTO VORST DETECTADO EN LA OLEADA 5"));
             CombatVFXManager.Instance.TriggerBossWarning(warnTitle, warnSub, 2.4f);
             yield return new WaitForSeconds(2.0f);
         }
         else if (isBossWave && CombatVFXManager.Instance != null)
         {
+            if (isLevel4Throneroom)
+            {
+                yield return StartCoroutine(PlaySanctumBreachTransitionRoutine());
+            }
+
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
-            string warnTitle = isLevel3Hive
-                ? "⚠ AMENAZA EXTREMA: MECHA BERSERKER VORTEX-OMEGA ⚠"
-                : (isLevel2BaseVorst ? "⚠ ¡SOBERANO DE LA BASE VORST! ⚠" : "⚠ ¡ADVERTENCIA: LÍDER DE ZONA! ⚠");
-            string warnSub = isLevel3Hive
-                ? "JEFE FINAL DE LA COLMENA — GUARDIÁN DE LAS CÁPSULAS DE ESTASIS"
-                : (isLevel2BaseVorst ? "JEFE FINAL: ARCONTE PSIÓNICO VORST" : "COMANDANTE VORST BLOQUEA LA SALIDA DEL SECTOR 7");
+            string warnTitle = isLevel4Throneroom
+                ? "☣ ¡ARCONTE SUPREMO — SOBERANO VORST! ☣"
+                : (isLevel3Hive
+                    ? "⚠ AMENAZA EXTREMA: MECHA BERSERKER VORTEX-OMEGA ⚠"
+                    : (isLevel2BaseVorst ? "⚠ ¡SOBERANO DE LA BASE VORST! ⚠" : "⚠ ¡ADVERTENCIA: LÍDER DE ZONA! ⚠"));
+            string warnSub = isLevel4Throneroom
+                ? "JEFE FINAL EN 3 FASES — DUELO MARCIAL // JUICIO PSIÓNICO // FUSIÓN CON LÍA"
+                : (isLevel3Hive
+                    ? "JEFE FINAL DE LA COLMENA — GUARDIÁN DE LAS CÁPSULAS DE ESTASIS"
+                    : (isLevel2BaseVorst ? "JEFE FINAL: ARCONTE PSIÓNICO VORST" : "COMANDANTE VORST BLOQUEA LA SALIDA DEL SECTOR 7"));
             CombatVFXManager.Instance.TriggerBossWarning(warnTitle, warnSub, 2.8f);
             yield return new WaitForSeconds(2.2f);
         }
@@ -228,6 +492,7 @@ public class WaveSpawner : MonoBehaviour
 
         int hordeCount = baseEnemiesPerWave + Mathf.FloorToInt(currentWave * 0.50f);
         if (isMiniBossWave || isBossWave) hordeCount += 1;
+        if (isLevel4Throneroom && isBossWave) hordeCount = 3; // 2 guardias de cobertura + Soberano Supremo en la batalla final
 
         enemiesAlive = hordeCount;
 
@@ -237,9 +502,19 @@ public class WaveSpawner : MonoBehaviour
 
             float jitterX = Random.Range(-0.12f, 0.12f);
             float spawnX = kaelTransform.position.x + spawnDistanceAhead + (i * enemySpacing) + jitterX;
+            if (isLevel4Throneroom && isBossWave && NexusThroneroomEnvironment.Instance != null && NexusThroneroomEnvironment.Instance.IsBossArenaLocked)
+            {
+                spawnX = Mathf.Clamp(
+                    NexusThroneroomEnvironment.Instance.ArenaMaxX - 1.5f - (hordeCount - 1 - i) * 1.4f,
+                    NexusThroneroomEnvironment.Instance.ArenaMinX + 1.0f,
+                    NexusThroneroomEnvironment.Instance.ArenaMaxX - 0.8f
+                );
+            }
             Vector3 spawnPos = new Vector3(spawnX, groundY, 0f);
 
-            GameObject enemyObj = Instantiate(vorstWalkerPrefab, spawnPos, Quaternion.identity);
+            bool spawningSovereignBoss = (isLevel4Throneroom && isBossWave && i == hordeCount - 1);
+            GameObject prefabToUse = (spawningSovereignBoss && sovereignBossPrefab != null) ? sovereignBossPrefab : vorstWalkerPrefab;
+            GameObject enemyObj = Instantiate(prefabToUse, spawnPos, Quaternion.identity);
             EnemyDummy enemy = enemyObj.GetComponent<EnemyDummy>();
 
             if (enemy != null)
@@ -249,7 +524,27 @@ public class WaveSpawner : MonoBehaviour
                 if (isBossWave && i == hordeCount - 1)
                 {
                     enemy.isBoss = true;
-                    if (isLevel3Hive)
+                    if (isLevel4Throneroom)
+                    {
+                        // NIVEL 4 FINAL: ARCONTE SUPREMO / SOBERANO VORST EN 3 FASES
+                        enemy.enemyTitle = "Soberano Supremo — Arconte Vorst";
+                        enemy.SetupLevel3Visuals("SupremeSovereign");
+                        enemyObj.transform.localScale = Vector3.one * 1.12f;
+                        if (sr != null) sr.color = Color.white;
+                        enemy.maxHP = 3400f;
+                        enemy.currentHP = 3400f;
+                        enemy.damage = 28f;
+                        enemy.moveSpeed = 2.35f;
+                        enemy.attackRange = 2.35f;
+                        enemy.attackRate = 1.25f;
+                        enemy.goldReward = 500;
+                        enemy.expReward = 420;
+
+                        SovereignBossAI sovAI = enemyObj.GetComponent<SovereignBossAI>();
+                        if (sovAI == null) sovAI = enemyObj.AddComponent<SovereignBossAI>();
+                        sovAI.Configure(SovereignBossAI.BossRole.SupremeSovereign);
+                    }
+                    else if (isLevel3Hive)
                     {
                         // BLOQUE 5: JEFE FINAL DEL NIVEL 3 (VORTEX-OMEGA)
                         if (sr != null) sr.color = Color.white;
@@ -283,7 +578,27 @@ public class WaveSpawner : MonoBehaviour
                 else if (isMiniBossWave && i == hordeCount - 1)
                 {
                     enemy.isMiniBoss = true;
-                    if (isLevel3Hive)
+                    if (isLevel4Throneroom)
+                    {
+                        // NIVEL 4 OLEADA 5 MINI-JEFE: CUSTODIO PRETORIANO VORST
+                        enemy.enemyTitle = "Custodio Pretoriano Vorst — Lanza Imperial";
+                        enemy.SetupLevel3Visuals("PraetorianCustodian");
+                        enemyObj.transform.localScale = Vector3.one * 1.08f;
+                        if (sr != null) sr.color = Color.white;
+                        enemy.maxHP = 1550f;
+                        enemy.currentHP = 1550f;
+                        enemy.damage = 22f;
+                        enemy.moveSpeed = 2.0f;
+                        enemy.attackRange = 2.25f;
+                        enemy.attackRate = 1.0f;
+                        enemy.goldReward = 220;
+                        enemy.expReward = 200;
+
+                        SovereignBossAI custAI = enemyObj.GetComponent<SovereignBossAI>();
+                        if (custAI == null) custAI = enemyObj.AddComponent<SovereignBossAI>();
+                        custAI.Configure(SovereignBossAI.BossRole.PraetorianCustodian);
+                    }
+                    else if (isLevel3Hive)
                     {
                         // BLOQUE 5: MINI-JEFE OLEADA 5 DEL NIVEL 3 (Inquisidor Psiónico Supremo)
                         if (sr != null) sr.color = Color.white;
@@ -317,7 +632,11 @@ public class WaveSpawner : MonoBehaviour
                 }
                 else
                 {
-                    if (isLevel3Hive)
+                    if (isLevel4Throneroom)
+                    {
+                        SetupLevel4PraetorianUnit(enemy, enemyObj, sr, currentWave, i, hordeCount);
+                    }
+                    else if (isLevel3Hive)
                     {
                         // BLOQUE 5: COMPOSICIONES TEMÁTICAS Y VARIADAS EN CADA OLEADA DEL NIVEL 3
                         int archetype = GetLevel3EnemyArchetype(currentWave, i, hordeCount);
@@ -362,6 +681,12 @@ public class WaveSpawner : MonoBehaviour
         {
             if (currentWave >= totalWaves)
             {
+                if (isLevel4Throneroom)
+                {
+                    EndingsManager.TriggerEndingFromFinalBoss();
+                    return;
+                }
+
                 if (AudioManager.Instance != null)
                 {
                     AudioManager.Instance.PlayVictoryDilemmaMusic();
@@ -394,5 +719,57 @@ public class WaveSpawner : MonoBehaviour
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Configura unidades de la Guardia Pretoriana de Élite Vorst en formaciones tácticas de cobertura
+    /// (vanguardia blindada al frente cubriendo a tiradores psiónicos y acechadores cibernéticos detrás).
+    /// </summary>
+    private void SetupLevel4PraetorianUnit(EnemyDummy enemy, GameObject enemyObj, SpriteRenderer sr, int wave, int index, int totalCount)
+    {
+        // Formación de cobertura: vanguardia con escudo (0), hostigadores con hoja (1, 2) y francotirador en retaguardia (3)
+        int roleSlot = index % 4;
+        if (roleSlot == 0)
+        {
+            // Vanguardia de Cobertura Acorazada Pretoriana (Escudo Aegis + Maza)
+            enemy.enemyTitle = "Baluarte Aegis Pretoriano";
+            enemy.SetupLevel3Visuals("PraetorianAegis");
+            enemyObj.transform.localScale = Vector3.one * 1.04f;
+            if (sr != null) sr.color = Color.white;
+            enemy.maxHP = Mathf.RoundToInt(175f * Mathf.Pow(1.14f, Mathf.Max(0, wave - 1)));
+            enemy.damage = Mathf.RoundToInt(14f * Mathf.Pow(1.11f, Mathf.Max(0, wave - 1)));
+            enemy.moveSpeed = 1.45f;
+            enemy.attackRange = 2.25f;
+        }
+        else if (roleSlot == 1 || roleSlot == 2)
+        {
+            // Guardia de Asalto con Hoja de Plasma (Alabarda / Espada Vorst)
+            bool fastFlanker = (roleSlot == 2);
+            enemy.enemyTitle = "Hoja Pretoriana Vorst";
+            enemy.SetupLevel3Visuals("PraetorianBlade");
+            enemyObj.transform.localScale = Vector3.one;
+            if (sr != null) sr.color = Color.white;
+            enemy.maxHP = Mathf.RoundToInt((fastFlanker ? 112f : 126f) * Mathf.Pow(1.14f, Mathf.Max(0, wave - 1)));
+            enemy.damage = Mathf.RoundToInt((fastFlanker ? 12f : 13f) * Mathf.Pow(1.11f, Mathf.Max(0, wave - 1)));
+            enemy.moveSpeed = fastFlanker ? 2.45f : 2.10f;
+            enemy.attackRange = 1.95f;
+        }
+        else
+        {
+            // Francotirador Pretoriano con Rifle de Plasma ubicado detrás de la vanguardia
+            enemy.enemyTitle = "Francotirador Pretoriano";
+            enemy.SetupLevel3Visuals("PraetorianMarksman");
+            enemyObj.transform.localScale = Vector3.one;
+            enemyObj.transform.position += new Vector3(1.85f, 0f, 0f);
+            if (sr != null) sr.color = Color.white;
+            enemy.maxHP = Mathf.RoundToInt(128f * Mathf.Pow(1.14f, Mathf.Max(0, wave - 1)));
+            enemy.damage = Mathf.RoundToInt(13f * Mathf.Pow(1.11f, Mathf.Max(0, wave - 1)));
+            enemy.moveSpeed = 1.75f;
+            enemy.attackRange = 2.65f;
+        }
+
+        enemy.goldReward = Mathf.RoundToInt(16f + (wave * 4f));
+        enemy.expReward = 20 + (wave * 5);
+        enemy.currentHP = enemy.maxHP;
     }
 }
