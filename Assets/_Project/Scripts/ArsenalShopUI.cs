@@ -320,7 +320,7 @@ public class ArsenalShopUI : MonoBehaviour
         GauntletSpec eqSpec = PlayerStats.GetGauntletSpec(stats.equippedGauntlet);
         stats.DrawStyledText(
             PlayerStats.ScaleRect(80f, 46f, 820f, 38f),
-            "⚙ ARSENAL DE VANGUARDIA — FORJA NEXO",
+            "♦ ARSENAL DE VANGUARDIA — FORJA NEXO",
             26, TextAnchor.MiddleLeft, stats.ColCyanNexo);
 
         stats.DrawStyledText(
@@ -336,7 +336,7 @@ public class ArsenalShopUI : MonoBehaviour
         if (stats.DrawSkinnedCyberButton(
             new Rect(1276f, 46f, 272f, 58f),
             stats.TexBtnPurple,
-            "🧬 ÁRBOL MEJORAS [TAB]",
+            "♦ ÁRBOL MEJORAS [TAB]",
             "ATRIBUTOS Y EVOLUCIÓN",
             15, 10, Color.white, stats.ColGoldYel, stats.ColExpPurp, true))
         {
@@ -348,7 +348,7 @@ public class ArsenalShopUI : MonoBehaviour
         if (stats.DrawSkinnedCyberButton(
             new Rect(1564f, 46f, 276f, 58f),
             stats.TexBtnCrimson,
-            "✖ CERRAR [B / ESC]",
+            "× CERRAR [B / ESC]",
             "VOLVER AL COMBATE",
             16, 11, Color.white, new Color(1f, 0.84f, 0.84f), new Color(1f, 0.35f, 0.45f), true))
         {
@@ -385,12 +385,12 @@ public class ArsenalShopUI : MonoBehaviour
         {
             bool unlocked = stats.IsGauntletUnlocked(previewGauntlet);
             bool equipped = stats.equippedGauntlet == previewGauntlet;
-            badgeStatus = equipped ? "✔ EQUIPADO" : (unlocked ? "✦ DESBLOQUEADO" : $"{spec.GoldCost} ORO");
+            badgeStatus = equipped ? "[OK] EQUIPADO" : (unlocked ? "♦ DESBLOQUEADO" : $"{spec.GoldCost} ORO");
             badgeColor = equipped ? stats.ColHpGreen : (unlocked ? stats.ColCyanNexo : stats.ColGoldYel);
         }
         else
         {
-            badgeStatus = stats.hasPurchasedNexaDrone ? "✔ DESPLEGADO" : $"{PlayerStats.NEXA_DRONE_COST} ORO";
+            badgeStatus = stats.hasPurchasedNexaDrone ? "[OK] DESPLEGADO" : $"{PlayerStats.NEXA_DRONE_COST} ORO";
             badgeColor = stats.hasPurchasedNexaDrone ? stats.ColHpGreen : stats.ColGoldYel;
         }
         stats.DrawCyberBox(PlayerStats.ScaleRect(584f, 138f, 172f, 28f), new Color(0.05f, 0.08f, 0.14f, 0.95f), badgeColor, 1.5f);
@@ -518,9 +518,9 @@ public class ArsenalShopUI : MonoBehaviour
         if (stats.DrawSkinnedCyberButton(
             new Rect(stageBase.x + stageBase.width - 216f, stageBase.y + stageBase.height - 46f, 204f, 36f),
             stats.TexBtnCyan,
-            "⚡ PROBAR IMPACTO VFX",
+            "► PROBAR IMPACTO VFX",
             "",
-            12, 10, Color.white, accent, accent, true))
+            11, 10, Color.white, accent, accent, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             TriggerVisorTestBurst();
@@ -588,7 +588,7 @@ public class ArsenalShopUI : MonoBehaviour
             {
                 stats.DrawSkinnedCyberButton(
                     btnRect, stats.TexBtnEmerald,
-                    $"✔ {spec.DisplayName.ToUpperInvariant()} EQUIPADO",
+                    $"[OK] {spec.DisplayName.ToUpperInvariant()} EQUIPADO",
                     "PARTÍCULAS Y PASIVA ACTIVAS EN COMBATE",
                     18, 12, Color.white, new Color(0.84f, 1f, 0.90f), stats.ColHpGreen, false);
             }
@@ -596,7 +596,7 @@ public class ArsenalShopUI : MonoBehaviour
             {
                 if (stats.DrawSkinnedCyberButton(
                     btnRect, stats.TexBtnCyan,
-                    $"⚡ EQUIPAR {spec.CodeName}",
+                    $"► EQUIPAR {spec.CodeName}",
                     "ACTUALIZA AL INSTANTE LOS GRADIENTES VFX Y MODIFICADORES",
                     18, 12, Color.white, accent, accent, true))
                 {
@@ -606,8 +606,8 @@ public class ArsenalShopUI : MonoBehaviour
             else
             {
                 string title = canAfford
-                    ? $"🛒 COMPRAR Y EQUIPAR ({spec.GoldCost} ORO)"
-                    : $"🔒 BLOQUEADO — NECESITAS {spec.GoldCost} ORO (TIENES {stats.gold})";
+                    ? $"+ COMPRAR Y EQUIPAR ({spec.GoldCost} ORO)"
+                    : $"BLOQUEADO — NECESITAS {spec.GoldCost} ORO (TIENES {stats.gold})";
                 string sub = canAfford
                     ? $"DESBLOQUEA {spec.DisplayName.ToUpperInvariant()} PERMANENTE"
                     : $"DERROTA MÁS OLEADAS VORST PARA REUNIR {spec.GoldCost - stats.gold} ORO EXTRA";
@@ -616,7 +616,7 @@ public class ArsenalShopUI : MonoBehaviour
                     btnRect,
                     canAfford ? stats.TexBtnGold : stats.TexBtnCrimson,
                     title, sub,
-                    18, 12,
+                    17, 12,
                     canAfford ? Color.white : new Color(1f, 0.72f, 0.72f),
                     canAfford ? stats.ColGoldYel : new Color(1f, 0.85f, 0.85f),
                     canAfford ? stats.ColGoldYel : Color.red,
@@ -632,16 +632,16 @@ public class ArsenalShopUI : MonoBehaviour
             {
                 stats.DrawSkinnedCyberButton(
                     btnRect, stats.TexBtnEmerald,
-                    "✔ DRON N.E.X.A. DESPLEGADO EN ESCUADRÓN",
+                    "[OK] DRON N.E.X.A. DESPLEGADO EN ESCUADRÓN",
                     "SOPORTE AÉREO Y PROTOCOLO BALUARTE ACTIVOS",
-                    18, 12, Color.white, new Color(0.84f, 1f, 0.90f), stats.ColHpGreen, false);
+                    17, 12, Color.white, new Color(0.84f, 1f, 0.90f), stats.ColHpGreen, false);
             }
             else
             {
                 bool canAfford = stats.gold >= PlayerStats.NEXA_DRONE_COST;
                 string title = canAfford
-                    ? $"🤖 ADQUIRIR Y DESPLEGAR DRON N.E.X.A. ({PlayerStats.NEXA_DRONE_COST} ORO)"
-                    : $"🔒 DRON N.E.X.A. — NECESITAS {PlayerStats.NEXA_DRONE_COST} ORO (TIENES {stats.gold})";
+                    ? $"+ ADQUIRIR Y DESPLEGAR DRON N.E.X.A. ({PlayerStats.NEXA_DRONE_COST} ORO)"
+                    : $"DRON N.E.X.A. — NECESITAS {PlayerStats.NEXA_DRONE_COST} ORO (TIENES {stats.gold})";
                 string sub = canAfford
                     ? "ACTIVA DISPAROS DE PLASMA AUTÓNOMOS Y ESCUDO BALUARTE (<25% HP)"
                     : $"FALTAN {PlayerStats.NEXA_DRONE_COST - stats.gold} ORO PARA ADQUIRIR ESTA UNIDAD";
@@ -722,7 +722,7 @@ public class ArsenalShopUI : MonoBehaviour
             PlayerStats.ScaleRect(baseR.x + 14f, baseR.y + 8f, baseR.width - 150f, 36f),
             spec.DisplayName.ToUpperInvariant(), 16, TextAnchor.MiddleLeft, spec.PrimaryColor);
 
-        string pillTxt = isEquipped ? "✔ EQUIPADO" : (isUnlocked ? "DESBLOQUEADO" : $"● {spec.GoldCost} ORO");
+        string pillTxt = isEquipped ? "[OK] EQUIPADO" : (isUnlocked ? "DESBLOQUEADO" : $"● {spec.GoldCost} ORO");
         Color pillCol = isEquipped ? stats.ColHpGreen : (isUnlocked ? stats.ColCyanNexo : (canAfford ? stats.ColGoldYel : new Color(1f, 0.45f, 0.45f)));
         stats.DrawStyledText(
             PlayerStats.ScaleRect(baseR.x + baseR.width - 144f, baseR.y + 8f, 130f, 36f),
@@ -747,7 +747,7 @@ public class ArsenalShopUI : MonoBehaviour
         // Texto descriptivo y efecto
         stats.DrawStyledText(
             PlayerStats.ScaleRect(baseR.x + 154f, baseR.y + 58f, baseR.width - 168f, 24f),
-            $"★ {spec.PassiveTitle}", 14, TextAnchor.MiddleLeft, stats.ColGoldYel);
+            $"♦ {spec.PassiveTitle}", 14, TextAnchor.MiddleLeft, stats.ColGoldYel);
         stats.DrawStyledText(
             PlayerStats.ScaleRect(baseR.x + 154f, baseR.y + 84f, baseR.width - 168f, 88f),
             spec.PassiveSummary, 13, TextAnchor.UpperLeft, new Color(0.86f, 0.93f, 1f), wordWrap: true);
@@ -756,7 +756,7 @@ public class ArsenalShopUI : MonoBehaviour
         if (stats.DrawSkinnedCyberButton(
             new Rect(baseR.x + 14f, baseR.y + 202f, 166f, 92f),
             stats.TexBtnCyan,
-            isSelected ? "👁 EN VISOR" : "👁 PROBAR / VER",
+            isSelected ? "► EN VISOR" : "► PROBAR / VER",
             spec.ElementTag,
             13, 10,
             isSelected ? stats.ColGoldYel : Color.white,
@@ -773,7 +773,7 @@ public class ArsenalShopUI : MonoBehaviour
         {
             if (stats.DrawSkinnedCyberButton(
                 buyBtnRect, stats.TexBtnEmerald,
-                "✔ ACTIVO EN COMBATE",
+                "[OK] ACTIVO EN COMBATE",
                 "CLIC PARA REVISAR DETALLES",
                 14, 11, Color.white, new Color(0.82f, 1f, 0.90f), stats.ColHpGreen, true))
             {
@@ -787,7 +787,7 @@ public class ArsenalShopUI : MonoBehaviour
         {
             if (stats.DrawSkinnedCyberButton(
                 buyBtnRect, stats.TexBtnCyan,
-                "⚡ EQUIPAR GUANTELETE",
+                "► EQUIPAR GUANTELETE",
                 "APLICA GRADIENTES VFX AL INSTANTE",
                 15, 11, Color.white, spec.PrimaryColor, spec.PrimaryColor, true))
             {
@@ -796,7 +796,7 @@ public class ArsenalShopUI : MonoBehaviour
         }
         else
         {
-            string bTitle = canAfford ? $"🛒 COMPRAR ({spec.GoldCost} ORO)" : $"🔒 COSTO: {spec.GoldCost} ORO";
+            string bTitle = canAfford ? $"+ COMPRAR ({spec.GoldCost} ORO)" : $"COSTO: {spec.GoldCost} ORO";
             string bSub = canAfford ? "DESBLOQUEAR Y EQUIPAR AHORA" : $"TE FALTAN {spec.GoldCost - stats.gold} ORO";
             if (stats.DrawSkinnedCyberButton(
                 buyBtnRect, canAfford ? stats.TexBtnGold : stats.TexBtnCrimson,
@@ -865,8 +865,8 @@ public class ArsenalShopUI : MonoBehaviour
 
         stats.DrawStyledText(
             PlayerStats.ScaleRect(baseR.x + 174f, baseR.y + 16f, 520f, 34f),
-            "🤖 DRON CENTINELA N.E.X.A. — UNIDAD DE ASISTENCIA",
-            19, TextAnchor.MiddleLeft, purchased ? stats.ColHpGreen : accent);
+            "♦ DRON CENTINELA N.E.X.A. — UNIDAD DE ASISTENCIA",
+            18, TextAnchor.MiddleLeft, purchased ? stats.ColHpGreen : accent);
 
         stats.DrawStyledText(
             PlayerStats.ScaleRect(baseR.x + 174f, baseR.y + 52f, 520f, 108f),
@@ -878,15 +878,15 @@ public class ArsenalShopUI : MonoBehaviour
         {
             stats.DrawSkinnedCyberButton(
                 actionR, stats.TexBtnEmerald,
-                "✔ UNIDAD N.E.X.A. ACTIVA",
+                "[OK] UNIDAD N.E.X.A. ACTIVA",
                 "DESPLEGADA JUNTO A KAEL",
                 16, 12, Color.white, new Color(0.82f, 1f, 0.90f), stats.ColHpGreen, false);
         }
         else
         {
             string title = canAfford
-                ? $"🛒 COMPRAR DRON ({PlayerStats.NEXA_DRONE_COST} ORO)"
-                : $"🔒 BLOQUEADO ({PlayerStats.NEXA_DRONE_COST} ORO)";
+                ? $"+ COMPRAR DRON ({PlayerStats.NEXA_DRONE_COST} ORO)"
+                : $"BLOQUEADO ({PlayerStats.NEXA_DRONE_COST} ORO)";
             string sub = canAfford
                 ? "DESPLEGAR UNIDAD ROBOT EN COMBATE"
                 : $"TE FALTAN {PlayerStats.NEXA_DRONE_COST - stats.gold} ORO";
@@ -922,8 +922,8 @@ public class ArsenalShopUI : MonoBehaviour
             GauntletSpec spec = PlayerStats.GetGauntletSpec(variant);
             TriggerVisorTestBurst();
             statusBannerMsg = wasUnlocked
-                ? $"⚡ {spec.DisplayName} equipado — Gradientes VFX y pasivas actualizados"
-                : $"🛒 ¡{spec.DisplayName} adquirido y equipado en el Guantelete Nexo!";
+                ? $"♦ {spec.DisplayName} equipado — Gradientes VFX y pasivas actualizados"
+                : $"+ ¡{spec.DisplayName} adquirido y equipado en el Guantelete Nexo!";
             statusBannerColor = spec.PrimaryColor;
             statusBannerTimer = 2.6f;
 
@@ -943,7 +943,7 @@ public class ArsenalShopUI : MonoBehaviour
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayLevelUp();
             TriggerVisorTestBurst();
-            statusBannerMsg = "🤖 ¡Dron N.E.X.A. adquirido y desplegado en el escuadrón!";
+            statusBannerMsg = "♦ ¡Dron N.E.X.A. adquirido y desplegado en el escuadrón!";
             statusBannerColor = new Color(0.22f, 0.96f, 1f);
             statusBannerTimer = 2.8f;
         }

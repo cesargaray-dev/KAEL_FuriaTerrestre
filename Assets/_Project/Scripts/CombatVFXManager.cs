@@ -815,8 +815,8 @@ public class CombatVFXManager : MonoBehaviour
             GUI.color = Color.white;
 
             string ultTitle = isCorrupt
-                ? "★ SOBRECARGA DISONANTE: CAÑÓN ABISAL VORST ★"
-                : "★ SOBRECARGA NEXO: CAÑÓN DE PLASMA ★";
+                ? "♦ SOBRECARGA DISONANTE: CAÑÓN ABISAL VORST ♦"
+                : "♦ SOBRECARGA NEXO: CAÑÓN DE PLASMA ♦";
             DrawStyledText(new Rect(0, barH * 0.18f, Screen.width, barH * 0.64f), ultTitle, 30, TextAnchor.MiddleCenter, bannerAccent);
         }
 
@@ -1151,7 +1151,7 @@ public class FloatingPopup : MonoBehaviour
         style.fontStyle = FontStyle.Bold;
         style.alignment = TextAnchor.MiddleCenter;
 
-        float w = Mathf.Round(300f * (Screen.width / 1920f));
+        float w = Mathf.Round(460f * (Screen.width / 1920f));
         float h = Mathf.Round(48f * (Screen.height / 1080f));
         Rect rect = new Rect(Mathf.Round(screenPos.x - w * 0.5f), Mathf.Round(guiY - h * 0.5f), w, h);
 

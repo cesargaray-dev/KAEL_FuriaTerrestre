@@ -385,38 +385,38 @@ public class MainMenuAndIntroController : MonoBehaviour
         float btnW = 560f;
         float btnH = 54f;
 
-        if (DrawMenuButton(0, new Rect(btnX, 282, btnW, btnH), "▶  INICIAR CAMPAÑA (CON CINEMÁTICA)", new Color(0.06f, 0.26f, 0.42f), new Color(0.22f, 0.92f, 1f), true))
+        if (DrawMenuButton(0, new Rect(btnX, 282, btnW, btnH), "►  INICIAR CAMPAÑA (CON CINEMÁTICA)", new Color(0.06f, 0.26f, 0.42f), new Color(0.22f, 0.92f, 1f), true))
         {
             keyboardMenuFocus = 0;
             StartCinematic();
         }
 
-        if (DrawMenuButton(1, new Rect(btnX, 344, btnW, btnH), "⚔  NIVEL 1: SECTOR 7 (LAB_CESAR)", new Color(0.10f, 0.15f, 0.28f), new Color(1f, 0.82f, 0.22f), false))
+        if (DrawMenuButton(1, new Rect(btnX, 344, btnW, btnH), "♦  NIVEL 1: SECTOR 7 (LAB_CESAR)", new Color(0.10f, 0.15f, 0.28f), new Color(1f, 0.82f, 0.22f), false))
         {
             keyboardMenuFocus = 1;
             LoadLevel1();
         }
 
-        if (DrawMenuButton(2, new Rect(btnX, 406, btnW, btnH), "⚡  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.15f, 0.08f, 0.28f), new Color(0.85f, 0.38f, 1f), false))
+        if (DrawMenuButton(2, new Rect(btnX, 406, btnW, btnH), "♦  NIVEL 2: BASE VORST (LAB_ZAHIR)", new Color(0.15f, 0.08f, 0.28f), new Color(0.85f, 0.38f, 1f), false))
         {
             keyboardMenuFocus = 2;
             LoadSceneFromMenu("Lab_Zahir");
         }
 
-        if (DrawMenuButton(7, new Rect(btnX, 468, btnW, btnH), "☣  NIVEL 3: COLMENA NAVE NÚCLEO", new Color(0.14f, 0.07f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
+        if (DrawMenuButton(7, new Rect(btnX, 468, btnW, btnH), "♦  NIVEL 3: COLMENA NAVE NÚCLEO", new Color(0.14f, 0.07f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
         {
             keyboardMenuFocus = 3;
             LoadSceneFromMenu("03_Nivel3_Colmena");
         }
 
         int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
-        if (DrawMenuButton(17, new Rect(btnX, 530, btnW, btnH), $"📘  CÓDICE VORST — BESTIARIO TÁCTICO ({unlockedCodex}/{VorstCodexUI.Catalog.Length}) [C]", new Color(0.06f, 0.22f, 0.36f), new Color(0.24f, 0.96f, 1f), true))
+        if (DrawMenuButton(17, new Rect(btnX, 530, btnW, btnH), $"■  CÓDICE VORST — BESTIARIO ({unlockedCodex}/{VorstCodexUI.Catalog.Length}) [C]", new Color(0.06f, 0.22f, 0.36f), new Color(0.24f, 0.96f, 1f), true))
         {
             keyboardMenuFocus = 4;
             OpenVorstCodexFromMenu();
         }
 
-        if (DrawMenuButton(8, new Rect(btnX, 592, btnW, btnH), "❖  SELECTOR DE CAPÍTULOS Y 3 FINALES", new Color(0.09f, 0.18f, 0.26f), new Color(1f, 0.84f, 0.28f), false))
+        if (DrawMenuButton(8, new Rect(btnX, 592, btnW, btnH), "◊  SELECTOR DE CAPÍTULOS Y 3 FINALES", new Color(0.09f, 0.18f, 0.26f), new Color(1f, 0.84f, 0.28f), false))
         {
             keyboardMenuFocus = 5;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -424,7 +424,7 @@ public class MainMenuAndIntroController : MonoBehaviour
             if (showChapterSelect) showCredits = false;
         }
 
-        if (DrawMenuButton(3, new Rect(btnX, 654, btnW, btnH), "❖  CRÉDITOS Y EQUIPO DE DESARROLLO", new Color(0.08f, 0.11f, 0.20f), new Color(0.55f, 0.65f, 1f), false))
+        if (DrawMenuButton(3, new Rect(btnX, 654, btnW, btnH), "◊  CRÉDITOS Y EQUIPO DE DESARROLLO", new Color(0.08f, 0.11f, 0.20f), new Color(0.55f, 0.65f, 1f), false))
         {
             keyboardMenuFocus = 6;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -432,7 +432,7 @@ public class MainMenuAndIntroController : MonoBehaviour
             if (showCredits) showChapterSelect = false;
         }
 
-        if (DrawMenuButton(4, new Rect(btnX, 716, btnW, btnH), "✖  SALIR DEL JUEGO", new Color(0.22f, 0.06f, 0.12f), new Color(1f, 0.32f, 0.42f), false))
+        if (DrawMenuButton(4, new Rect(btnX, 716, btnW, btnH), "×  SALIR DEL JUEGO", new Color(0.22f, 0.06f, 0.12f), new Color(1f, 0.32f, 0.42f), false))
         {
             keyboardMenuFocus = 7;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -447,58 +447,58 @@ public class MainMenuAndIntroController : MonoBehaviour
         {
             Rect chapBox = ScaleRect(65, 250, 950, 740);
             DrawCyberPanelDouble(chapBox, new Color(0.02f, 0.05f, 0.11f, 0.97f), new Color(0.22f, 0.92f, 1f), new Color(1f, 0.82f, 0.22f, 0.55f), 2.5f);
-            DrawStyledText(ScaleRect(65, 268, 950, 38), "❖ SELECTOR DE CAPÍTULOS, PUENTE JUGABLE Y 3 FINALES ❖", 24, TextAnchor.MiddleCenter, new Color(1f, 0.84f, 0.24f));
-            DrawStyledText(ScaleRect(90, 306, 900, 28), "Acceso rápido para prueba y evaluación de niveles, transición narrativa y desenlaces morales:", 16, TextAnchor.MiddleCenter, new Color(0.75f, 0.90f, 1f));
+            DrawStyledText(ScaleRect(65, 268, 950, 38), "◊ SELECTOR DE CAPÍTULOS, PUENTE JUGABLE Y 3 FINALES ◊", 22, TextAnchor.MiddleCenter, new Color(1f, 0.84f, 0.24f), false);
+            DrawStyledText(ScaleRect(90, 306, 900, 28), "Acceso rápido para prueba y evaluación de niveles, transición narrativa y desenlaces morales:", 16, TextAnchor.MiddleCenter, new Color(0.75f, 0.90f, 1f), false);
 
             float cBtnX1 = 105f;
             float cBtnX2 = 545f;
             float cBtnW = 430f;
             float cBtnH = 60f;
 
-            if (DrawMenuButton(9, new Rect(cBtnX1, 350, cBtnW, cBtnH), "⚔ CAPÍTULO 1: SECTOR 7 (CESAR)", new Color(0.08f, 0.18f, 0.30f), new Color(0.22f, 0.92f, 1f), false))
+            if (DrawMenuButton(9, new Rect(cBtnX1, 350, cBtnW, cBtnH), "CAPÍTULO 1: SECTOR 7 (CESAR)", new Color(0.08f, 0.18f, 0.30f), new Color(0.22f, 0.92f, 1f), false))
             {
                 LoadLevel1();
             }
-            if (DrawMenuButton(10, new Rect(cBtnX2, 350, cBtnW, cBtnH), "🌉 PUENTE JUGABLE NV.1 ➔ NV.2", new Color(0.14f, 0.12f, 0.28f), new Color(1f, 0.82f, 0.24f), false))
+            if (DrawMenuButton(10, new Rect(cBtnX2, 350, cBtnW, cBtnH), "PUENTE JUGABLE NV.1 → NV.2", new Color(0.14f, 0.12f, 0.28f), new Color(1f, 0.82f, 0.24f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 BridgeLevel1To2Controller.StartBridgeSequence("Lab_Zahir");
             }
 
-            if (DrawMenuButton(11, new Rect(cBtnX1, 424, cBtnW, cBtnH), "⚡ CAPÍTULO 2: BASE VORST (ZAHIR)", new Color(0.14f, 0.08f, 0.26f), new Color(0.85f, 0.38f, 1f), false))
+            if (DrawMenuButton(11, new Rect(cBtnX1, 424, cBtnW, cBtnH), "CAPÍTULO 2: BASE VORST (ZAHIR)", new Color(0.14f, 0.08f, 0.26f), new Color(0.85f, 0.38f, 1f), false))
             {
                 LoadSceneFromMenu("Lab_Zahir");
             }
-            if (DrawMenuButton(12, new Rect(cBtnX2, 424, cBtnW, cBtnH), "☣ CAPÍTULO 3: COLMENA BIO-CABLES", new Color(0.06f, 0.22f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
+            if (DrawMenuButton(12, new Rect(cBtnX2, 424, cBtnW, cBtnH), "CAPÍTULO 3: COLMENA BIO-CABLES", new Color(0.06f, 0.22f, 0.24f), new Color(0.22f, 0.96f, 0.82f), false))
             {
                 LoadSceneFromMenu("03_Nivel3_Colmena");
             }
 
-            if (DrawMenuButton(18, new Rect(165f, 498f, 750f, 64f), "👑 CAPÍTULO 4 (FINAL): TRONO DE LA DISONANCIA — RESCATE DE LÍA", new Color(0.24f, 0.07f, 0.34f), new Color(0.88f, 0.32f, 1f), true))
+            if (DrawMenuButton(18, new Rect(145f, 498f, 790f, 64f), "CAPÍTULO 4 (FINAL): TRONO DE LA DISONANCIA — RESCATE DE LÍA", new Color(0.24f, 0.07f, 0.34f), new Color(0.88f, 0.32f, 1f), true))
             {
                 LoadSceneFromMenu("04_Final_NexusThroneroom");
             }
 
-            DrawStyledText(ScaleRect(90, 582, 900, 32), "── DESENLACES CINEMÁTICOS DINÁMICOS (SEGÚN COMPASIÓN VS RIGOR) ──", 17, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f));
+            DrawStyledText(ScaleRect(90, 582, 900, 32), "── DESENLACES CINEMÁTICOS DINÁMICOS (SEGÚN COMPASIÓN VS RIGOR) ──", 17, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.24f), false);
 
-            if (DrawMenuButton(13, new Rect(cBtnX1, 624, cBtnW, cBtnH), "☀ FINAL 1: LUMINOSO (COMPASIÓN)", new Color(0.06f, 0.24f, 0.34f), new Color(0.25f, 0.95f, 1f), false))
+            if (DrawMenuButton(13, new Rect(cBtnX1, 624, cBtnW, cBtnH), "♦ FINAL 1: LUMINOSO (COMPASIÓN)", new Color(0.06f, 0.24f, 0.34f), new Color(0.25f, 0.95f, 1f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Luminoso);
             }
-            if (DrawMenuButton(14, new Rect(cBtnX2, 624, cBtnW, cBtnH), "🩸 FINAL 2: OSCURO (RIGOR / VORST)", new Color(0.24f, 0.06f, 0.14f), new Color(1f, 0.22f, 0.38f), false))
+            if (DrawMenuButton(14, new Rect(cBtnX2, 624, cBtnW, cBtnH), "♦ FINAL 2: OSCURO (RIGOR / VORST)", new Color(0.24f, 0.06f, 0.14f), new Color(1f, 0.22f, 0.38f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Oscuro);
             }
 
-            if (DrawMenuButton(15, new Rect(220, 700, 640, cBtnH), "⚖ FINAL 3: NEUTRAL (EL ÚLTIMO LEGADO DE N.E.X.A.)", new Color(0.16f, 0.14f, 0.06f), new Color(1f, 0.82f, 0.24f), false))
+            if (DrawMenuButton(15, new Rect(220, 700, 640, cBtnH), "♦ FINAL 3: NEUTRAL (EL ÚLTIMO LEGADO DE N.E.X.A.)", new Color(0.16f, 0.14f, 0.06f), new Color(1f, 0.82f, 0.24f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 EndingCinematicController.LaunchEnding(EndingCinematicController.EndingType.Neutral);
             }
 
-            if (DrawMenuButton(16, new Rect(395, 782, 290, 52), "✖ CERRAR SELECTOR", new Color(0.18f, 0.08f, 0.14f), new Color(1f, 0.40f, 0.48f), false))
+            if (DrawMenuButton(16, new Rect(395, 782, 290, 52), "× CERRAR SELECTOR", new Color(0.18f, 0.08f, 0.14f), new Color(1f, 0.40f, 0.48f), false))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 showChapterSelect = false;
@@ -560,7 +560,7 @@ public class MainMenuAndIntroController : MonoBehaviour
         DrawCyberPanelDouble(box, new Color(0.03f, 0.06f, 0.12f, 0.95f), accent, new Color(1f, 0.82f, 0.22f, 0.35f), 2f);
 
         DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 10f, baseRect.width - 36f, 28f),
-            muted ? "🔇 SISTEMA DE AUDIO: SILENCIADO" : $"🔊 VOLUMEN MAESTRO DE AUDIO: {pct}%",
+            muted ? "[MUTE] SISTEMA DE AUDIO: SILENCIADO" : $"● VOLUMEN MAESTRO DE AUDIO: {pct}%",
             16, TextAnchor.MiddleLeft, muted ? new Color(1f, 0.45f, 0.5f) : new Color(0.22f, 0.92f, 1f));
 
         // Botón de Silencio (Mute / Unmute)
@@ -569,7 +569,7 @@ public class MainMenuAndIntroController : MonoBehaviour
         DrawCyberPanel(muteBtn,
             hoverMute ? new Color(0.16f, 0.24f, 0.38f, 0.98f) : new Color(0.08f, 0.12f, 0.20f, 0.95f),
             accent, 2f);
-        DrawStyledText(muteBtn, muted ? "🔇 ACTIVAR" : "🔊 SILENCIAR", 15, TextAnchor.MiddleCenter, Color.white);
+        DrawStyledText(muteBtn, muted ? "► ACTIVAR" : "|| SILENCIAR", 15, TextAnchor.MiddleCenter, Color.white);
         if (GUI.Button(muteBtn, GUIContent.none, GUIStyle.none))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.ToggleMute();
@@ -637,18 +637,18 @@ public class MainMenuAndIntroController : MonoBehaviour
         if (slide != null)
         {
             float zoom = 1.0f + Mathf.Clamp01(slideTimer / 8f) * 0.08f;
-            float w = 1520f * zoom;
-            float h = 760f * zoom;
-            Rect imgRect = ScaleRect((1920f - w) * 0.5f, 35f - (h - 760f) * 0.5f, w, h);
+            float w = 1500f * zoom;
+            float h = 746f * zoom;
+            Rect imgRect = ScaleRect((1920f - w) * 0.5f, 34f - (h - 746f) * 0.5f, w, h);
             GUI.DrawTexture(imgRect, slide, ScaleMode.ScaleAndCrop);
 
             GUI.color = new Color(0.22f, 0.88f, 1f, 0.85f);
-            GUI.DrawTexture(ScaleRect(198, 32, 1524, 3), Texture2D.whiteTexture);
-            GUI.DrawTexture(ScaleRect(198, 798, 1524, 3), Texture2D.whiteTexture);
+            GUI.DrawTexture(ScaleRect(208f, 31f, 1504f, 3f), Texture2D.whiteTexture);
+            GUI.DrawTexture(ScaleRect(208f, 781f, 1504f, 3f), Texture2D.whiteTexture);
             GUI.color = Color.white;
         }
 
-        Rect dialogBox = ScaleRect(160, 815, 1600, 235);
+        Rect dialogBox = ScaleRect(140f, 798f, 1640f, 252f);
         if (panelCyanTex != null)
         {
             GUI.color = new Color(1f, 1f, 1f, 0.98f);
@@ -661,12 +661,12 @@ public class MainMenuAndIntroController : MonoBehaviour
         }
 
         Texture2D port = (currentSlide == 1) ? portKaelShout : ((currentSlide >= 2) ? portNexaNormal : null);
-        float textStartX = 195f;
-        float textWidth = 1260f;
+        float textStartX = 180f;
+        float textWidth = 1236f;
 
         if (port != null)
         {
-            Rect pFrame = ScaleRect(178, 833, 200, 200);
+            Rect pFrame = ScaleRect(176f, 825f, 198f, 198f);
             GUI.color = (currentSlide == 1) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
             GUI.DrawTexture(pFrame, Texture2D.whiteTexture);
             Rect pRect = new Rect(pFrame.x + 2f, pFrame.y + 2f, pFrame.width - 4f, pFrame.height - 4f);
@@ -676,17 +676,26 @@ public class MainMenuAndIntroController : MonoBehaviour
             GUI.DrawTexture(pRect, port, ScaleMode.ScaleToFit);
 
             textStartX = 398f;
-            textWidth = 1065f;
+            textWidth = 1020f;
         }
 
-        DrawStyledText(ScaleRect(textStartX, 835, textWidth, 34), $"{slideTitles[currentSlide]}   —   <color=#ffd35c>{slideSpeakers[currentSlide]}</color>", 20, TextAnchor.MiddleLeft, new Color(0.22f, 0.92f, 1f));
+        float spkColW = 340f;
+        float titColW = textWidth - spkColW - 14f;
+        DrawStyledText(ScaleRect(textStartX, 822f, titColW, 30f), slideTitles[currentSlide], 18, TextAnchor.MiddleLeft, new Color(0.22f, 0.94f, 1f), false);
+        DrawStyledText(ScaleRect(textStartX + titColW + 14f, 822f, spkColW, 30f), slideSpeakers[currentSlide], 15, TextAnchor.MiddleRight, new Color(1f, 0.84f, 0.32f), false);
+
+        GUI.color = new Color(0.22f, 0.88f, 1f, 0.32f);
+        GUI.DrawTexture(ScaleRect(textStartX, 856f, textWidth, 2f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
 
         string fullTxt = slideNarrations[currentSlide];
         int chars = Mathf.Clamp(Mathf.FloorToInt(slideTimer * 45f), 0, fullTxt.Length);
-        DrawStyledText(ScaleRect(textStartX, 875, textWidth, 145), fullTxt.Substring(0, chars), 21, TextAnchor.UpperLeft, Color.white, true);
+        DrawStyledText(ScaleRect(textStartX, 868f, textWidth, 122f), fullTxt.Substring(0, chars), 20, TextAnchor.UpperLeft, Color.white, true);
 
-        string nextLabel = (currentSlide < 3) ? $"SIGUIENTE ESCENA ({currentSlide + 1}/4) ▶" : "⚔ ¡ENTRAR AL SECTOR 7! ▶";
-        if (DrawMenuButton(5, new Rect(1485, 855, 255, 78), nextLabel, new Color(0.08f, 0.35f, 0.50f), new Color(0.22f, 0.92f, 1f), true))
+        DrawStyledText(ScaleRect(textStartX, 998f, textWidth, 24f), "► [ESPACIO / ENTER] Avanzar escena   •   [ESC] Ir al Sector 7", 14, TextAnchor.MiddleLeft, new Color(0.62f, 0.84f, 0.98f), false);
+
+        string nextLabel = (currentSlide < 3) ? $"SIGUIENTE ({currentSlide + 1}/4) ►" : "ENTRAR AL SECTOR 7 ►";
+        if (DrawMenuButton(5, new Rect(1444f, 832f, 298f, 86f), nextLabel, new Color(0.08f, 0.35f, 0.50f), new Color(0.22f, 0.92f, 1f), true))
         {
             if (chars < fullTxt.Length)
             {
@@ -699,7 +708,7 @@ public class MainMenuAndIntroController : MonoBehaviour
             }
         }
 
-        if (DrawMenuButton(6, new Rect(1485, 948, 255, 60), "SALTAR INTRO ⏭", new Color(0.15f, 0.18f, 0.25f), new Color(0.65f, 0.75f, 0.88f), false))
+        if (DrawMenuButton(6, new Rect(1444f, 932f, 298f, 68f), "SALTAR INTRO ►►", new Color(0.15f, 0.18f, 0.25f), new Color(0.65f, 0.75f, 0.88f), false))
         {
             LoadLevel1();
         }
@@ -760,7 +769,16 @@ public class MainMenuAndIntroController : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        DrawStyledText(r, label, 20, TextAnchor.MiddleCenter, hovered ? new Color(1f, 0.96f, 0.82f) : Color.white);
+        float lblOffX = (btnSkin != null) ? 18f : 8f;
+        float lblTrimW = (btnSkin != null) ? 28f : 16f;
+        float lblTrimH = (btnSkin != null) ? 10f : 4f;
+        Rect textR = ScaleRect(
+            (baseRect.x - hVal * 8f) + lblOffX,
+            (baseRect.y - hVal * 2f) + 2f,
+            (baseRect.width + hVal * 12f) - lblTrimW,
+            (baseRect.height + hVal * 4f) - lblTrimH
+        );
+        DrawStyledText(textR, label, 18, TextAnchor.MiddleCenter, hovered ? new Color(1f, 0.96f, 0.82f) : Color.white, false);
         return GUI.Button(r, GUIContent.none, GUIStyle.none);
     }
 

@@ -552,7 +552,7 @@ public class PlayerStats : MonoBehaviour
                 CombatVFXManager.Instance.SpawnShockwaveRing(kaelTransform.position + Vector3.up * 0.6f, new Color(1f, 0.25f, 0.85f), 2.8f);
                 CombatVFXManager.Instance.SpawnFloatingText(
                     kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.55f),
-                    "⚡ ¡SOBREMARCHA NEXO (OVERDRIVE)! ⚡",
+                    "♦ ¡SOBREMARCHA NEXO (OVERDRIVE)!",
                     new Color(1f, 0.35f, 0.92f), 23, 1.3f
                 );
             }
@@ -570,7 +570,7 @@ public class PlayerStats : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.35f),
-                $"✨ +{Mathf.RoundToInt(healAmt)} HP (PUREZA NEXO)",
+                $"+{Mathf.RoundToInt(healAmt)} HP (PUREZA NEXO)",
                 new Color(0.25f, 1f, 0.65f), 18, 0.95f
             );
         }
@@ -651,7 +651,7 @@ public class PlayerStats : MonoBehaviour
             {
                 CombatVFXManager.Instance.SpawnFloatingText(
                     kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.4f),
-                    $"★ ¡NIVEL {playerLevel}! (+1 PTO EVOLUCIÓN) ★",
+                    $"♦ ¡NIVEL {playerLevel}! (+1 PTO EVOLUCIÓN)",
                     colCyanNexo, 22, 1.4f
                 );
             }
@@ -735,7 +735,7 @@ public class PlayerStats : MonoBehaviour
 
         if (CombatVFXManager.Instance != null && kaelTransform != null)
         {
-            string popTxt = guarded ? $"🛡 -{Mathf.RoundToInt(finalDmg)} (GUARDIA -45%)" : $"-{Mathf.RoundToInt(finalDmg)}";
+            string popTxt = guarded ? $"-{Mathf.RoundToInt(finalDmg)} (GUARDIA -45%)" : $"-{Mathf.RoundToInt(finalDmg)}";
             Color popCol = guarded ? colCyanNexo : new Color(1f, 0.25f, 0.3f);
             CombatVFXManager.Instance.SpawnFloatingText(
                 kaelTransform.position + Vector3.up * (healthBarOffsetY + 0.2f),
@@ -1056,14 +1056,19 @@ public class PlayerStats : MonoBehaviour
             DrawCyberBox(r, hovered ? new Color(0.14f, 0.22f, 0.36f, 0.98f) : colBgDark, hovered ? Color.white : fallbackAccent, 2f);
         }
 
+        float padL = (skinTex != null) ? 18f : 10f;
+        float padR = (skinTex != null) ? 12f : 10f;
+        float padB = (skinTex != null) ? 5f : 0f;
+
         if (string.IsNullOrEmpty(subText))
         {
-            DrawStyledText(r, mainText, mainFontSize, TextAnchor.MiddleCenter, enabled ? (hovered ? Color.white : mainTextCol) : new Color(0.62f, 0.66f, 0.74f));
+            Rect txtR = ScaleRect(baseRect.x + padL, baseRect.y + 2f, baseRect.width - padL - padR, baseRect.height - padB - 2f);
+            DrawStyledText(txtR, mainText, mainFontSize, TextAnchor.MiddleCenter, enabled ? (hovered ? Color.white : mainTextCol) : new Color(0.62f, 0.66f, 0.74f));
         }
         else
         {
-            Rect topR = ScaleRect(baseRect.x + 14f, baseRect.y + 6f, baseRect.width - 28f, baseRect.height * 0.52f);
-            Rect botR = ScaleRect(baseRect.x + 14f, baseRect.y + baseRect.height * 0.50f, baseRect.width - 28f, baseRect.height * 0.42f);
+            Rect topR = ScaleRect(baseRect.x + padL, baseRect.y + 4f, baseRect.width - padL - padR, (baseRect.height - padB) * 0.52f);
+            Rect botR = ScaleRect(baseRect.x + padL, baseRect.y + (baseRect.height - padB) * 0.49f, baseRect.width - padL - padR, (baseRect.height - padB) * 0.44f);
             DrawStyledText(topR, mainText, mainFontSize, TextAnchor.MiddleCenter, enabled ? (hovered ? Color.white : mainTextCol) : new Color(0.62f, 0.66f, 0.74f));
             DrawStyledText(botR, subText, subFontSize, TextAnchor.MiddleCenter, enabled ? subTextCol : new Color(0.50f, 0.54f, 0.62f));
         }
@@ -1130,7 +1135,7 @@ public class PlayerStats : MonoBehaviour
             if (DrawSkinnedCyberButton(
                 new Rect(538f, 12f, 228f, 68f),
                 texBtnPurple,
-                $"✦ EVOLUCIÓN (+{skillPoints})",
+                $"♦ EVOLUCIÓN (+{skillPoints})",
                 "ABRIR RAMA NEXO [TAB]",
                 16, 12, Color.white, colGoldYel, colExpPurp, true))
             {
@@ -1139,16 +1144,19 @@ public class PlayerStats : MonoBehaviour
         }
 
         // --- B) PANEL CENTRAL SUPERIOR: OLEADAS ---
+        bool inBridgePhase = (BridgeLevel1To2Controller.Instance != null && BridgeLevel1To2Controller.Instance.isBridgeActive);
         WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
-        if (spawner != null && spawner.currentWave < spawner.totalWaves && spawner.currentWave != 5)
+        if (!inBridgePhase && spawner != null && spawner.enabled && spawner.currentWave < spawner.totalWaves && spawner.currentWave != 5)
         {
             DrawSkinnedCyberPanel(ScaleRect(775, 12, 410, 68), texPanelCyan, colBorder);
-            string waveHeader = (levelNumber == 3)
-                ? $"COLMENA VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
-                : ((levelNumber == 2)
-                    ? $"BASE VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
-                    : $"SECTOR 7 — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}");
-            DrawStyledText(ScaleRect(775, 16, 410, 28), waveHeader, 17, TextAnchor.MiddleCenter, colCyanNexo);
+            string waveHeader = (levelNumber == 4)
+                ? $"TRONO NEXO — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
+                : ((levelNumber == 3)
+                    ? $"COLMENA VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
+                    : ((levelNumber == 2)
+                        ? $"BASE VORST — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"
+                        : $"SECTOR 7 — OLEADA {Mathf.Max(1, spawner.currentWave)} / {spawner.totalWaves}"));
+            DrawStyledText(ScaleRect(785, 16, 390, 28), waveHeader, 16, TextAnchor.MiddleCenter, colCyanNexo);
             float waveRatio = Mathf.Clamp01((float)spawner.currentWave / Mathf.Max(1, spawner.totalWaves));
             DrawProgressBar(ScaleRect(798, 48, 364, 16), waveRatio, new Color(0.08f, 0.14f, 0.24f), colCyanNexo, "", 11);
         }
@@ -1162,9 +1170,9 @@ public class PlayerStats : MonoBehaviour
         if (DrawSkinnedCyberButton(
             new Rect(1768f, 12f, 134f, 68f),
             isPaused ? texBtnEmerald : texBtnCyan,
-            isPaused ? "▶ REANUDAR" : "❚❚ PAUSA",
+            isPaused ? "► REANUDAR" : "|| PAUSA",
             "[ESC]",
-            15, 11, Color.white, colCyanNexo, colBorder, !isGameOver && !isLevelCompleted && !isChoosingDilemma))
+            14, 11, Color.white, colCyanNexo, colBorder, !isGameOver && !isLevelCompleted && !isChoosingDilemma))
         {
             TogglePause();
         }
@@ -1203,8 +1211,8 @@ public class PlayerStats : MonoBehaviour
             Color mCol = isPureza ? new Color(0.28f, 0.98f, 1f) : new Color(1f, 0.22f, 0.48f);
             DrawCyberBox(moralBadge, new Color(0.03f, 0.05f, 0.12f, 0.92f), mCol, 1.5f);
             string moralTxt = isPureza
-                ? $"☀ PUREZA NEXO (Compasión {compassionPoints}) — +10% Curación en Ult/Parry"
-                : $"☣ DISONANCIA VORST (Rigor {rigorPoints}) — +22% Crit + Quemadura Plasma";
+                ? $"♦ PUREZA NEXO (Compasión {compassionPoints}) — +10% Curación en Ult/Parry"
+                : $"♦ DISONANCIA VORST (Rigor {rigorPoints}) — +22% Crit + Quemadura Plasma";
             DrawStyledText(moralBadge, moralTxt, 13, TextAnchor.MiddleCenter, mCol);
         }
 
@@ -1224,28 +1232,28 @@ public class PlayerStats : MonoBehaviour
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f);
             rankCol = Color.Lerp(new Color(1f, 0.22f, 0.78f), new Color(0.22f, 0.96f, 1f), pulse);
             cardSkin = texPanelCrimson;
-            rankTitle = "⚡ SOBREMARCHA NEXO ⚡";
+            rankTitle = "♦ SOBREMARCHA NEXO ♦";
             buffSubtitle = "+30% VEL. ATAQUE  |  +20% MOVIMIENTO  |  +30% ORO";
         }
         else if (comboCount >= 12)
         {
             rankCol = colGoldYel;
             cardSkin = texPanelGold;
-            rankTitle = "★ RANGO: IMPARABLE ★";
+            rankTitle = "♦ RANGO: IMPARABLE ♦";
             buffSubtitle = $"A {20 - comboCount} GOLPES DE ACTIVAR SOBREMARCHA NEXO";
         }
         else if (comboCount >= 5)
         {
             rankCol = colCyanNexo;
             cardSkin = texPanelCyan;
-            rankTitle = "✦ RANGO: SINCRONIZADO ✦";
+            rankTitle = "♦ RANGO: SINCRONIZADO ♦";
             buffSubtitle = $"A {20 - comboCount} GOLPES DE ACTIVAR SOBREMARCHA NEXO";
         }
 
         DrawSkinnedCyberPanel(comboCard, cardSkin, rankCol);
 
         int hitFontSize = Mathf.Clamp(20 + Mathf.RoundToInt(punch * 0.3f), 20, 25);
-        DrawStyledText(ScaleRect(1472f, 98f, 155f, 36f), $"🔥 x{comboCount} HITS", hitFontSize, TextAnchor.MiddleLeft, Color.white, false);
+        DrawStyledText(ScaleRect(1472f, 98f, 155f, 36f), $"×{comboCount} HITS", hitFontSize, TextAnchor.MiddleLeft, Color.white, false);
         DrawStyledText(ScaleRect(1630f, 100f, 256f, 34f), rankTitle, 13, TextAnchor.MiddleRight, rankCol, false);
 
         DrawStyledText(ScaleRect(1474f, 136f, 410f, 24f), buffSubtitle, 12, TextAnchor.MiddleCenter, new Color(0.90f, 0.96f, 1f));
@@ -1285,9 +1293,9 @@ public class PlayerStats : MonoBehaviour
         Rect ctrlBox = ScaleRect(16f, 1002f, 610f, 68f);
         DrawSkinnedCyberPanel(ctrlBox, texPanelCyan, colBorder);
 
-        DrawHoldControlPill(new Rect(26f, 1011f, 72f, 50f), "◀ [A]", "IZQ", kael != null && (KaelAutoController.IsLeftHeld() || kael.hudMoveLeftHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveLeftHeld = true; });
-        DrawHoldControlPill(new Rect(104f, 1011f, 88f, 50f), "🛡 [S]", "GUARDIA", kael != null && kael.isGuarding, new Color(0.35f, 0.95f, 1f), () => { if (kael != null) kael.hudGuardHeld = true; });
-        DrawHoldControlPill(new Rect(198f, 1011f, 72f, 50f), "▶ [D]", "DER", kael != null && (KaelAutoController.IsRightHeld() || kael.hudMoveRightHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveRightHeld = true; });
+        DrawHoldControlPill(new Rect(26f, 1011f, 72f, 50f), "◄ [A]", "IZQ", kael != null && (KaelAutoController.IsLeftHeld() || kael.hudMoveLeftHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveLeftHeld = true; });
+        DrawHoldControlPill(new Rect(104f, 1011f, 88f, 50f), "♦ [S]", "GUARDIA", kael != null && kael.isGuarding, new Color(0.35f, 0.95f, 1f), () => { if (kael != null) kael.hudGuardHeld = true; });
+        DrawHoldControlPill(new Rect(198f, 1011f, 72f, 50f), "[D] ►", "DER", kael != null && (KaelAutoController.IsRightHeld() || kael.hudMoveRightHeld), colCyanNexo, () => { if (kael != null) kael.hudMoveRightHeld = true; });
 
         DrawStyledText(ScaleRect(280f, 1010f, 336f, 26f),
             "<color=#38e1ff>[A/D]</color> Mover   <color=#38e1ff>[S]</color> Guardia (-45%)",
@@ -1298,7 +1306,7 @@ public class PlayerStats : MonoBehaviour
 
         // 2. BOTÓN DE ACCIÓN BISELADO: ATACAR [J / ESPACIO]
         int comboStep = (kael != null) ? kael.currentCombo : 0;
-        string comboLabel = (comboStep > 0) ? $"⚔ ATACAR [J] • {comboStep}/3" : "⚔ ATACAR [J / ESP]";
+        string comboLabel = (comboStep > 0) ? $"► ATACAR [J] • {comboStep}/3" : "► ATACAR [J / ESP]";
         string comboSub = (comboStep == 2) ? "¡SIGUIENTE: SÍSMICO!" : $"CADENCIA {attackRate:F1}/s";
 
         if (DrawSkinnedCyberButton(
@@ -1369,11 +1377,11 @@ public class PlayerStats : MonoBehaviour
         GUI.DrawTexture(fillRect, Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        string mainTitle = ready ? "⚡ ¡SOBRECARGA! [K/Q]" : $"⚡ SOBRECARGA [K] ({Mathf.FloorToInt(currentUltCharge)}%)";
+        string mainTitle = ready ? "♦ ¡SOBRECARGA! [K/Q]" : $"♦ SOBRECARGA [K] ({Mathf.FloorToInt(currentUltCharge)}%)";
         string subTitle = ready ? "CLIC O [K] PARA CAÑÓN NEXO" : "GOLPEA CON [J] PARA CARGAR";
 
-        DrawStyledText(ScaleRect(baseRect.x + 10f, baseRect.y + 7f, baseRect.width - 20f, 28f), mainTitle, 15, TextAnchor.MiddleCenter, ready ? Color.white : colCyanNexo);
-        DrawStyledText(ScaleRect(baseRect.x + 10f, baseRect.y + 34f, baseRect.width - 20f, 24f), subTitle, 11, TextAnchor.MiddleCenter, ready ? colGoldYel : new Color(0.78f, 0.90f, 1f));
+        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 6f, baseRect.width - 30f, 26f), mainTitle, 15, TextAnchor.MiddleCenter, ready ? Color.white : colCyanNexo);
+        DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 32f, baseRect.width - 30f, 22f), subTitle, 11, TextAnchor.MiddleCenter, ready ? colGoldYel : new Color(0.78f, 0.90f, 1f));
 
         if (ready && isHovered)
         {
@@ -1408,9 +1416,9 @@ public class PlayerStats : MonoBehaviour
         if (DrawSkinnedCyberButton(
             baseRect,
             btnSkin,
-            "⚙ ARSENAL DE VANGUARDIA [B]",
+            "♦ ARSENAL DE VANGUARDIA [B]",
             subTxt,
-            15, 11,
+            14, 11,
             Color.white,
             affordableArsenal > 0 ? colGoldYel : eqSpec.PrimaryColor,
             eqSpec.PrimaryColor, !IsAnyBlockingModalOpen))
@@ -1423,7 +1431,7 @@ public class PlayerStats : MonoBehaviour
             float bounce = Mathf.Sin(Time.unscaledTime * 6.5f) * 3f;
             Rect badgeRect = ScaleRect(baseRect.x + baseRect.width - 134f, baseRect.y - 18f + bounce, 126f, 24f);
             DrawCyberBox(badgeRect, new Color(0.18f, 0.92f, 0.98f, 1f), Color.white, 1.5f);
-            DrawStyledText(badgeRect, $"🛒 {affordableArsenal} EN TIENDA", 12, TextAnchor.MiddleCenter, new Color(0.02f, 0.06f, 0.10f));
+            DrawStyledText(badgeRect, $"● {affordableArsenal} EN TIENDA", 12, TextAnchor.MiddleCenter, new Color(0.02f, 0.06f, 0.10f));
         }
     }
 
@@ -1433,15 +1441,15 @@ public class PlayerStats : MonoBehaviour
         bool hasNotification = (affordableCount > 0 || skillPoints > 0);
 
         string subStatus = (skillPoints > 0)
-            ? $"★ ¡{skillPoints} PTO EVOLUCIÓN + {affordableCount} MEJ.!"
+            ? $"♦ ¡{skillPoints} PTO EVOLUCIÓN + {affordableCount} MEJ.!"
             : (affordableCount > 0 ? $"● ¡{affordableCount} MEJORA(S) CON ORO!" : "ATRIBUTOS Y EVOLUCIÓN [TAB]");
 
         if (DrawSkinnedCyberButton(
             baseRect,
             hasNotification ? texBtnGold : texBtnPurple,
-            "🧬 ÁRBOL DE MEJORAS [TAB]",
+            "♦ ÁRBOL DE MEJORAS [TAB]",
             subStatus,
-            16, 11,
+            15, 11,
             hasNotification ? colGoldYel : Color.white,
             hasNotification ? Color.white : new Color(0.84f, 0.88f, 1f),
             colGoldYel, !IsAnyBlockingModalOpen))
@@ -1472,7 +1480,7 @@ public class PlayerStats : MonoBehaviour
         Rect panel = ScaleRect(44f, 30f, 1832f, 1020f);
         DrawSkinnedCyberPanel(panel, texPanelCyan, colCyanNexo);
 
-        DrawStyledText(ScaleRect(82f, 48f, 840f, 40f), "🧬 MATRIZ DE EVOLUCIÓN — ÁRBOL DE MEJORAS NEXO", 26, TextAnchor.MiddleLeft, colCyanNexo);
+        DrawStyledText(ScaleRect(82f, 48f, 840f, 40f), "♦ MATRIZ DE EVOLUCIÓN — ÁRBOL DE MEJORAS NEXO", 26, TextAnchor.MiddleLeft, colCyanNexo);
         DrawStyledText(ScaleRect(82f, 86f, 840f, 28f),
             $"KAEL Nv.{playerLevel}   |   ATK: {attackDamage}   |   HP: {maxHP}   |   CRIT: {Mathf.RoundToInt(critChance * 100)}%   |   DEF: {Mathf.RoundToInt(armorDamageReduction * 100)}%   |   VEL: x{moveSpeedMultiplier:F2}",
             15, TextAnchor.MiddleLeft, new Color(0.84f, 0.93f, 1f));
@@ -1482,12 +1490,12 @@ public class PlayerStats : MonoBehaviour
         DrawStyledText(ScaleRect(880f, 48f, 210f, 58f), $"● {gold} ORO", 21, TextAnchor.MiddleCenter, colGoldYel);
 
         DrawSkinnedCyberPanel(ScaleRect(1102f, 48f, 232f, 58f), texPanelCyan, colExpPurp);
-        DrawStyledText(ScaleRect(1102f, 48f, 232f, 58f), $"✦ {skillPoints} PTOS EVOLUCIÓN", 16, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
+        DrawStyledText(ScaleRect(1102f, 48f, 232f, 58f), $"♦ {skillPoints} PTOS EVOLUCIÓN", 16, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
 
         if (DrawSkinnedCyberButton(
             new Rect(1346f, 48f, 234f, 58f),
             texBtnGold,
-            "⚙ TIENDA ARSENAL [B]",
+            "♦ TIENDA ARSENAL [B]",
             "GUANTELETES & N.E.X.A.",
             15, 10, Color.white, colGoldYel, colGoldYel, true))
         {
@@ -1495,11 +1503,11 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
-        // Botón biselado ✖ CERRAR ÁRBOL [TAB / ESC]
+        // Botón biselado × CERRAR ÁRBOL [TAB / ESC]
         if (DrawSkinnedCyberButton(
             new Rect(1592f, 48f, 250f, 58f),
             texBtnCrimson,
-            "✖ CERRAR [TAB / ESC]",
+            "× CERRAR [TAB / ESC]",
             "REANUDAR COMBATE",
             15, 10, Color.white, new Color(1f, 0.82f, 0.82f), new Color(1f, 0.35f, 0.45f), true))
         {
@@ -1640,16 +1648,18 @@ public class PlayerStats : MonoBehaviour
             GUI.color = prevCol;
         }
 
-        // 3. Indicador de Estado: Mini-Badge en esquina superior
+        // 3. Indicador de Estado: Mini-Badge limpio en esquina superior (sin glifos Unicode rotos)
         if (isUnlocked)
         {
-            Rect checkBadge = new Rect(r.x + r.width - ScaleFont(16) - 2f, r.y + 2f, ScaleFont(16), ScaleFont(16));
-            DrawStyledText(checkBadge, "✔", 11, TextAnchor.MiddleCenter, colHpGreen);
+            Rect checkBadge = new Rect(r.xMax - ScaleFont(20) - 2f, r.y + 2f, ScaleFont(20), ScaleFont(14));
+            DrawCyberBox(checkBadge, new Color(0.06f, 0.25f, 0.14f, 0.96f), colHpGreen, 1f);
+            DrawStyledText(checkBadge, "OK", 9, TextAnchor.MiddleCenter, colHpGreen);
         }
-        else
+        else if (isAffordable)
         {
-            Rect lockBadge = new Rect(r.x + r.width - ScaleFont(16) - 2f, r.y + 2f, ScaleFont(16), ScaleFont(16));
-            DrawStyledText(lockBadge, "🔒", 11, TextAnchor.MiddleCenter, isAffordable ? colGoldYel : new Color(0.55f, 0.62f, 0.72f));
+            Rect nextBadge = new Rect(r.xMax - ScaleFont(14) - 2f, r.y + 2f, ScaleFont(14), ScaleFont(14));
+            DrawCyberBox(nextBadge, new Color(0.28f, 0.20f, 0.04f, 0.96f), colGoldYel, 1f);
+            DrawStyledText(nextBadge, "+", 10, TextAnchor.MiddleCenter, colGoldYel);
         }
     }
 
@@ -1708,7 +1718,7 @@ public class PlayerStats : MonoBehaviour
         if (DrawSkinnedCyberButton(
             new Rect(baseRect.x + 16f, baseRect.y + 152f, baseRect.width - 32f, 54f),
             canAfford ? texBtnGold : texBtnCyan,
-            canAfford ? $"▲ MEJORAR NODO  •  {cost} ORO" : $"🔒 REQUIERE {cost} ORO",
+            canAfford ? $"▲ MEJORAR NODO  •  {cost} ORO" : $"REQUIERE {cost} ORO",
             "",
             16, 11,
             canAfford ? Color.white : new Color(0.65f, 0.72f, 0.82f),
@@ -1726,9 +1736,9 @@ public class PlayerStats : MonoBehaviour
     {
         DrawStyledText(ScaleRect(120f, 232f, 1640f, 34f),
             skillPoints > 0
-                ? $"✦ TIENES {skillPoints} PUNTO(S) DE EVOLUCIÓN NEXO DISPONIBLE(S) — ELIGE UNA SENDA PARA DESBLOQUEAR SU SIGUIENTE NODO ✦"
-                : "✦ SENDAS EVOLUTIVAS DEL GUANTELETE NEXO — SUBE DE NIVEL EN COMBATE O SINTETIZA UN NODO CON ORO ✦",
-            18, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
+                ? $"♦ TIENES {skillPoints} PUNTO(S) DE EVOLUCIÓN NEXO DISPONIBLE(S) — ELIGE UNA SENDA PARA DESBLOQUEAR SU SIGUIENTE NODO ♦"
+                : "♦ SENDAS EVOLUTIVAS DEL GUANTELETE NEXO — SUBE DE NIVEL EN COMBATE O SINTETIZA UN NODO CON ORO ♦",
+            17, TextAnchor.MiddleCenter, skillPoints > 0 ? colGoldYel : colExpPurp);
 
         DrawEvolutionPathColumn(
             140f, "SENDA DE LA FURIA", "Ofensiva Crítica y Ruptura",
@@ -1785,8 +1795,8 @@ public class PlayerStats : MonoBehaviour
         bool canUpgrade = canUseSkillPt || canUseGold;
 
         string btnTxt = canUseSkillPt
-            ? "✦ EVOLUCIONAR SENDA (1 PTO NEXO)"
-            : (canUseGold ? $"⚡ SINTETIZAR NODO ({goldSynthCost} ORO)" : $"🔒 REQUIERE 1 PTO NEXO O {goldSynthCost} ORO");
+            ? "▲ EVOLUCIONAR SENDA (1 PTO NEXO)"
+            : (canUseGold ? $"▲ SINTETIZAR NODO ({goldSynthCost} ORO)" : $"REQUIERE 1 PTO NEXO O {goldSynthCost} ORO");
 
         if (DrawSkinnedCyberButton(
             new Rect(baseX + 20f, 922f, colW - 40f, 64f),
@@ -1812,7 +1822,7 @@ public class PlayerStats : MonoBehaviour
         // Icono en el nodo del tier
         DrawSkillIconBadge(new Rect(baseRect.x + 12f, baseRect.y + 14f, 54f, 54f), iconTex, unlocked, isNext, pathColor);
 
-        string statusBadge = unlocked ? "✔ DESBLOQUEADO" : (isNext ? "◎ SIGUIENTE NODO" : "🔒 POR DESBLOQUEAR");
+        string statusBadge = unlocked ? "[OK] DESBLOQUEADO" : (isNext ? "► SIGUIENTE NODO" : "POR DESBLOQUEAR");
         Color badgeCol = unlocked ? colHpGreen : (isNext ? colGoldYel : new Color(0.55f, 0.62f, 0.72f));
 
         DrawStyledText(ScaleRect(baseRect.x + 76f, baseRect.y + 12f, 120f, 26f), nodeTag, 16, TextAnchor.MiddleLeft, unlocked ? Color.white : pathColor);
@@ -1900,8 +1910,8 @@ public class PlayerStats : MonoBehaviour
         DrawStyledText(ScaleRect(baseRect.x + 18f, baseRect.y + 88f, baseRect.width - 36f, 60f), desc, 13, TextAnchor.UpperLeft, new Color(0.80f, 0.88f, 0.96f), true);
 
         string btnTxt = isMaxed
-            ? "✔ EQUIPAMIENTO AL NIVEL MÁXIMO"
-            : (canAfford ? $"▲ {(level == 0 ? "FABRICAR E INSTALAR" : "MEJORAR MÓDULO")}  •  {cost} ORO" : $"🔒 REQUIERE {cost} ORO");
+            ? "[OK] EQUIPAMIENTO AL NIVEL MÁXIMO"
+            : (canAfford ? $"▲ {(level == 0 ? "FABRICAR E INSTALAR" : "MEJORAR MÓDULO")}  •  {cost} ORO" : $"REQUIERE {cost} ORO");
 
         if (DrawSkinnedCyberButton(
             new Rect(baseRect.x + 18f, baseRect.y + 154f, baseRect.width - 36f, 54f),
@@ -1941,7 +1951,7 @@ public class PlayerStats : MonoBehaviour
             13, TextAnchor.MiddleCenter, new Color(1f, 0.55f, 0.62f));
 
         DrawStyledText(ScaleRect(420f, 198f, 1080f, 52f),
-            "⚠ KAEL HA CAÍDO EN COMBATE ⚠",
+            "[!] KAEL HA CAÍDO EN COMBATE [!]",
             36, TextAnchor.MiddleCenter, new Color(1f, 0.32f, 0.40f));
 
         // 4. Ilustración Widescreen HD de Game Over (Izquierda: 580x326)
@@ -1961,15 +1971,15 @@ public class PlayerStats : MonoBehaviour
         }
 
         // Etiqueta sobre la esquina inferior de la ilustración
-        Rect artBadge = ScaleRect(436f, 548f, 310f, 32f);
+        Rect artBadge = ScaleRect(436f, 548f, 326f, 32f);
         DrawCyberBox(artBadge, new Color(0.04f, 0.08f, 0.16f, 0.92f), colCyanNexo, 1.5f);
-        DrawStyledText(artBadge, "⚡ MATRIZ DEL GUANTELETE: INTACTA", 13, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(artBadge, "♦ MATRIZ DEL GUANTELETE: INTACTA", 13, TextAnchor.MiddleCenter, colCyanNexo);
 
         // 5. Tarjeta Derecha: Reporte Táctico y Progreso Conservado (486x328)
         Rect statsCard = ScaleRect(1026f, 262f, 470f, 328f);
         DrawSkinnedCyberPanel(statsCard, texPanelCyan, colCyanNexo);
 
-        DrawStyledText(ScaleRect(1046f, 276f, 430f, 32f), "📊 REPORTE DE SINCRONIZACIÓN", 19, TextAnchor.MiddleCenter, colCyanNexo);
+        DrawStyledText(ScaleRect(1046f, 276f, 430f, 32f), "♦ REPORTE DE SINCRONIZACIÓN", 19, TextAnchor.MiddleCenter, colCyanNexo);
 
         int waveReached = (spawner != null) ? Mathf.Max(1, spawner.currentWave) : 1;
         int totalWaves = (spawner != null) ? spawner.totalWaves : 10;
@@ -1998,9 +2008,9 @@ public class PlayerStats : MonoBehaviour
         if (DrawSkinnedCyberButton(
             new Rect(424f, 610f, 440f, 84f),
             texBtnEmerald,
-            "⚡ RECONSTRUIR Y REINTENTAR",
+            "► RECONSTRUIR Y REINTENTAR",
             "CONSERVAR ORO Y MEJORAS ACTUALES",
-            19, 13, Color.white, new Color(0.80f, 1f, 0.90f), colHpGreen, true))
+            18, 12, Color.white, new Color(0.80f, 1f, 0.90f), colHpGreen, true))
         {
             RetryFromGameOver();
         }
@@ -2008,9 +2018,9 @@ public class PlayerStats : MonoBehaviour
         if (DrawSkinnedCyberButton(
             new Rect(880f, 610f, 410f, 84f),
             texBtnGold,
-            "🧬 ABRIR ÁRBOL Y MEJORAR",
+            "♦ ABRIR ÁRBOL Y MEJORAR",
             treeBtnSub,
-            18, 12, Color.white, colGoldYel, colGoldYel, true))
+            17, 12, Color.white, colGoldYel, colGoldYel, true))
         {
             RetryFromGameOver();
             ToggleUpgradeTreeModal();
@@ -2057,9 +2067,11 @@ public class PlayerStats : MonoBehaviour
         int timeBonus = Mathf.Max(100, 1000 - (timeSec * 4));
         int totalScore = (gold * 10) + (kills * 25) + timeBonus;
 
-        string vicTitle = (levelNumber == 3)
-            ? "★ ¡COLMENA VORST CONQUISTADA! ★"
-            : ((levelNumber == 2) ? "★ ¡BASE VORST CONQUISTADA! ★" : "★ ¡SECTOR 7 LIBERADO! ★");
+        string vicTitle = (levelNumber == 4)
+            ? "♦ ¡TRONO NEXO CONQUISTADO! ♦"
+            : ((levelNumber == 3)
+                ? "♦ ¡COLMENA VORST CONQUISTADA! ♦"
+                : ((levelNumber == 2) ? "♦ ¡BASE VORST CONQUISTADA! ♦" : "♦ ¡SECTOR 7 LIBERADO! ♦"));
         DrawStyledText(ScaleRect(420f, 178f, 1080f, 48f), vicTitle, 36, TextAnchor.MiddleCenter, colGoldYel);
         DrawStyledText(ScaleRect(420f, 224f, 1080f, 30f), $"Decisión registrada: <color=#38e1ff>{choiceSummary}</color>", 18, TextAnchor.MiddleCenter, Color.white);
 
@@ -2076,7 +2088,7 @@ public class PlayerStats : MonoBehaviour
         Rect scoreCard = ScaleRect(1026f, 266f, 470f, 328f);
         DrawSkinnedCyberPanel(scoreCard, texPanelCyan, colCyanNexo);
 
-        DrawStyledText(ScaleRect(1046f, 282f, 430f, 32f), "🏆 REGISTRO DE COMBATE NEXO", 19, TextAnchor.MiddleCenter, colGoldYel);
+        DrawStyledText(ScaleRect(1046f, 282f, 430f, 32f), "♦ REGISTRO DE COMBATE NEXO", 19, TextAnchor.MiddleCenter, colGoldYel);
         DrawStatRow(1050f, 330f, 422f, "TIEMPO EMPLEADO:", $"{timeSec / 60:00}:{timeSec % 60:00}", colCyanNexo);
         DrawStatRow(1050f, 372f, 422f, "VORST DERROTADOS:", $"{kills} ENEMIGOS", colCyanNexo);
         DrawStatRow(1050f, 414f, 422f, "NIVEL Y ORO:", $"Nv.{playerLevel} ({gold} ORO)", colGoldYel);
@@ -2095,7 +2107,7 @@ public class PlayerStats : MonoBehaviour
                 if (DrawSkinnedCyberButton(
                     new Rect(424f, 612f, 520f, 82f),
                     texBtnEmerald,
-                    "⚡ AVANZAR AL NIVEL 4 (TRONO FINAL)",
+                    "► AVANZAR AL NIVEL 4 (TRONO FINAL)",
                     "VIÑETA II: DESCUBRIMIENTO DE LA CÁPSULA DE LÍA",
                     18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
                 {
@@ -2107,7 +2119,7 @@ public class PlayerStats : MonoBehaviour
                 if (DrawSkinnedCyberButton(
                     new Rect(964f, 612f, 532f, 82f),
                     texBtnGold,
-                    "🎬 EPÍLOGO FINAL (ISSUE #24)",
+                    "♦ EPÍLOGO FINAL DE CAMPAÑA",
                     "VER LOS 3 FINALES DE RESCATE DE LÍA",
                     18, 12, Color.white, colGoldYel, colGoldYel, true))
                 {
@@ -2122,9 +2134,9 @@ public class PlayerStats : MonoBehaviour
                 if (DrawSkinnedCyberButton(
                     new Rect(424f, 612f, 640f, 82f),
                     texBtnEmerald,
-                    "🎬 VER DESENLACE FINAL (RESCATE DE LÍA)",
+                    "► VER DESENLACE FINAL (RESCATE DE LÍA)",
                     "EVALUAR COMPASIÓN VS RIGOR (3 FINALES DE CAMPAÑA)",
-                    19, 13, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+                    18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
                 {
                     if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                     SaveProgressForNextLevel();
@@ -2155,15 +2167,15 @@ public class PlayerStats : MonoBehaviour
         if (hasNextLevel || levelNumber == 1 || levelNumber == 2)
         {
             string nextBtnTitle = (levelNumber == 1)
-                ? "▶ AVANZAR AL NIVEL 2 (CINEMÁTICA PUENTE)"
-                : "▶ AVANZAR AL NIVEL 3 (NAVE NÚCLEO COLMENA)";
+                ? "► AVANZAR AL NIVEL 2 (CINEMÁTICA PUENTE)"
+                : "► AVANZAR AL NIVEL 3 (NAVE NÚCLEO COLMENA)";
 
             if (DrawSkinnedCyberButton(
                 new Rect(424f, 612f, 640f, 82f),
                 texBtnEmerald,
                 nextBtnTitle,
                 "CONSERVAR NIVEL, ORO Y ÁRBOL DE MEJORAS",
-                19, 13, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+                18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 SaveProgressForNextLevel();
@@ -2196,12 +2208,11 @@ public class PlayerStats : MonoBehaviour
         }
         else
         {
-            if (DrawSkinnedCyberButton(
-                new Rect(424f, 612f, 520f, 82f),
+            if (DrawSkinnedCyberButton(new Rect(424f, 612f, 520f, 82f),
                 texBtnCyan,
-                $"↻ REPETIR NIVEL {levelNumber}",
+                $"◄ REPETIR NIVEL {levelNumber}",
                 "VOLVER A DESPLEGARSE EN ESTA ZONA",
-                20, 13, Color.white, colCyanNexo, colCyanNexo, true))
+                19, 12, Color.white, colCyanNexo, colCyanNexo, true))
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
                 Time.timeScale = 1f;
@@ -2237,30 +2248,30 @@ public class PlayerStats : MonoBehaviour
         DrawStyledText(ScaleRect(630, 168, 660, 44), "PAUSA TÁCTICA", 32, TextAnchor.MiddleCenter, colCyanNexo);
         DrawStyledText(ScaleRect(630, 212, 660, 28), zoneName, 17, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 0.98f));
 
-        if (DrawSkinnedCyberButton(new Rect(750, 256, 420, 62), texBtnEmerald, "▶ CONTINUAR COMBATE", "REANUDAR MISIÓN [ESC]", 19, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 256, 420, 62), texBtnEmerald, "► CONTINUAR COMBATE", "REANUDAR MISIÓN [ESC]", 18, 12, Color.white, new Color(0.82f, 1f, 0.90f), colHpGreen, true))
         {
             TogglePause();
         }
 
         int unlockedCodex = VorstCodexUI.GetUnlockedSpeciesCount();
-        if (DrawSkinnedCyberButton(new Rect(750, 328, 420, 62), texBtnCyan, $"📘 CÓDICE VORST ({unlockedCodex}/{VorstCodexUI.Catalog.Length}) [C]", "BESTIARIO, DEBILIDADES Y BAJAS", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 328, 420, 62), texBtnCyan, $"■ CÓDICE VORST ({unlockedCodex}/{VorstCodexUI.Catalog.Length}) [C]", "BESTIARIO, DEBILIDADES Y BAJAS", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
         {
             OpenVorstCodexModal(returnToPauseOnClose: true);
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 400, 420, 62), texBtnCyan, "⚙ ARSENAL DE VANGUARDIA [B]", "VARIANTES DEL GUANTELETE Y DRON N.E.X.A.", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 400, 420, 62), texBtnCyan, "♦ ARSENAL DE VANGUARDIA [B]", "VARIANTES DEL GUANTELETE Y DRON N.E.X.A.", 17, 11, Color.white, colGoldYel, colCyanNexo, true))
         {
             isPaused = false;
             OpenArsenalShopModal();
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 472, 420, 62), texBtnGold, "🧬 ABRIR ÁRBOL DE MEJORAS", "GESTIONAR ATRIBUTOS Y EVOLUCIÓN [TAB]", 17, 11, Color.white, colGoldYel, colGoldYel, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 472, 420, 62), texBtnGold, "♦ ABRIR ÁRBOL DE MEJORAS", "GESTIONAR ATRIBUTOS Y EVOLUCIÓN [TAB]", 17, 11, Color.white, colGoldYel, colGoldYel, true))
         {
             isPaused = false;
             OpenUpgradeTreeAtTab(0);
         }
 
-        if (DrawSkinnedCyberButton(new Rect(750, 544, 420, 58), texBtnCrimson, "↻ REINICIAR NIVEL", "COMENZAR DESDE LA OLEADA 1", 17, 11, Color.white, new Color(1f, 0.80f, 0.82f), colAttrFuerza, true))
+        if (DrawSkinnedCyberButton(new Rect(750, 544, 420, 58), texBtnCrimson, "◄ REINICIAR NIVEL", "COMENZAR DESDE LA OLEADA 1", 17, 11, Color.white, new Color(1f, 0.80f, 0.82f), colAttrFuerza, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
             Time.timeScale = 1f;
@@ -2345,11 +2356,11 @@ public class PlayerStats : MonoBehaviour
         // Opción 2: Rigor
         Rect cardRigor = ScaleRect(990, 350, 460, 430);
         DrawSkinnedCyberPanel(cardRigor, texPanelCrimson, new Color(1f, 0.35f, 0.55f));
-        DrawStyledText(ScaleRect(1010, 372, 420, 40), "❖ RIGOR (DISONANCIA VORST)", 22, TextAnchor.MiddleCenter, new Color(1f, 0.45f, 0.62f));
+        DrawStyledText(ScaleRect(1010, 372, 420, 40), "♦ RIGOR (DISONANCIA VORST)", 22, TextAnchor.MiddleCenter, new Color(1f, 0.45f, 0.62f));
         DrawStyledText(ScaleRect(1020, 430, 400, 120), rigorDesc, 17, TextAnchor.MiddleCenter, Color.white, true);
         DrawStyledText(ScaleRect(1010, 565, 420, 60), rigorBonusTxt, 17, TextAnchor.MiddleCenter, colGoldYel, true);
 
-        if (DrawSkinnedCyberButton(new Rect(1020, 655, 400, 72), texBtnCrimson, "❖ ELEGIR RIGOR", "SOBRECARGAR EL GUANTELETE", 19, 12, Color.white, colGoldYel, colAttrFuerza, true))
+        if (DrawSkinnedCyberButton(new Rect(1020, 655, 400, 72), texBtnCrimson, "♦ ELEGIR RIGOR", "SOBRECARGAR EL GUANTELETE", 19, 12, Color.white, colGoldYel, colAttrFuerza, true))
         {
             if (AudioManager.Instance != null)
             {
@@ -2383,7 +2394,7 @@ public class PlayerStats : MonoBehaviour
         if (DrawSkinnedCyberButton(
             new Rect(baseX + 8f, baseY + 8f, 64f, baseH - 16f),
             muted ? texBtnCrimson : texBtnCyan,
-            muted ? "🔇" : "🔊", "", 20, 10,
+            muted ? "OFF" : "ON", muted ? "MUTE" : "VOL", 13, 9,
             muted ? new Color(1f, 0.45f, 0.5f) : colCyanNexo, Color.white, accent, true))
         {
             if (AudioManager.Instance != null) AudioManager.Instance.ToggleMute();
@@ -2474,7 +2485,7 @@ public class PlayerStats : MonoBehaviour
         {
             Rect guardTag = new Rect(x - 30f * sx, y - 22f * sy, barW + 60f * sx, 18f * sy);
             bool inParryWin = KaelAutoController.Instance.IsWithinPerfectParryWindow();
-            string guardTxt = inParryWin ? "⚡ PARRY NEXO (0.35s)" : "🛡 GUARDIA NEXO (-45%)";
+            string guardTxt = inParryWin ? "♦ PARRY NEXO (0.35s)" : "♦ GUARDIA NEXO (-45%)";
             Color guardCol = inParryWin ? colGoldYel : colCyanNexo;
             DrawStyledText(guardTag, guardTxt, 12, TextAnchor.MiddleCenter, guardCol);
         }

@@ -357,7 +357,7 @@ public class KaelAutoController : MonoBehaviour
             CombatVFXManager.Instance.SpawnParryFlashAndShockwave(shieldPos, primaryParryCol, secondaryParryCol);
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 1.55f,
-                "⚡ ¡PARRY PERFECTO! +20% ULT",
+                "♦ ¡PARRY PERFECTO! +20% ULT",
                 primaryParryCol,
                 22,
                 1.1f
@@ -1090,8 +1090,8 @@ public class KaelAutoController : MonoBehaviour
             CombatVFXManager.Instance.SetUltimateCinematic(true, triggerFlash: false);
             CombatVFXManager.Instance.SpawnUltChargeInward(gauntletPos, 0.50f);
             string chargeLabel = isCorrupcion
-                ? "⚡ ¡CANALIZANDO DISONANCIA ABISAL! ⚡"
-                : (isPureza ? "☀ ¡CANALIZANDO PUREZA SOLAR NEXO! ☀" : "⚡ ¡CARGANDO CAÑÓN NEXO! ⚡");
+                ? "♦ ¡CANALIZANDO DISONANCIA ABISAL! ♦"
+                : (isPureza ? "♦ ¡CANALIZANDO PUREZA SOLAR NEXO! ♦" : "♦ ¡CARGANDO CAÑÓN NEXO! ♦");
             Color chargeCol = GetEffectiveGauntletColor(
                 isCorrupcion ? new Color(1f, 0.22f, 0.52f) : (isPureza ? new Color(1f, 0.90f, 0.35f) : Color.cyan));
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.55f, chargeLabel, chargeCol, 22, 0.7f);

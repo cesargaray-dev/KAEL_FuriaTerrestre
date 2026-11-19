@@ -137,7 +137,7 @@ public class NexaDroneCompanion : MonoBehaviour
             CombatVFXManager.Instance.SpawnShockwaveRing(transform.position, new Color(0.22f, 0.95f, 1f), 1.6f);
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 0.65f,
-                "🤖 ¡DRON N.E.X.A. DESPLEGADO!",
+                "♦ ¡DRON N.E.X.A. DESPLEGADO!",
                 new Color(0.25f, 0.96f, 1f), 18, 1.3f);
         }
         if (CompanionDialogueManager.Instance != null)
@@ -456,7 +456,7 @@ public class NexaDroneCompanion : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 kaelTarget.position + Vector3.up * 2.25f,
-                $"🛡 ¡PROTOCOLO BALUARTE! ({shieldHitsRemaining} IMPACTOS)",
+                $"♦ ¡PROTOCOLO BALUARTE! ({shieldHitsRemaining} IMPACTOS)",
                 new Color(0.22f, 0.95f, 1f),
                 20,
                 1.25f
@@ -501,7 +501,7 @@ public class NexaDroneCompanion : MonoBehaviour
             {
                 CombatVFXManager.Instance.SpawnFloatingText(
                     kaelTarget.position + Vector3.up * 2.15f,
-                    $"🛡 ¡ESCUDO NEXO! ({shieldHitsRemaining}/{maxShieldImpacts})",
+                    $"♦ ¡ESCUDO NEXO! ({shieldHitsRemaining}/{maxShieldImpacts})",
                     new Color(0.25f, 0.95f, 1f),
                     18,
                     0.85f
@@ -538,7 +538,7 @@ public class NexaDroneCompanion : MonoBehaviour
             CombatVFXManager.Instance.SpawnHitSparks(transform.position, true, 14);
             CombatVFXManager.Instance.SpawnFloatingText(
                 kaelTarget.position + Vector3.up * 2.30f,
-                "⚠ ¡BALUARTE SOBRECALENTADO!",
+                "[!] ¡BALUARTE SOBRECALENTADO!",
                 new Color(1f, 0.45f, 0.15f),
                 19,
                 1.3f
@@ -571,7 +571,7 @@ public class NexaDroneCompanion : MonoBehaviour
             {
                 CombatVFXManager.Instance.SpawnFloatingText(
                     transform.position + Vector3.up * 0.55f,
-                    "⚡ BALUARTE ENFRIADO Y LISTO",
+                    "► BALUARTE ENFRIADO Y LISTO",
                     new Color(0.22f, 0.95f, 1f),
                     15,
                     1.0f
@@ -726,13 +726,13 @@ public class NexaDroneCompanion : MonoBehaviour
         Color col;
         if (isShieldActive)
         {
-            string pips = new string('♦', shieldHitsRemaining) + new string('♢', Mathf.Max(0, maxShieldImpacts - shieldHitsRemaining));
-            label = $"🛡 BALUARTE [{pips}]";
+            string pips = new string('♦', shieldHitsRemaining) + new string('◊', Mathf.Max(0, maxShieldImpacts - shieldHitsRemaining));
+            label = $"♦ BALUARTE [{pips}]";
             col = new Color(0.25f, 0.96f, 1f);
         }
         else
         {
-            label = $"⚠ DRON ENFRIANDO ({Mathf.CeilToInt(overheatTimer)}s)";
+            label = $"[!] DRON ENFRIANDO ({Mathf.CeilToInt(overheatTimer)}s)";
             col = new Color(1f, 0.50f, 0.20f);
         }
 

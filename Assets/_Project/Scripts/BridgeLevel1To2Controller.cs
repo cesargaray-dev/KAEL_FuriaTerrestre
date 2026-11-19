@@ -156,6 +156,11 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             PlayerStats.Instance.isArsenalShopOpen = false;
         }
 
+        if (CompanionDialogueManager.Instance != null)
+        {
+            CompanionDialogueManager.Instance.ClearDialogue();
+        }
+
         WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
         if (spawner != null)
         {
@@ -227,14 +232,11 @@ public class BridgeLevel1To2Controller : MonoBehaviour
         barrierRenderer.sprite = Level3MonsterAssetGenerator.GetVorstEnergyBarrierSprite();
         barrierRenderer.sortingOrder = 15;
 
+        // Evitar que CompanionDialogueManager se superponga al banner táctico de infiltración:
+        // la instrucción de N.E.X.A. con retrato se muestra integrada en DrawPhase2PlayableHUD().
         if (CompanionDialogueManager.Instance != null)
         {
-            CompanionDialogueManager.Instance.ShowCustomMessage(
-                "N.E.X.A. // INFILTRACIÓN DE PERÍMETRO",
-                "Kael, el Generador de Campo de Fuerza Vorst bloquea el acceso al Nivel 2. ¡Avanza con [D] y destrúyelo con [J] para abrir brecha!",
-                new Color(0.20f, 0.95f, 1f),
-                6.5f
-            );
+            CompanionDialogueManager.Instance.ClearDialogue();
         }
     }
 
@@ -376,7 +378,7 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             CombatVFXManager.Instance.SpawnShockwaveRing(barrierObject.transform.position + Vector3.up * 1.2f, new Color(1f, 0.25f, 0.72f), 2.4f);
             CombatVFXManager.Instance.SpawnFloatingText(
                 barrierObject.transform.position + Vector3.up * 2.5f,
-                $"💥 ¡IMPACTO AL GENERADOR! ({Mathf.CeilToInt(barrierCurrentHp)}/{Mathf.CeilToInt(barrierMaxHp)})",
+                $"¡IMPACTO AL GENERADOR! ({Mathf.CeilToInt(barrierCurrentHp)}/{Mathf.CeilToInt(barrierMaxHp)})",
                 new Color(1f, 0.85f, 0.25f),
                 20,
                 0.85f
@@ -397,7 +399,7 @@ public class BridgeLevel1To2Controller : MonoBehaviour
                 CombatVFXManager.Instance.SpawnEnemyDeathBurst(barrierObject.transform.position + Vector3.up * 1.3f, true);
                 CombatVFXManager.Instance.SpawnFloatingText(
                     barrierObject.transform.position + Vector3.up * 2.2f,
-                    "⚡ ¡COMPUERTA VORST DESTRUIDA! AVANZA CON [D] ⚡",
+                    "¡COMPUERTA VORST DESTRUIDA! AVANZA CON [D]",
                     new Color(0.25f, 1f, 0.60f),
                     24,
                     1.6f
@@ -515,18 +517,28 @@ public class BridgeLevel1To2Controller : MonoBehaviour
         if (slide != null)
         {
             float zoom = 1.0f + Mathf.Clamp01(actTimer / 10f) * 0.06f;
-            float w = 1520f * zoom;
-            float h = 760f * zoom;
-            Rect imgRect = ScaleRect((1920f - w) * 0.5f, 35f - (h - 760f) * 0.5f, w, h);
+            float w = 1500f * zoom;
+            float h = 746f * zoom;
+            Rect imgRect = ScaleRect((1920f - w) * 0.5f, 34f - (h - 746f) * 0.5f, w, h);
             GUI.DrawTexture(imgRect, slide, ScaleMode.ScaleAndCrop);
 
             GUI.color = new Color(0.22f, 0.88f, 1f, 0.85f);
-            GUI.DrawTexture(ScaleRect(198, 32, 1524, 3), Texture2D.whiteTexture);
-            GUI.DrawTexture(ScaleRect(198, 798, 1524, 3), Texture2D.whiteTexture);
+            GUI.DrawTexture(ScaleRect(208f, 31f, 1504f, 3f), Texture2D.whiteTexture);
+            GUI.DrawTexture(ScaleRect(208f, 781f, 1504f, 3f), Texture2D.whiteTexture);
             GUI.color = Color.white;
+
+            // Etiqueta discreta de escena en esquina superior izquierda de la viñeta
+            Rect actTagRect = ScaleRect(224f, 46f, 290f, 30f);
+            GUI.color = new Color(0.02f, 0.05f, 0.12f, 0.82f);
+            GUI.DrawTexture(actTagRect, Texture2D.whiteTexture);
+            GUI.color = new Color(0.22f, 0.90f, 1f, 0.85f);
+            GUI.DrawTexture(new Rect(actTagRect.x, actTagRect.y, 4f, actTagRect.height), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            DrawStyledText(ScaleRect(236f, 46f, 270f, 30f), $"PUENTE NV.1 → NV.2  •  {idx + 1}/4", 13, TextAnchor.MiddleLeft, new Color(0.22f, 0.94f, 1f), false);
         }
 
-        Rect dialogBox = ScaleRect(160, 815, 1600, 235);
+        // Panel inferior amplio con márgenes internos seguros
+        Rect dialogBox = ScaleRect(140f, 798f, 1640f, 252f);
         if (panelCyanTex != null)
         {
             GUI.color = new Color(1f, 1f, 1f, 0.98f);
@@ -543,13 +555,14 @@ public class BridgeLevel1To2Controller : MonoBehaviour
         }
 
         Texture2D port = (idx == 0) ? portKaelShout : portNexaNormal;
-        float textStartX = 195f;
-        float textWidth = 1260f;
+        float textStartX = 180f;
+        float textWidth = 1236f;
 
         if (port != null)
         {
-            Rect pFrame = ScaleRect(178, 833, 200, 200);
-            GUI.color = (idx == 0) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
+            Rect pFrame = ScaleRect(176f, 825f, 198f, 198f);
+            Color portBorder = (idx == 0) ? new Color(1f, 0.82f, 0.22f, 0.96f) : new Color(0.22f, 0.92f, 1f, 0.96f);
+            GUI.color = portBorder;
             GUI.DrawTexture(pFrame, Texture2D.whiteTexture);
             Rect pRect = new Rect(pFrame.x + 2f, pFrame.y + 2f, pFrame.width - 4f, pFrame.height - 4f);
             GUI.color = new Color(0.04f, 0.07f, 0.14f, 1f);
@@ -557,24 +570,58 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             GUI.color = Color.white;
             GUI.DrawTexture(pRect, port, ScaleMode.ScaleToFit);
 
+            if (idx > 0)
+            {
+                float scanY = pRect.y + Mathf.PingPong(Time.unscaledTime * (pRect.height * 0.65f), Mathf.Max(1f, pRect.height - 3f));
+                GUI.color = new Color(0.22f, 0.92f, 1f, 0.35f);
+                GUI.DrawTexture(new Rect(pRect.x, scanY, pRect.width, 2f), Texture2D.whiteTexture);
+                GUI.color = Color.white;
+            }
+
             textStartX = 398f;
-            textWidth = 1065f;
+            textWidth = 1020f;
         }
 
+        // Cabecera en dos columnas fijas (título a la izquierda, interlocutor a la derecha) para evitar saltos o recortes
+        float speakerColW = 330f;
+        float titleColW = textWidth - speakerColW - 14f;
         DrawStyledText(
-            ScaleRect(textStartX, 835, textWidth, 34),
-            $"{GetActTitle(idx)}   —   <color=#ffd35c>{GetActSpeaker(idx)}</color>",
-            20,
+            ScaleRect(textStartX, 822f, titleColW, 30f),
+            GetActTitle(idx),
+            18,
             TextAnchor.MiddleLeft,
-            new Color(0.22f, 0.92f, 1f)
+            new Color(0.22f, 0.94f, 1f),
+            false
         );
+        DrawStyledText(
+            ScaleRect(textStartX + titleColW + 14f, 822f, speakerColW, 30f),
+            GetActSpeaker(idx),
+            15,
+            TextAnchor.MiddleRight,
+            new Color(1f, 0.84f, 0.32f),
+            false
+        );
+
+        // Línea divisoria sutil entre cabecera y narración
+        GUI.color = new Color(0.22f, 0.88f, 1f, 0.32f);
+        GUI.DrawTexture(ScaleRect(textStartX, 856f, textWidth, 2f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
 
         string fullTxt = GetActNarration(idx);
         int chars = Mathf.Clamp(Mathf.FloorToInt(actTimer * 45f), 0, fullTxt.Length);
-        DrawStyledText(ScaleRect(textStartX, 875, textWidth, 145), fullTxt.Substring(0, chars), 21, TextAnchor.UpperLeft, Color.white, true);
+        DrawStyledText(ScaleRect(textStartX, 868f, textWidth, 122f), fullTxt.Substring(0, chars), 20, TextAnchor.UpperLeft, Color.white, true);
 
-        string nextLabel = (idx < 3) ? $"SIGUIENTE ESCENA ({idx + 1}/4) ▶" : "⚔ ¡ASALTAR PERÍMETRO! ▶";
-        if (DrawCyberButton(0, new Rect(1485, 855, 255, 78), nextLabel, btnCyanTex, new Color(0.22f, 0.92f, 1f), true))
+        DrawStyledText(
+            ScaleRect(textStartX, 998f, textWidth, 24f),
+            "► [ESPACIO / ENTER] Avanzar escena   •   [ESC] Ir directo al perímetro",
+            14,
+            TextAnchor.MiddleLeft,
+            new Color(0.62f, 0.84f, 0.98f),
+            false
+        );
+
+        string nextLabel = (idx < 3) ? $"SIGUIENTE ({idx + 1}/4) ►" : "ASALTAR PERÍMETRO ►";
+        if (DrawCyberButton(0, new Rect(1444f, 832f, 298f, 86f), nextLabel, btnCyanTex, new Color(0.22f, 0.92f, 1f), true))
         {
             if (chars < fullTxt.Length)
             {
@@ -587,7 +634,7 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             }
         }
 
-        if (DrawCyberButton(1, new Rect(1485, 948, 255, 60), "SALTAR CINEMÁTICA ⏭", btnPurpleTex, new Color(0.65f, 0.75f, 0.88f), false))
+        if (DrawCyberButton(1, new Rect(1444f, 932f, 298f, 68f), "SALTAR CINEMÁTICA ►►", btnPurpleTex, new Color(0.65f, 0.75f, 0.88f), false))
         {
             BeginPhase2PlayableInfiltration();
         }
@@ -611,13 +658,13 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             {
                 float sx = Screen.width / 1920f;
                 float sy = Screen.height / 1080f;
-                float bw = 220f * sx;
+                float bw = 270f * sx;
                 float bh = 18f * sy;
                 float bx = sp.x - bw * 0.5f;
                 float by = (Screen.height - sp.y) - bh * 0.5f;
 
                 GUI.color = new Color(0.02f, 0.04f, 0.10f, 0.95f);
-                GUI.DrawTexture(new Rect(bx - 3f, by - 26f * sy, bw + 6f, bh + 30f * sy), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(bx - 4f, by - 28f * sy, bw + 8f, bh + 34f * sy), Texture2D.whiteTexture);
                 GUI.color = new Color(1f, 0.25f, 0.72f, 0.95f);
                 GUI.DrawTexture(new Rect(bx - 2f, by - 2f, bw + 4f, bh + 4f), Texture2D.whiteTexture);
                 GUI.color = new Color(0.12f, 0.04f, 0.16f, 1f);
@@ -629,20 +676,21 @@ public class BridgeLevel1To2Controller : MonoBehaviour
                 GUI.color = Color.white;
 
                 DrawStyledText(
-                    new Rect(bx - 20f * sx, by - 24f * sy, bw + 40f * sx, 22f * sy),
-                    $"⚡ COMPUERTA LÁSER VORST [{Mathf.CeilToInt(barrierCurrentHp)}/{Mathf.CeilToInt(barrierMaxHp)}]",
+                    new Rect(bx - 16f * sx, by - 25f * sy, bw + 32f * sx, 22f * sy),
+                    $"COMPUERTA LÁSER VORST [{Mathf.CeilToInt(barrierCurrentHp)}/{Mathf.CeilToInt(barrierMaxHp)}]",
                     13,
                     TextAnchor.MiddleCenter,
-                    new Color(1f, 0.85f, 0.28f)
+                    new Color(1f, 0.85f, 0.28f),
+                    false
                 );
             }
         }
 
-        // 2. Banner superior táctico de infiltración
-        Rect topBanner = ScaleRect(440f, 102f, 1040f, 84f);
+        // 2. Panel táctico unificado de infiltración (sin colisionar con Perfil HUD ni Audio/Pausa)
+        Rect topBanner = ScaleRect(546f, 94f, 920f, 94f);
         if (panelCyanTex != null)
         {
-            GUI.color = new Color(1f, 1f, 1f, 0.96f);
+            GUI.color = new Color(1f, 1f, 1f, 0.97f);
             GUI.DrawTexture(topBanner, panelCyanTex, ScaleMode.StretchToFill);
             GUI.color = Color.white;
         }
@@ -653,35 +701,62 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             GUI.color = Color.white;
         }
 
+        float textLeft = 568f;
+        float textW = 876f;
+        if (portNexaNormal != null)
+        {
+            Rect pFrame = ScaleRect(564f, 106f, 70f, 70f);
+            GUI.color = new Color(0.22f, 0.92f, 1f, 0.95f);
+            GUI.DrawTexture(pFrame, Texture2D.whiteTexture);
+            Rect pInner = new Rect(pFrame.x + 2f, pFrame.y + 2f, pFrame.width - 4f, pFrame.height - 4f);
+            GUI.color = new Color(0.04f, 0.07f, 0.14f, 1f);
+            GUI.DrawTexture(pInner, Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            GUI.DrawTexture(pInner, portNexaNormal, ScaleMode.ScaleToFit);
+            textLeft = 648f;
+            textW = 796f;
+        }
+
         if (!barrierDestroyed)
         {
             DrawStyledText(
-                ScaleRect(460f, 110f, 1000f, 32f),
-                "⚡ TRAMO JUGABLE DE INFILTRACIÓN: DESTRUYE LA COMPUERTA DE ESCUDO VORST ⚡",
-                18,
-                TextAnchor.MiddleCenter,
-                new Color(1f, 0.84f, 0.24f)
+                ScaleRect(textLeft, 104f, textW, 30f),
+                "♦ N.E.X.A. // INFILTRACIÓN: DESTRUYE LA COMPUERTA VORST",
+                17,
+                TextAnchor.MiddleLeft,
+                new Color(1f, 0.84f, 0.24f),
+                false
             );
             DrawStyledText(
-                ScaleRect(460f, 144f, 1000f, 30f),
-                $"Camina hacia la derecha con [D] y golpea el Generador Vorst con [J] ({Mathf.CeilToInt(barrierCurrentHp)}/{Mathf.CeilToInt(barrierMaxHp)} Integridad)",
+                ScaleRect(textLeft, 136f, textW, 36f),
+                $"Avanza a la derecha con [D] y ataca el generador con [J] ({Mathf.CeilToInt(barrierCurrentHp)}/{Mathf.CeilToInt(barrierMaxHp)} Integridad)",
                 16,
-                TextAnchor.MiddleCenter,
-                Color.white
+                TextAnchor.MiddleLeft,
+                Color.white,
+                false
             );
         }
         else
         {
             DrawStyledText(
-                ScaleRect(460f, 122f, 1000f, 42f),
-                "✓ ¡COMPUERTA DESTRUIDA! AVANZA CON [D] PARA ENTRAR AL NIVEL 2 (BASE VORST)",
-                19,
-                TextAnchor.MiddleCenter,
-                new Color(0.25f, 1f, 0.58f)
+                ScaleRect(textLeft, 104f, textW, 30f),
+                "♦ ¡BRECHA ABIERTA EN EL PERÍMETRO!",
+                17,
+                TextAnchor.MiddleLeft,
+                new Color(0.25f, 1f, 0.58f),
+                false
+            );
+            DrawStyledText(
+                ScaleRect(textLeft, 136f, textW, 36f),
+                "Avanza a la derecha con [D] para infiltrarte en el Nivel 2 (Base Vorst)",
+                16,
+                TextAnchor.MiddleLeft,
+                Color.white,
+                false
             );
         }
 
-        if (DrawCyberButton(2, new Rect(1495f, 118f, 380f, 52f), "⏭ ENTRAR DIRECTO AL NIVEL 2 ▶", btnGoldTex, new Color(1f, 0.84f, 0.24f), true))
+        if (DrawCyberButton(2, new Rect(1484f, 106f, 412f, 68f), "ENTRAR DIRECTO AL NIVEL 2 ►►", btnGoldTex, new Color(1f, 0.84f, 0.24f), true))
         {
             CompleteBridgeAndLoadLevel2();
         }
@@ -742,7 +817,16 @@ public class BridgeLevel1To2Controller : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        DrawStyledText(r, label, 18, TextAnchor.MiddleCenter, hovered ? new Color(1f, 0.96f, 0.82f) : Color.white);
+        float lblOffX = (skin != null) ? 18f : 8f;
+        float lblTrimW = (skin != null) ? 28f : 16f;
+        float lblTrimH = (skin != null) ? 10f : 4f;
+        Rect textR = ScaleRect(
+            (baseRect.x - hVal * 6f) + lblOffX,
+            (baseRect.y - hVal * 2f) + 2f,
+            (baseRect.width + hVal * 10f) - lblTrimW,
+            (baseRect.height + hVal * 4f) - lblTrimH
+        );
+        DrawStyledText(textR, label, 17, TextAnchor.MiddleCenter, hovered ? new Color(1f, 0.96f, 0.82f) : Color.white, false);
         return GUI.Button(r, GUIContent.none, GUIStyle.none);
     }
 

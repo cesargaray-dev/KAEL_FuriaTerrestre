@@ -487,7 +487,7 @@ public class VorstCodexUI : MonoBehaviour
         }
 
         GameObject host = new GameObject("VorstCodexUI");
-        DontDestroyOnLoad(host);
+        if (Application.isPlaying) DontDestroyOnLoad(host);
         Instance = host.AddComponent<VorstCodexUI>();
         return Instance;
     }
@@ -638,7 +638,7 @@ public class VorstCodexUI : MonoBehaviour
             CodexSpeciesEntry entry = Catalog[idx];
             CombatVFXManager.Instance.SpawnFloatingText(
                 worldPos + Vector3.up * 2.25f,
-                $"📘 CÓDICE DESBLOQUEADO: {entry.DisplayName.ToUpper()}",
+                $"■ CÓDICE DESBLOQUEADO: {entry.DisplayName.ToUpper()}",
                 entry.ThemeColor,
                 18,
                 1.55f
@@ -722,7 +722,8 @@ public class VorstCodexUI : MonoBehaviour
             return;
         }
         Instance = this;
-        if (gameObject.name == "VorstCodexUI" &&
+        if (Application.isPlaying &&
+            gameObject.name == "VorstCodexUI" &&
             GetComponent<Camera>() == null &&
             GetComponent<MainMenuAndIntroController>() == null &&
             GetComponent<PlayerStats>() == null &&
@@ -1134,8 +1135,8 @@ public class VorstCodexUI : MonoBehaviour
         if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
         ShowNotification(
             simulationPreviewAll
-                ? "🔓 SIMULACIÓN N.E.X.A. ACTIVA: ARCHIVOS Y ANIMACIONES PREVISUALIZABLES"
-                : "🔒 MODO PROGRESIVO ESTRICTO: SOLO ESPECÍMENES DERROTADOS EN COMBATE",
+                ? "♦ SIMULACIÓN N.E.X.A. ACTIVA: ARCHIVOS Y ANIMACIONES PREVISUALIZABLES"
+                : "■ MODO PROGRESIVO ESTRICTO: SOLO ESPECÍMENES DERROTADOS EN COMBATE",
             simulationPreviewAll ? new Color(0.25f, 0.96f, 1f) : new Color(1f, 0.82f, 0.24f)
         );
     }
@@ -1223,14 +1224,14 @@ public class VorstCodexUI : MonoBehaviour
     void DrawHeaderBar()
     {
         DrawStyledText(ScaleRect(76f, 48f, 920f, 36f),
-            "📘 BASE DE DATOS MILITAR TERRESTRE // CÓDICE XENOBIOLÓGICO VORST",
-            25, TextAnchor.MiddleLeft, new Color(0.22f, 0.94f, 1f));
+            "■ BASE DE DATOS MILITAR TERRESTRE // CÓDICE XENOBIOLÓGICO VORST",
+            24, TextAnchor.MiddleLeft, new Color(0.22f, 0.94f, 1f));
 
         int unlockedCount = GetUnlockedSpeciesCount();
         int totalKillsAll = GetAllSpeciesTotalKills();
 
         DrawStyledText(ScaleRect(76f, 84f, 920f, 24f),
-            $"ARCHIVO DE INTELIGENCIA N.E.X.A. v2.5   •   ESPECÍMENES REGISTRADOS: <color=#2ee678>{unlockedCount} / {Catalog.Length}</color>   •   BAJAS TOTALES CONFIRMADAS: <color=#ffd35c>{totalKillsAll}</color>",
+            $"ARCHIVO DE INTELIGENCIA N.E.X.A. v2.5   •   ESPECÍMENES REGISTRADOS: <color=#2ee678>{unlockedCount} / {Catalog.Length}</color>   •   BAJAS CONFIRMADAS: <color=#ffd35c>{totalKillsAll}</color>",
             14, TextAnchor.MiddleLeft, new Color(0.82f, 0.92f, 1f));
 
         // Barra de progreso de desbloqueo global del Códice
@@ -1243,7 +1244,7 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(1264f, 48f, 326f, 58f),
             simulationPreviewAll ? texBtnEmerald : texBtnGold,
-            simulationPreviewAll ? "🔓 SIMULACIÓN N.E.X.A.: ACTIVA" : "🔒 MODO PROGRESIVO [TAB]",
+            simulationPreviewAll ? "♦ SIMULACIÓN N.E.X.A.: ACTIVA" : "■ MODO PROGRESIVO [TAB]",
             simulationPreviewAll ? "MOSTRANDO TODAS LAS FICHAS" : "CLIC O [TAB] PARA PREVISUALIZAR TODOS",
             14, 10, Color.white, simulationPreviewAll ? new Color(0.80f, 1f, 0.90f) : new Color(1f, 0.86f, 0.32f),
             new Color(1f, 0.82f, 0.22f)))
@@ -1255,9 +1256,9 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(1604f, 48f, 240f, 58f),
             texBtnCrimson,
-            "✖ CERRAR CÓDICE [ESC]",
+            "× CERRAR CÓDICE [ESC]",
             "VOLVER AL MENÚ ANTERIOR",
-            15, 10, Color.white, new Color(1f, 0.82f, 0.84f), new Color(1f, 0.32f, 0.42f)))
+            14, 10, Color.white, new Color(1f, 0.82f, 0.84f), new Color(1f, 0.32f, 0.42f)))
         {
             CloseCodex();
         }
@@ -1300,7 +1301,7 @@ public class VorstCodexUI : MonoBehaviour
         DrawCyberBox(listPanel, new Color(0.02f, 0.04f, 0.09f, 0.94f), new Color(0.20f, 0.78f, 0.96f, 0.85f), 2f);
 
         DrawStyledText(ScaleRect(84f, 134f, 424f, 26f),
-            "❖ SELECTOR DE ESPECÍMENES [▲/▼]",
+            "◊ SELECTOR DE ESPECÍMENES [▲/▼]",
             16, TextAnchor.MiddleLeft, new Color(0.22f, 0.92f, 1f));
         DrawStyledText(ScaleRect(84f, 158f, 424f, 20f),
             "Filtra por zona [Q/E] o selecciona una criatura:",
@@ -1384,9 +1385,9 @@ public class VorstCodexUI : MonoBehaviour
             DrawStyledText(new Rect(textX, cardY + 10f * sy, textW, 18f * sy),
                 entry.CodeName, 11, TextAnchor.MiddleLeft, entry.ThemeColor);
 
-            string titleDisplay = inspectable ? entry.DisplayName.ToUpper() : $"[CLASIFICADO] {entry.DisplayName.ToUpper()}";
+            string titleDisplay = inspectable ? entry.DisplayName.ToUpper() : $"[BLOQ] {entry.DisplayName.ToUpper()}";
             DrawStyledText(new Rect(textX, cardY + 28f * sy, textW, 26f * sy),
-                titleDisplay, 16, TextAnchor.MiddleLeft, selected ? Color.white : new Color(0.90f, 0.95f, 1f));
+                titleDisplay, 14, TextAnchor.MiddleLeft, selected ? Color.white : new Color(0.90f, 0.95f, 1f));
 
             DrawStyledText(new Rect(textX, cardY + 54f * sy, textW, 20f * sy),
                 entry.Classification, 10, TextAnchor.MiddleLeft, new Color(0.72f, 0.84f, 0.96f));
@@ -1399,8 +1400,8 @@ public class VorstCodexUI : MonoBehaviour
             DrawCyberBox(statusPill, new Color(0.02f, 0.05f, 0.10f, 0.92f), statusCol, 1f);
 
             string statusTxt = unlocked
-                ? $"✔ DESBLOQUEADO  •  ☠ {kills} BAJA(S)"
-                : (simulationPreviewAll ? $"🔓 SIMULACIÓN N.E.X.A.  •  0 BAJAS" : "🔒 DERROTA EN COMBATE PARA DESBLOQUEAR");
+                ? $"[OK] DESBLOQUEADO  •  {kills} BAJA(S)"
+                : (simulationPreviewAll ? "♦ SIMULACIÓN N.E.X.A.  •  0 BAJAS" : "[!] ABATE EN COMBATE PARA VER");
             DrawStyledText(statusPill, statusTxt, 10, TextAnchor.MiddleCenter, statusCol);
 
             if (GUI.Button(cardScreen, GUIContent.none, GUIStyle.none))
@@ -1426,7 +1427,7 @@ public class VorstCodexUI : MonoBehaviour
         DrawCyberBox(viewPanel, new Color(0.02f, 0.04f, 0.09f, 0.95f), entry.ThemeColor, 2f);
 
         DrawStyledText(ScaleRect(556f, 134f, 504f, 28f),
-            "🔬 VISOR BIOMÉTRICO EN TIEMPO REAL",
+            "♦ VISOR BIOMÉTRICO EN TIEMPO REAL",
             17, TextAnchor.MiddleCenter, entry.ThemeColor);
 
         string subHeader = unlocked
@@ -1545,14 +1546,14 @@ public class VorstCodexUI : MonoBehaviour
             Rect lockOverlay = ScaleRect(584f, 360f, 448f, 126f);
             DrawCyberBox(lockOverlay, new Color(0.02f, 0.04f, 0.10f, 0.95f), new Color(1f, 0.68f, 0.22f), 2f);
             DrawStyledText(ScaleRect(596f, 370f, 424f, 44f),
-                "🔒 ESPÉCIMEN NO ABATIDO EN COMBATE\nDerrota a esta criatura en campaña o activa la Simulación N.E.X.A.",
+                "[!] ESPÉCIMEN NO ABATIDO EN COMBATE\nDerrota a esta criatura en campaña o activa la Simulación N.E.X.A.",
                 13, TextAnchor.MiddleCenter, new Color(1f, 0.84f, 0.35f), true);
 
             if (DrawCyberButton(
                 new Rect(638f, 426f, 340f, 46f),
                 texBtnEmerald,
-                "🔓 PREVISUALIZAR CON SIMULACIÓN N.E.X.A.",
-                "", 13, 10, Color.white, Color.white, new Color(0.22f, 0.94f, 0.62f)))
+                "PREVISUALIZAR CON SIMULACIÓN N.E.X.A.",
+                "", 12, 10, Color.white, Color.white, new Color(0.22f, 0.94f, 0.62f)))
             {
                 ToggleSimulationPreviewMode();
             }
@@ -1560,13 +1561,13 @@ public class VorstCodexUI : MonoBehaviour
 
         // Controles del Reproductor de Animaciones
         DrawStyledText(ScaleRect(560f, 654f, 496f, 24f),
-            "🎬 CONTROL DE SECUENCIA DE ANIMACIÓN [◀ A/D ▶  |  1-2-3]",
+            "CONTROL DE SECUENCIA DE ANIMACIÓN [◄ A/D ►  |  1-2-3]",
             13, TextAnchor.MiddleCenter, new Color(0.80f, 0.92f, 1f));
 
         if (DrawCyberButton(
             new Rect(560f, 684f, 158f, 54f),
             selectedAnimState == CodexAnimState.Walk ? texBtnEmerald : texBtnCyan,
-            "1. CAMINAR", "LOCOMOCIÓN", 14, 10,
+            "1. CAMINAR", "LOCOMOCIÓN", 13, 10,
             Color.white, new Color(0.82f, 0.96f, 1f), entry.ThemeColor))
         {
             SetAnimState(CodexAnimState.Walk);
@@ -1575,7 +1576,7 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(729f, 684f, 158f, 54f),
             selectedAnimState == CodexAnimState.Attack ? texBtnCrimson : texBtnCyan,
-            "2. ATAQUE", "PATRÓN OFENSIVO", 14, 10,
+            "2. ATAQUE", "PATRÓN OFENSIVO", 13, 10,
             Color.white, new Color(1f, 0.84f, 0.84f), entry.ThemeColor))
         {
             SetAnimState(CodexAnimState.Attack);
@@ -1584,7 +1585,7 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(898f, 684f, 158f, 54f),
             selectedAnimState == CodexAnimState.Die ? texBtnGold : texBtnCyan,
-            "3. COLAPSO", "NEUTRALIZACIÓN", 14, 10,
+            "3. COLAPSO", "NEUTRALIZACIÓN", 13, 10,
             Color.white, new Color(1f, 0.88f, 0.45f), entry.ThemeColor))
         {
             SetAnimState(CodexAnimState.Die);
@@ -1594,8 +1595,8 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(560f, 748f, 158f, 46f),
             animPaused ? texBtnGold : texBtnPurple,
-            animPaused ? "▶ REANUDAR [ESP]" : "❚❚ PAUSAR [ESP]",
-            "", 13, 10, Color.white, Color.white, entry.ThemeColor))
+            animPaused ? "► REANUDAR" : "|| PAUSAR [ESP]",
+            "", 12, 10, Color.white, Color.white, entry.ThemeColor))
         {
             animPaused = !animPaused;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -1604,8 +1605,8 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(729f, 748f, 158f, 46f),
             texBtnCyan,
-            "⏭ SIG. CUADRO",
-            "", 13, 10, Color.white, Color.white, entry.ThemeColor))
+            "SIG. CUADRO ►►",
+            "", 12, 10, Color.white, Color.white, entry.ThemeColor))
         {
             animPaused = true;
             currentFrameIndex = (currentFrameIndex + 1) % Mathf.Max(1, totalFrames);
@@ -1615,8 +1616,8 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(898f, 748f, 158f, 46f),
             texBtnCyan,
-            flipSpriteHorizontal ? "⇄ VISTA: IZQ [F]" : "⇄ VISTA: DER [F]",
-            "", 13, 10, Color.white, Color.white, entry.ThemeColor))
+            flipSpriteHorizontal ? "↔ VISTA: IZQ [F]" : "↔ VISTA: DER [F]",
+            "", 12, 10, Color.white, Color.white, entry.ThemeColor))
         {
             flipSpriteHorizontal = !flipSpriteHorizontal;
             if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
@@ -1626,7 +1627,7 @@ public class VorstCodexUI : MonoBehaviour
         Rect threatBox = ScaleRect(560f, 808f, 496f, 142f);
         DrawCyberBox(threatBox, new Color(0.03f, 0.05f, 0.12f, 0.96f), entry.ThemeColor, 1.5f);
         DrawStyledText(ScaleRect(576f, 818f, 464f, 24f),
-            $"⚠ CLASIFICACIÓN DE AMENAZA: {entry.ThreatLevelText}",
+            $"[!] CLASIFICACIÓN DE AMENAZA: {entry.ThreatLevelText}",
             13, TextAnchor.MiddleLeft, entry.ThemeColor);
 
         // 6 bloques de intensidad de amenaza
@@ -1649,11 +1650,11 @@ public class VorstCodexUI : MonoBehaviour
         if (DrawCyberButton(
             new Rect(576f, 904f, 464f, 36f),
             texBtnEmerald,
-            $"⚔ REGISTRAR BAJA DE PRUEBA EN CÓDICE (+1 {entry.DisplayName.ToUpper()})",
-            "", 12, 9, Color.white, Color.white, new Color(0.20f, 0.92f, 0.56f)))
+            $"[+] REGISTRAR BAJA DE PRUEBA (+1 {entry.DisplayName.ToUpper()})",
+            "", 11, 9, Color.white, Color.white, new Color(0.20f, 0.92f, 0.56f)))
         {
             RegisterSpeciesKill(entry.SpeciesId, Vector3.zero, false);
-            ShowNotification($"✔ Baja registrada: {entry.DisplayName} desbloqueado y actualizado en el Códice.", entry.ThemeColor);
+            ShowNotification($"[OK] Baja registrada: {entry.DisplayName} desbloqueado y actualizado en el Códice.", entry.ThemeColor);
         }
     }
 
@@ -1688,14 +1689,14 @@ public class VorstCodexUI : MonoBehaviour
         // Contador Destacado de Récord de Bajas
         Rect killsBadge = ScaleRect(1608f, 146f, 208f, 66f);
         DrawCyberBox(killsBadge, new Color(0.02f, 0.05f, 0.11f, 0.98f), new Color(1f, 0.82f, 0.22f), 1.5f);
-        DrawStyledText(ScaleRect(1614f, 150f, 196f, 20f), "☠ RÉCORD DE BAJAS", 12, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.22f));
+        DrawStyledText(ScaleRect(1614f, 150f, 196f, 20f), "♦ RÉCORD DE BAJAS", 12, TextAnchor.MiddleCenter, new Color(1f, 0.82f, 0.22f));
         DrawStyledText(ScaleRect(1614f, 170f, 196f, 24f), $"{totalKills} ABATIDOS", 18, TextAnchor.MiddleCenter, Color.white);
         DrawStyledText(ScaleRect(1614f, 192f, 196f, 16f), $"Partida actual: {sessionKills}", 11, TextAnchor.MiddleCenter, new Color(0.24f, 0.94f, 0.62f));
 
         // Sección 1: Origen Alienígena
         DrawDossierFieldCard(
             new Rect(1112f, 232f, 716f, 92f),
-            "🌌 ORIGEN ALIENÍGENA Y PROCEDENCIA",
+            "♦ ORIGEN ALIENÍGENA Y PROCEDENCIA",
             inspectable ? entry.AlienOrigin : "[DATOS ENCRIPTADOS — DERROTA AL ESPÉCIMEN EN COMBATE O ACTIVA SIMULACIÓN N.E.X.A.]",
             entry.ThemeColor,
             inspectable ? Color.white : new Color(0.55f, 0.68f, 0.82f)
@@ -1704,7 +1705,7 @@ public class VorstCodexUI : MonoBehaviour
         // Sección 2: Tipo de Blindaje
         DrawDossierFieldCard(
             new Rect(1112f, 334f, 716f, 92f),
-            "🛡 COMPOSICIÓN DE BLINDAJE Y DEFENSA",
+            "♦ COMPOSICIÓN DE BLINDAJE Y DEFENSA",
             inspectable ? entry.ArmorType : "[ANÁLISIS ESTRUCTURAL PENDIENTE DE CAPTURA EN COMBATE]",
             new Color(0.22f, 0.90f, 1f),
             inspectable ? Color.white : new Color(0.55f, 0.68f, 0.82f)
@@ -1713,7 +1714,7 @@ public class VorstCodexUI : MonoBehaviour
         // Sección 3: Puntos Débiles Corporales
         DrawDossierFieldCard(
             new Rect(1112f, 436f, 716f, 98f),
-            "🎯 PUNTOS DÉBILES CORPORALES DETECTADOS",
+            "♦ PUNTOS DÉBILES CORPORALES DETECTADOS",
             inspectable ? entry.BodyWeakPoints : "[ESCÁNER ANATÓMICO BLOQUEADO — REQUIERE MUESTRA DE COMBATE]",
             new Color(1f, 0.42f, 0.32f),
             inspectable ? new Color(1f, 0.92f, 0.86f) : new Color(0.55f, 0.68f, 0.82f)
@@ -1722,7 +1723,7 @@ public class VorstCodexUI : MonoBehaviour
         // Sección 4: Debilidades Elementales (Guantelete Nexo)
         DrawDossierFieldCard(
             new Rect(1112f, 544f, 716f, 98f),
-            "⚡ DEBILIDAD ELEMENTAL Y CONTRAESTRATEGIA NEXO",
+            "♦ DEBILIDAD ELEMENTAL Y CONTRAESTRATEGIA NEXO",
             inspectable ? entry.ElementalWeakness : "[CONTRAESTRATEGIA ELEMENTAL CLASIFICADA]",
             new Color(1f, 0.82f, 0.22f),
             inspectable ? new Color(1f, 0.94f, 0.68f) : new Color(0.55f, 0.68f, 0.82f)
@@ -1738,7 +1739,7 @@ public class VorstCodexUI : MonoBehaviour
         GUI.color = Color.white;
 
         DrawStyledText(ScaleRect(1128f, 660f, 684f, 30f),
-            $"📡 {entry.DefenseDiaryTitle}",
+            $"■ {entry.DefenseDiaryTitle}",
             13, TextAnchor.MiddleLeft, new Color(0.24f, 0.94f, 1f));
 
         string diaryBody = inspectable
@@ -1754,8 +1755,8 @@ public class VorstCodexUI : MonoBehaviour
         DrawCyberBox(diaryFooter, new Color(0.02f, 0.04f, 0.09f, 0.92f), entry.ThemeColor, 1f);
         string footerStatus = unlocked
             ? $"ESTADO DE INTELIGENCIA: VERIFICADO EN CAMPO ({totalKills} BAJA(S) REGISTRADAS POR KAEL)"
-            : "ESTADO DE INTELIGENCIA: SIMULACIÓN PREVENTIVA — DERROTA AL ENEMIGO EN CAMPAÑA PARA CONFIRMAR";
-        DrawStyledText(diaryFooter, footerStatus, 12, TextAnchor.MiddleCenter, unlocked ? new Color(0.22f, 0.96f, 0.58f) : new Color(1f, 0.82f, 0.28f));
+            : "ESTADO DE INTELIGENCIA: MODO SIMULACIÓN — ABATE AL ESPÉCIMEN EN CAMPAÑA PARA CONFIRMAR";
+        DrawStyledText(diaryFooter, footerStatus, 11, TextAnchor.MiddleCenter, unlocked ? new Color(0.22f, 0.96f, 0.58f) : new Color(1f, 0.82f, 0.28f));
     }
 
     void DrawDossierFieldCard(Rect baseRect, string title, string content, Color accentCol, Color textCol)
@@ -1786,7 +1787,7 @@ public class VorstCodexUI : MonoBehaviour
         }
 
         DrawStyledText(footerRect,
-            "<color=#38e1ff>[Q/E]</color> Pestañas de Zona   •   <color=#38e1ff>[▲/▼ o W/S]</color> Seleccionar Especie   •   <color=#ffd35c>[◀/▶ o A/D o 1-2-3]</color> Cambiar Animación   •   <color=#2ee678>[ESPACIO]</color> Pausar/Reanudar   •   <color=#38e1ff>[F]</color> Voltear   •   <color=#ffd35c>[TAB]</color> Simulación N.E.X.A.   •   <color=#ff5c77>[ESC]</color> Cerrar",
+            "<color=#38e1ff>[Q/E]</color> Pestañas de Zona   •   <color=#38e1ff>[▲/▼ o W/S]</color> Seleccionar Especie   •   <color=#ffd35c>[◄/► o A/D o 1-2-3]</color> Cambiar Animación   •   <color=#2ee678>[ESPACIO]</color> Pausar/Reanudar   •   <color=#38e1ff>[F]</color> Voltear   •   <color=#ffd35c>[TAB]</color> Simulación N.E.X.A.   •   <color=#ff5c77>[ESC]</color> Cerrar",
             13, TextAnchor.MiddleCenter, Color.white);
     }
 
@@ -1863,14 +1864,19 @@ public class VorstCodexUI : MonoBehaviour
             DrawCyberBox(r, hovered ? new Color(0.12f, 0.22f, 0.36f, 0.98f) : new Color(0.04f, 0.07f, 0.14f, 0.96f), hovered ? Color.white : fallbackBorder, 2f);
         }
 
+        float padL = (skinTex != null) ? 16f : 8f;
+        float padR = (skinTex != null) ? 12f : 8f;
+        float padB = (skinTex != null) ? 4f : 0f;
+
         if (string.IsNullOrEmpty(subText))
         {
-            DrawStyledText(r, mainText, mainFontSize, TextAnchor.MiddleCenter, hovered ? Color.white : mainCol);
+            Rect txtR = ScaleRect(baseRect.x + padL, baseRect.y + 2f, baseRect.width - padL - padR, baseRect.height - padB - 2f);
+            DrawStyledText(txtR, mainText, mainFontSize, TextAnchor.MiddleCenter, hovered ? Color.white : mainCol);
         }
         else
         {
-            Rect topR = ScaleRect(baseRect.x + 8f, baseRect.y + 4f, baseRect.width - 16f, baseRect.height * 0.54f);
-            Rect botR = ScaleRect(baseRect.x + 8f, baseRect.y + baseRect.height * 0.50f, baseRect.width - 16f, baseRect.height * 0.44f);
+            Rect topR = ScaleRect(baseRect.x + padL, baseRect.y + 4f, baseRect.width - padL - padR, (baseRect.height - padB) * 0.54f);
+            Rect botR = ScaleRect(baseRect.x + padL, baseRect.y + (baseRect.height - padB) * 0.50f, baseRect.width - padL - padR, (baseRect.height - padB) * 0.44f);
             DrawStyledText(topR, mainText, mainFontSize, TextAnchor.MiddleCenter, hovered ? Color.white : mainCol);
             DrawStyledText(botR, subText, subFontSize, TextAnchor.MiddleCenter, subCol);
         }

@@ -200,6 +200,11 @@ public class EndingCinematicController : MonoBehaviour
             GUI.color = Color.white;
         }
 
+        float padL = (btnTex != null) ? drawRect.width * 0.045f : 6f;
+        float padR = (btnTex != null) ? drawRect.width * 0.025f : 6f;
+        float padB = (btnTex != null) ? drawRect.height * 0.08f : 2f;
+        Rect textRect = new Rect(drawRect.x + padL, drawRect.y + 2f, drawRect.width - padL - padR, drawRect.height - padB - 2f);
+
         GUIStyle st = new GUIStyle(GUI.skin.label)
         {
             fontSize = fontSize,
@@ -207,9 +212,9 @@ public class EndingCinematicController : MonoBehaviour
             alignment = TextAnchor.MiddleCenter
         };
         st.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
-        GUI.Label(new Rect(drawRect.x + 2f, drawRect.y + 2f, drawRect.width, drawRect.height), label, st);
+        GUI.Label(new Rect(textRect.x + 2f, textRect.y + 2f, textRect.width, textRect.height), label, st);
         st.normal.textColor = hovered ? new Color(1f, 0.98f, 0.78f) : Color.white;
-        GUI.Label(drawRect, label, st);
+        GUI.Label(textRect, label, st);
 
         GUI.color = Color.clear;
         bool clicked = GUI.Button(drawRect, "");
@@ -245,7 +250,7 @@ public class EndingCinematicController : MonoBehaviour
             activeTex = texLight;
             panelPath = "StoryUI/Panel_Cyber_Cyan";
             portraitPath = "StoryUI/Portrait_Kael_Normal";
-            headerBadge = "☀ DESENLACE CANÓNICO I — SENDA DE LA PUREZA NEXO (COMPASIÓN > RIGOR)";
+            headerBadge = "♦ DESENLACE CANÓNICO I — SENDA DE LA PUREZA NEXO (COMPASIÓN > RIGOR)";
             mainTitle = "FINAL LUMINOSO: «EL HÉROE DE LA TIERRA»";
             slides = new string[]
             {
@@ -261,7 +266,7 @@ public class EndingCinematicController : MonoBehaviour
             activeTex = texDark;
             panelPath = "StoryUI/Panel_Cyber_Crimson";
             portraitPath = "StoryUI/Portrait_Kael_Shout";
-            headerBadge = "☣ DESENLACE CANÓNICO II — SENDA DE LA DISONANCIA VORST (RIGOR > COMPASIÓN)";
+            headerBadge = "♦ DESENLACE CANÓNICO II — SENDA DE LA DISONANCIA VORST (RIGOR > COMPASIÓN)";
             mainTitle = "FINAL OSCURO: «EL SEÑOR DE LA DISONANCIA»";
             slides = new string[]
             {
@@ -277,7 +282,7 @@ public class EndingCinematicController : MonoBehaviour
             activeTex = texNeutral;
             panelPath = "StoryUI/Panel_Cyber_Gold";
             portraitPath = "StoryUI/Portrait_Nexa_Normal";
-            headerBadge = "❖ DESENLACE CANÓNICO III — EQUILIBRIO SIMBIÓTICO (COMPASIÓN == RIGOR)";
+            headerBadge = "♦ DESENLACE CANÓNICO III — EQUILIBRIO SIMBIÓTICO (COMPASIÓN == RIGOR)";
             mainTitle = "FINAL NEUTRAL: «EL ÚLTIMO LEGADO DE N.E.X.A.»";
             slides = new string[]
             {
@@ -288,27 +293,27 @@ public class EndingCinematicController : MonoBehaviour
             epilogueQuote = "«TRANSMISIÓN FINAL DE N.E.X.A.: Protocolo de protección completado al 100%. Hasta siempre, compañero.»";
         }
 
-        // Cabecera superior
+        // Cabecera superior centrada en su propia banda, libre del botón derecho de Salto Táctico
         GUIStyle badgeSt = new GUIStyle(GUI.skin.label)
         {
-            fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * sy)),
+            fontSize = Mathf.Max(12, Mathf.RoundToInt(15f * sy)),
             fontStyle = FontStyle.Bold,
             alignment = TextAnchor.MiddleCenter
         };
         badgeSt.normal.textColor = themeCol;
-        GUI.Label(new Rect(160f * sx, 16f * sy, 1600f * sx, 26f * sy), headerBadge, badgeSt);
+        GUI.Label(new Rect(270f * sx, 14f * sy, 1340f * sx, 24f * sy), headerBadge, badgeSt);
 
         GUIStyle titleSt = new GUIStyle(GUI.skin.label)
         {
-            fontSize = Mathf.Max(18, Mathf.RoundToInt(32f * sy)),
+            fontSize = Mathf.Max(18, Mathf.RoundToInt(30f * sy)),
             fontStyle = FontStyle.Bold,
             alignment = TextAnchor.MiddleCenter
         };
         titleSt.normal.textColor = Color.white;
-        GUI.Label(new Rect(160f * sx, 42f * sy, 1600f * sx, 42f * sy), mainTitle, titleSt);
+        GUI.Label(new Rect(270f * sx, 38f * sy, 1340f * sx, 42f * sy), mainTitle, titleSt);
 
-        // Marco Widescreen de la Ilustración Final (1380x560 escalado)
-        Rect artFrame = new Rect(270f * sx, 92f * sy, 1380f * sx, 560f * sy);
+        // Marco Widescreen de la Ilustración Final (1380x560 sin deformación de aspecto)
+        Rect artFrame = new Rect(270f * sx, 90f * sy, 1380f * sx, 560f * sy);
         GUI.color = themeCol;
         GUI.DrawTexture(new Rect(artFrame.x - 3f, artFrame.y - 3f, artFrame.width + 6f, artFrame.height + 6f), Texture2D.whiteTexture);
         GUI.color = Color.black;
@@ -318,7 +323,13 @@ public class EndingCinematicController : MonoBehaviour
         if (activeTex != null)
         {
             float zoom = 1f + Mathf.PingPong(slideTimer * 0.015f, 0.05f);
-            Rect uv = new Rect((1f - 1f / zoom) * 0.5f, (1f - 1f / zoom) * 0.5f, 1f / zoom, 1f / zoom);
+            float texAspect = (float)activeTex.width / Mathf.Max(1f, activeTex.height);
+            float frameAspect = artFrame.width / Mathf.Max(1f, artFrame.height);
+            float uvW = 1f / zoom;
+            float uvH = 1f / zoom;
+            if (frameAspect > texAspect) uvH *= (texAspect / frameAspect);
+            else uvW *= (frameAspect / texAspect);
+            Rect uv = new Rect((1f - uvW) * 0.5f, (1f - uvH) * 0.5f, uvW, uvH);
             GUI.DrawTextureWithTexCoords(artFrame, activeTex, uv);
         }
 
@@ -328,8 +339,8 @@ public class EndingCinematicController : MonoBehaviour
         GUI.DrawTexture(new Rect(artFrame.x, scanY, artFrame.width, 2f), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
-        // Panel narrativo inferior biselado
-        Rect narrativeBox = new Rect(270f * sx, 668f * sy, 1380f * sx, 214f * sy);
+        // Panel narrativo inferior biselado con márgenes seguros
+        Rect narrativeBox = new Rect(250f * sx, 666f * sy, 1420f * sx, 220f * sy);
         Texture2D cyberPanel = PlayerStats.LoadResTex(panelPath);
         if (cyberPanel != null)
         {
@@ -346,8 +357,8 @@ public class EndingCinematicController : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        // Retrato a la izquierda del cuadro narrativo
-        Rect portRect = new Rect(narrativeBox.x + 22f * sx, narrativeBox.y + 22f * sy, 148f * sx, 148f * sy);
+        // Retrato a la izquierda del cuadro narrativo (holgado dentro del bisel)
+        Rect portRect = new Rect(narrativeBox.x + 30f * sx, narrativeBox.y + 32f * sy, 156f * sx, 156f * sy);
         GUI.color = themeCol;
         GUI.DrawTexture(new Rect(portRect.x - 2f, portRect.y - 2f, portRect.width + 4f, portRect.height + 4f), Texture2D.whiteTexture);
         GUI.color = new Color(0.03f, 0.05f, 0.11f, 1f);
@@ -373,42 +384,50 @@ public class EndingCinematicController : MonoBehaviour
             CompanionDialogueManager.Instance.PlaySyntheticVoiceTick(voiceKey, visibleChars);
         }
 
+        float textX = narrativeBox.x + 208f * sx;
+        float textW = narrativeBox.width - 240f * sx;
+
         GUIStyle bodySt = new GUIStyle(GUI.skin.label)
         {
-            fontSize = Mathf.Max(13, Mathf.RoundToInt(20f * sy)),
+            fontSize = Mathf.Max(13, Mathf.RoundToInt(19f * sy)),
             fontStyle = FontStyle.Bold,
             wordWrap = true,
             alignment = TextAnchor.UpperLeft
         };
         bodySt.normal.textColor = Color.white;
-        GUI.Label(new Rect(narrativeBox.x + 190f * sx, narrativeBox.y + 24f * sy, 1160f * sx, 112f * sy), shownText, bodySt);
+        GUI.Label(new Rect(textX, narrativeBox.y + 26f * sy, textW, 114f * sy), shownText, bodySt);
+
+        GUI.color = new Color(themeCol.r, themeCol.g, themeCol.b, 0.30f);
+        GUI.DrawTexture(new Rect(textX, narrativeBox.y + 146f * sy, textW, 2f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
 
         GUIStyle quoteSt = new GUIStyle(GUI.skin.label)
         {
             fontSize = Mathf.Max(12, Mathf.RoundToInt(15f * sy)),
             fontStyle = FontStyle.Italic,
+            wordWrap = true,
             alignment = TextAnchor.MiddleLeft
         };
         quoteSt.normal.textColor = themeCol;
-        GUI.Label(new Rect(narrativeBox.x + 190f * sx, narrativeBox.y + 148f * sy, 1160f * sx, 40f * sy), epilogueQuote, quoteSt);
+        GUI.Label(new Rect(textX, narrativeBox.y + 154f * sy, textW, 44f * sy), epilogueQuote, quoteSt);
 
-        int btnFont = Mathf.Max(12, Mathf.RoundToInt(16f * sy));
+        int btnFont = Mathf.Max(12, Mathf.RoundToInt(15f * sy));
 
-        // Botón superior derecho de Salto Táctico (Omitir cinemática)
+        // Botón superior derecho de Salto Táctico (fuera del título)
         if (DrawEndingCyberButton(
-            new Rect(1370f * sx, 26f * sy, 280f * sx, 44f * sy),
-            "⏭ SALTO TÁCTICO [ESC]",
+            new Rect(1620f * sx, 22f * sy, 260f * sx, 48f * sy),
+            "SALTO TÁCTICO [ESC] ►►",
             "StoryUI/Btn_Cyber_Crimson",
             new Color(1f, 0.35f, 0.45f),
-            Mathf.Max(11, Mathf.RoundToInt(14f * sy))))
+            Mathf.Max(11, Mathf.RoundToInt(13f * sy))))
         {
             SkipEndingToMenu();
         }
 
         // Botón principal de avance de página
         if (DrawEndingCyberButton(
-            new Rect(270f * sx, 902f * sy, 300f * sx, 56f * sy),
-            $"SIGUIENTE PÁGINA ({currentSlide + 1}/3) ▶",
+            new Rect(250f * sx, 902f * sy, 320f * sx, 58f * sy),
+            $"SIGUIENTE PÁGINA ({currentSlide + 1}/3) ►",
             "StoryUI/Btn_Cyber_Cyan",
             new Color(0.2f, 0.95f, 1f),
             btnFont))
@@ -426,8 +445,8 @@ public class EndingCinematicController : MonoBehaviour
 
         // Botones para previsualizar cualquiera de los 3 finales en vivo
         if (DrawEndingCyberButton(
-            new Rect(590f * sx, 902f * sy, 235f * sx, 56f * sy),
-            "☀ FINAL LUMINOSO",
+            new Rect(586f * sx, 902f * sy, 244f * sx, 58f * sy),
+            "♦ FINAL LUMINOSO",
             "StoryUI/Btn_Cyber_Gold",
             new Color(1f, 0.82f, 0.25f),
             btnFont))
@@ -436,8 +455,8 @@ public class EndingCinematicController : MonoBehaviour
         }
 
         if (DrawEndingCyberButton(
-            new Rect(840f * sx, 902f * sy, 235f * sx, 56f * sy),
-            "☣ FINAL OSCURO",
+            new Rect(844f * sx, 902f * sy, 244f * sx, 58f * sy),
+            "♦ FINAL OSCURO",
             "StoryUI/Btn_Cyber_Crimson",
             new Color(1f, 0.25f, 0.45f),
             btnFont))
@@ -446,8 +465,8 @@ public class EndingCinematicController : MonoBehaviour
         }
 
         if (DrawEndingCyberButton(
-            new Rect(1090f * sx, 902f * sy, 235f * sx, 56f * sy),
-            "❖ FINAL NEUTRAL",
+            new Rect(1102f * sx, 902f * sy, 244f * sx, 58f * sy),
+            "♦ FINAL NEUTRAL",
             "StoryUI/Btn_Cyber_Purple",
             new Color(0.75f, 0.35f, 1f),
             btnFont))
@@ -456,8 +475,8 @@ public class EndingCinematicController : MonoBehaviour
         }
 
         if (DrawEndingCyberButton(
-            new Rect(1345f * sx, 902f * sy, 305f * sx, 56f * sy),
-            "🏠 MENÚ PRINCIPAL",
+            new Rect(1360f * sx, 902f * sy, 310f * sx, 58f * sy),
+            "⌂ MENÚ PRINCIPAL",
             "StoryUI/Btn_Cyber_Emerald",
             new Color(0.25f, 0.95f, 0.55f),
             btnFont))

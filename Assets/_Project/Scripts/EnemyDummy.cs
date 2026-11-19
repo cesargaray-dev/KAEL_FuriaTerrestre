@@ -573,7 +573,7 @@ public class EnemyDummy : MonoBehaviour
                 CombatVFXManager.Instance.SpawnFireBurnTickVFX(fxPos);
                 CombatVFXManager.Instance.SpawnFloatingText(
                     fxPos + new Vector3(UnityEngine.Random.Range(-0.22f, 0.22f), 0.35f, 0f),
-                    $"🔥 -{Mathf.RoundToInt(ch.damagePerTick)}",
+                    $"♦ -{Mathf.RoundToInt(ch.damagePerTick)}",
                     new Color(1f, 0.42f, 0.14f), 14, 0.48f);
             }
             else
@@ -746,7 +746,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            string warn = isMiniBoss ? "⚠ ¡VÓRTICE PSIÓNICO SUPREMO!" : "⚠ ¡DESCARGA PSIÓNICA VORST!";
+            string warn = isMiniBoss ? "[!] ¡VÓRTICE PSIÓNICO SUPREMO!" : "[!] ¡DESCARGA PSIÓNICA VORST!";
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, warn, new Color(0.85f, 0.25f, 1f), 19, 0.9f);
         }
 
@@ -853,7 +853,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            string txt = isMiniBoss ? "⚠ ¡MISILES PSIÓNICOS DEL ARCONTE!" : "⚠ ¡DESCARGA DE DARDOS VORST!";
+            string txt = isMiniBoss ? "[!] ¡MISILES PSIÓNICOS DEL ARCONTE!" : "[!] ¡DESCARGA DE DARDOS VORST!";
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, txt, new Color(0.90f, 0.20f, 1f), 19, 0.9f);
         }
 
@@ -944,7 +944,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            string txt = isMiniBoss ? "⚠ ¡TORBELLINO Y OLA DE PLASMA TERRESTRE!" : "⚠ ¡LLAMA OSCURA TERRESTRE VORST!";
+            string txt = isMiniBoss ? "[!] ¡TORBELLINO Y OLA DE PLASMA TERRESTRE!" : "[!] ¡LLAMA OSCURA TERRESTRE VORST!";
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.9f, txt, new Color(0.95f, 0.15f, 0.70f), 20, 1.0f);
         }
 
@@ -1095,7 +1095,7 @@ public class EnemyDummy : MonoBehaviour
     private IEnumerator BioHulkChestLaserRoutine()
     {
         return ExecuteCustomLaserRoutine(
-            "⚠ ¡CAÑÓN LÁSER DE CRISÁLIDA!",
+            "[!] ¡CAÑÓN LÁSER DE CRISÁLIDA!",
             new Color(0.20f, 0.95f, 0.40f),
             1.15f,
             0.50f,
@@ -1108,7 +1108,7 @@ public class EnemyDummy : MonoBehaviour
     private IEnumerator PraetorianMarksmanLaserRoutine()
     {
         return ExecuteCustomLaserRoutine(
-            "⚠ ¡DISPARO DE FRANCOTIRADOR!",
+            "[!] ¡DISPARO DE FRANCOTIRADOR!",
             new Color(0.85f, 0.30f, 1.0f),
             0.96f,
             0.62f,
@@ -1232,7 +1232,7 @@ public class EnemyDummy : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 1.7f,
-                "⚠ ¡CICLÓN DE TENTÁCULOS!",
+                "[!] ¡CICLÓN DE TENTÁCULOS!",
                 new Color(0.20f, 0.90f, 1f),
                 19,
                 0.9f
@@ -1433,7 +1433,7 @@ public class EnemyDummy : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            string txt = isEnraged ? "⚠ ¡CAÑÓN LÁSER PESADO OVERCLOCK!" : "⚠ ¡DESCARGA DEL REACTOR PECTORAL!";
+            string txt = isEnraged ? "[!] ¡CAÑÓN LÁSER PESADO OVERCLOCK!" : "[!] ¡DESCARGA DEL REACTOR PECTORAL!";
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.1f, txt, new Color(1f, 0.15f, 0.45f), 22, 1.1f);
         }
         if (LevelAudioManager.Instance != null)
@@ -1556,7 +1556,7 @@ public class EnemyDummy : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.1f,
-                "⚠ ¡SALTO METEORITO SÍSMICO!",
+                "[!] ¡SALTO METEORITO SÍSMICO!",
                 new Color(1f, 0.35f, 0.15f), 22, 1.1f
             );
             CombatVFXManager.Instance.ShakeCamera(0.25f, 0.12f);
@@ -1727,7 +1727,7 @@ public class EnemyDummy : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.1f,
-                "⚠ ¡TAJO CRUZADO EN X!",
+                "[!] ¡TAJO CRUZADO EN X!",
                 new Color(1f, 0.50f, 0.12f),
                 20,
                 0.8f
@@ -1815,7 +1815,7 @@ public class EnemyDummy : MonoBehaviour
         if (CombatVFXManager.Instance != null)
         {
             CombatVFXManager.Instance.TriggerBossWarning(
-                "⚠ ¡SOBRECARGA DEL NÚCLEO: FASE 2 MECHA BERSERKER! ⚠",
+                "[!] ¡SOBRECARGA DEL NÚCLEO: FASE 2 MECHA BERSERKER! [!]",
                 "VORTEX-OMEGA DESATA SU PROTOCOLO DE EXTERMINIO OVERCLOCK",
                 3.2f
             );
@@ -2043,11 +2043,11 @@ public class EnemyDummy : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            string warnTxt = "⚠ ¡PUÑO DEMOLEDOR!";
-            if (visualType == "HiveInquisitor") warnTxt = "⚠ ¡PULSO PSIÓNICO VORST!";
-            else if (visualType == "VortexOmega") warnTxt = "⚠ ¡IMPACTO SÍSMICO DE CADENAS DE ESTASIS!";
-            else if (visualType == "BioHulk") warnTxt = "⚠ ¡APLASTAMIENTO DE CRISÁLIDA!";
-            else if (isBoss) warnTxt = "⚠ ¡DESCARGA PSIÓNICA!";
+            string warnTxt = "[!] ¡PUÑO DEMOLEDOR!";
+            if (visualType == "HiveInquisitor") warnTxt = "[!] ¡PULSO PSIÓNICO VORST!";
+            else if (visualType == "VortexOmega") warnTxt = "[!] ¡IMPACTO SÍSMICO DE CADENAS DE ESTASIS!";
+            else if (visualType == "BioHulk") warnTxt = "[!] ¡APLASTAMIENTO DE CRISÁLIDA!";
+            else if (isBoss) warnTxt = "[!] ¡DESCARGA PSIÓNICA!";
 
             CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.5f, warnTxt, new Color(1f, 0.55f, 0.1f), 19, 1.0f);
         }
@@ -2235,7 +2235,7 @@ public class EnemyDummy : MonoBehaviour
             {
                 CombatVFXManager.Instance.TriggerScreenFlash(Color.white, 0.85f);
                 CombatVFXManager.Instance.ShakeCamera(2.5f, 0.28f);
-                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.0f, "☠ ¡COLAPSO CATASTRÓFICO DE NÚCLEO! ☠", new Color(1f, 0.2f, 0.35f), 26, 2.2f);
+                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.0f, "[!] ¡COLAPSO CATASTRÓFICO DE NÚCLEO! [!]", new Color(1f, 0.2f, 0.35f), 26, 2.2f);
             }
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
 
@@ -2315,7 +2315,7 @@ public class EnemyDummy : MonoBehaviour
             if (CombatVFXManager.Instance != null)
             {
                 CombatVFXManager.Instance.SpawnLootDrop(transform.position, finalGold, expReward, true);
-                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, "★ VORTEX-OMEGA ANIQUILADO ★", new Color(1f, 0.85f, 0.2f), 26, 2.5f);
+                CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 1.8f, "♦ VORTEX-OMEGA ANIQUILADO ♦", new Color(1f, 0.85f, 0.2f), 26, 2.5f);
             }
 
             // Smoldering Wreckage Hold: subtle rising embers for 1.5 seconds
@@ -2418,13 +2418,13 @@ public class EnemyDummy : MonoBehaviour
                 if (stunTimer > 0f)
                 {
                     statusStyle.normal.textColor = new Color(0.25f, 0.98f, 1f);
-                    GUI.Label(new Rect(statusScreen.x - 110f, sy - 16f, 220f, 28f), $"⚡ ATURDIDO ({stunTimer:F1}s) ⚡", statusStyle);
+                    GUI.Label(new Rect(statusScreen.x - 140f, sy - 16f, 280f, 28f), $"♦ ATURDIDO ({stunTimer:F1}s) ♦", statusStyle);
                 }
                 if (fireBurn.timer > 0f)
                 {
                     float yOff = stunTimer > 0f ? -38f : -16f;
                     statusStyle.normal.textColor = new Color(1f, 0.48f, 0.14f);
-                    GUI.Label(new Rect(statusScreen.x - 110f, sy + yOff, 220f, 28f), $"🔥 COMBUSTIÓN ({fireBurn.timer:F1}s)", statusStyle);
+                    GUI.Label(new Rect(statusScreen.x - 140f, sy + yOff, 280f, 28f), $"♦ COMBUSTIÓN ({fireBurn.timer:F1}s) ♦", statusStyle);
                 }
             }
         }
@@ -2454,7 +2454,7 @@ public class EnemyDummy : MonoBehaviour
             titleStyle.fontStyle = FontStyle.Bold;
             titleStyle.fontSize = PlayerStats.ScaleFont(15);
 
-            string bossTxt = hasEnteredRagePhase ? $"🔥 {enemyTitle.ToUpper()} [FURIA] 🔥" : $"☠ {enemyTitle.ToUpper()} ☠";
+            string bossTxt = hasEnteredRagePhase ? $"[!] {enemyTitle.ToUpper()} [FURIA] [!]" : $"♦ {enemyTitle.ToUpper()} ♦";
             titleStyle.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
             GUI.Label(new Rect(titleRect.x + 1f, titleRect.y + 1f, titleRect.width, titleRect.height), bossTxt, titleStyle);
             titleStyle.normal.textColor = isBoss ? new Color(1f, 0.35f, 0.55f) : new Color(1f, 0.72f, 0.22f);

@@ -32,9 +32,19 @@ public class CompanionDialogueManager : MonoBehaviour
     private Queue<DialogueLine> lineQueue = new Queue<DialogueLine>();
     private DialogueLine currentLine;
     private bool isShowingDialogue = false;
+    public bool IsShowingDialogue => isShowingDialogue;
     private float charTimer = 0f;
     private int visibleChars = 0;
     private float autoAdvanceTimer = 0f;
+
+    public void ClearDialogue()
+    {
+        lineQueue.Clear();
+        isShowingDialogue = false;
+        visibleChars = 0;
+        charTimer = 0f;
+        autoAdvanceTimer = 0f;
+    }
 
     private HashSet<int> triggeredWaves = new HashSet<int>();
 
@@ -481,8 +491,8 @@ public class CompanionDialogueManager : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        // Panel del Retrato con marco luminoso
-        Rect portFrame = ScaleRect(512f, 110f, 142f, 142f);
+        // Panel del Retrato con marco luminoso (centrado en márgenes seguros del panel)
+        Rect portFrame = ScaleRect(516f, 112f, 138f, 138f);
         GUI.color = borderCol;
         GUI.DrawTexture(portFrame, Texture2D.whiteTexture);
         Rect portRect = new Rect(portFrame.x + 2f, portFrame.y + 2f, portFrame.width - 4f, portFrame.height - 4f);
@@ -517,20 +527,20 @@ public class CompanionDialogueManager : MonoBehaviour
         }
 
         // Nombre del hablante a resolución nativa
-        string speakerHeader = "📡 " + currentLine.speaker;
+        string speakerHeader = (isAlert ? "[!] " : "♦ ") + currentLine.speaker;
         if (!isKael && isCorruptMoral)
         {
-            speakerHeader += "  [⚠ GLITCH: SOBRECARGA VORST]";
+            speakerHeader += "  [GLITCH: SOBRECARGA VORST]";
         }
-        DrawStyledText(ScaleRect(672f, 108f, 736f, 32f), speakerHeader, 19, TextAnchor.MiddleLeft, borderCol, false);
+        DrawStyledText(ScaleRect(674f, 110f, 730f, 30f), speakerHeader, 18, TextAnchor.MiddleLeft, borderCol, false);
 
         // Texto con fuente nítida nativa
         string shownText = currentLine.text.Substring(0, Mathf.Clamp(visibleChars, 0, currentLine.text.Length));
-        DrawStyledText(ScaleRect(672f, 144f, 736f, 88f), shownText, 19, TextAnchor.UpperLeft, Color.white, true);
+        DrawStyledText(ScaleRect(674f, 144f, 730f, 86f), shownText, 18, TextAnchor.UpperLeft, Color.white, true);
 
         // Indicador de avance
-        string hintLabel = (visibleChars < currentLine.text.Length) ? "[Toca para completar]" : "[Toca para continuar ▶]";
-        DrawStyledText(ScaleRect(672f, 234f, 736f, 24f), hintLabel, 14, TextAnchor.MiddleRight, new Color(0.72f, 0.88f, 1f), false);
+        string hintLabel = (visibleChars < currentLine.text.Length) ? "[Toca para completar]" : "[Toca para continuar ►]";
+        DrawStyledText(ScaleRect(674f, 232f, 730f, 24f), hintLabel, 13, TextAnchor.MiddleRight, new Color(0.72f, 0.88f, 1f), false);
 
         if (GUI.Button(box, GUIContent.none, GUIStyle.none))
         {

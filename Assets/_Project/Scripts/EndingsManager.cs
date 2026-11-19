@@ -446,17 +446,17 @@ public class EndingsManager : MonoBehaviour
         switch (selectedEnding)
         {
             case EndingCinematicController.EndingType.Luminoso:
-                transitionTitle = "☀ CÁPSULA DE LÍA LIBERADA — SENDA: ARMONÍA HUMANA";
+                transitionTitle = "♦ CÁPSULA DE LÍA LIBERADA — SENDA: ARMONÍA HUMANA";
                 transitionSubtitle = "Pureza Nexo dominante: Kael purifica el corazón del Trono sin perder su humanidad.";
                 transitionColor = new Color(0.25f, 0.95f, 1f);
                 break;
             case EndingCinematicController.EndingType.Oscuro:
-                transitionTitle = "☣ TRONO ASIMILADO — SENDA: TIRANO VORST";
+                transitionTitle = "♦ TRONO ASIMILADO — SENDA: TIRANO VORST";
                 transitionSubtitle = "Disonancia dominante: El Guantelete absorbe al Soberano y corona un nuevo señor.";
                 transitionColor = new Color(1f, 0.22f, 0.45f);
                 break;
             default:
-                transitionTitle = "❖ NÚCLEO ESTABILIZADO — SENDA: SACRIFICIO NEXO";
+                transitionTitle = "♦ NÚCLEO ESTABILIZADO — SENDA: SACRIFICIO NEXO";
                 transitionSubtitle = "Equilibrio simbiótico: N.E.X.A. asume la sobrecarga para salvar a Kael y Lía.";
                 transitionColor = new Color(1f, 0.85f, 0.28f);
                 break;
@@ -530,8 +530,8 @@ public class EndingsManager : MonoBehaviour
         GUI.Label(new Rect(banner.x + 30f * sx, banner.y + 58f * sy, banner.width - 60f * sx, 42f * sy), transitionSubtitle, subStyle);
 
         // Botón de Salto Táctico inmediato durante el banner de transición
-        Rect skipBannerBtn = new Rect(1320f * sx, 304f * sy, 280f * sx, 42f * sy);
-        if (DrawTacticalButton(skipBannerBtn, "⏭ SALTO TÁCTICO [ESC]", "StoryUI/Btn_Cyber_Gold", transitionColor, Mathf.Max(11, Mathf.RoundToInt(14f * sy))))
+        Rect skipBannerBtn = new Rect(1320f * sx, 304f * sy, 280f * sx, 44f * sy);
+        if (DrawTacticalButton(skipBannerBtn, "SALTO TÁCTICO [ESC] ►►", "StoryUI/Btn_Cyber_Gold", transitionColor, Mathf.Max(11, Mathf.RoundToInt(14f * sy))))
         {
             SkipActiveCinematic();
         }
@@ -551,8 +551,8 @@ public class EndingsManager : MonoBehaviour
         Color themeCol = isVignette1 ? new Color(1f, 0.52f, 0.18f) : new Color(0.76f, 0.32f, 1f);
         Texture2D activeTex = isVignette1 ? texCoreBreach : texLiaCapsule;
         string headerBadge = isVignette1
-            ? "🔥 TRANSICIÓN CINEMÁTICA (NV.2 → NV.3) — INFILTRACIÓN EN LA NAVE NÚCLEO"
-            : "👁 TRANSICIÓN CINEMÁTICA (NV.3 → NV.4) — LA CÁPSULA DE LÍA Y LA SOMBRA DEL TRONO";
+            ? "♦ TRANSICIÓN CINEMÁTICA (NV.2 → NV.3) — INFILTRACIÓN EN LA NAVE NÚCLEO"
+            : "♦ TRANSICIÓN CINEMÁTICA (NV.3 → NV.4) — LA CÁPSULA DE LÍA Y LA SOMBRA DEL TRONO";
         string mainTitle = isVignette1
             ? "VIÑETA I: «BRECHA EN LLAMAS SOBRE LA COLMENA VORST»"
             : "VIÑETA II: «EL SANTUARIO DE LÍA Y EL SOBERANO SUPREMO»";
@@ -564,19 +564,19 @@ public class EndingsManager : MonoBehaviour
             alignment = TextAnchor.MiddleCenter
         };
         badgeSt.normal.textColor = themeCol;
-        GUI.Label(new Rect(160f * sx, 16f * sy, 1600f * sx, 26f * sy), headerBadge, badgeSt);
+        GUI.Label(new Rect(160f * sx, 14f * sy, 1600f * sx, 26f * sy), headerBadge, badgeSt);
 
         GUIStyle titleSt = new GUIStyle(GUI.skin.label)
         {
-            fontSize = Mathf.Max(18, Mathf.RoundToInt(31f * sy)),
+            fontSize = Mathf.Max(18, Mathf.RoundToInt(30f * sy)),
             fontStyle = FontStyle.Bold,
             alignment = TextAnchor.MiddleCenter
         };
         titleSt.normal.textColor = Color.white;
-        GUI.Label(new Rect(160f * sx, 42f * sy, 1600f * sx, 42f * sy), mainTitle, titleSt);
+        GUI.Label(new Rect(160f * sx, 40f * sy, 1600f * sx, 42f * sy), mainTitle, titleSt);
 
-        // Marco Widescreen HD (1380x560 escalado)
-        Rect artFrame = new Rect(270f * sx, 92f * sy, 1380f * sx, 560f * sy);
+        // Marco Widescreen HD (1380x560 escalado sin deformación de relación de aspecto)
+        Rect artFrame = new Rect(270f * sx, 90f * sy, 1380f * sx, 560f * sy);
         GUI.color = themeCol;
         GUI.DrawTexture(new Rect(artFrame.x - 3f, artFrame.y - 3f, artFrame.width + 6f, artFrame.height + 6f), Texture2D.whiteTexture);
         GUI.color = Color.black;
@@ -586,7 +586,13 @@ public class EndingsManager : MonoBehaviour
         if (activeTex != null)
         {
             float zoom = 1f + Mathf.PingPong(slideTimer * 0.016f, 0.045f);
-            Rect uv = new Rect((1f - 1f / zoom) * 0.5f, (1f - 1f / zoom) * 0.5f, 1f / zoom, 1f / zoom);
+            float texAspect = (float)activeTex.width / Mathf.Max(1f, activeTex.height);
+            float frameAspect = artFrame.width / Mathf.Max(1f, artFrame.height);
+            float uvW = 1f / zoom;
+            float uvH = 1f / zoom;
+            if (frameAspect > texAspect) uvH *= (texAspect / frameAspect);
+            else uvW *= (frameAspect / texAspect);
+            Rect uv = new Rect((1f - uvW) * 0.5f, (1f - uvH) * 0.5f, uvW, uvH);
             GUI.DrawTextureWithTexCoords(artFrame, activeTex, uv);
         }
 
@@ -603,7 +609,7 @@ public class EndingsManager : MonoBehaviour
         int visibleChars = Mathf.Clamp(Mathf.FloorToInt(slideTimer * CHARS_PER_SEC), 0, fullText.Length);
         string shownText = fullText.Substring(0, visibleChars);
 
-        Rect narrativeBox = new Rect(270f * sx, 668f * sy, 1380f * sx, 214f * sy);
+        Rect narrativeBox = new Rect(250f * sx, 666f * sy, 1420f * sx, 220f * sy);
         string panelPath = isVignette1 ? "StoryUI/Panel_Cyber_Gold" : "StoryUI/Panel_Cyber_Crimson";
         Texture2D cyberPanel = PlayerStats.LoadResTex(panelPath);
         if (cyberPanel != null)
@@ -621,8 +627,8 @@ public class EndingsManager : MonoBehaviour
             GUI.color = Color.white;
         }
 
-        // Retrato del hablante
-        Rect portRect = new Rect(narrativeBox.x + 22f * sx, narrativeBox.y + 22f * sy, 148f * sx, 148f * sy);
+        // Retrato del hablante con margen interior amplio dentro del bisel del panel
+        Rect portRect = new Rect(narrativeBox.x + 30f * sx, narrativeBox.y + 32f * sy, 156f * sx, 156f * sy);
         GUI.color = themeCol;
         GUI.DrawTexture(new Rect(portRect.x - 2f, portRect.y - 2f, portRect.width + 4f, portRect.height + 4f), Texture2D.whiteTexture);
         GUI.color = new Color(0.03f, 0.05f, 0.11f, 1f);
@@ -640,33 +646,48 @@ public class EndingsManager : MonoBehaviour
             GUI.DrawTexture(portRect, portTex, ScaleMode.ScaleToFit);
         }
 
+        float textX = narrativeBox.x + 208f * sx;
+        float textW = narrativeBox.width - 240f * sx;
         GUIStyle spkStyle = new GUIStyle(GUI.skin.label)
         {
-            fontSize = Mathf.Max(13, Mathf.RoundToInt(19f * sy)),
+            fontSize = Mathf.Max(13, Mathf.RoundToInt(18f * sy)),
             fontStyle = FontStyle.Bold,
             alignment = TextAnchor.MiddleLeft
         };
         spkStyle.normal.textColor = themeCol;
-        GUI.Label(new Rect(narrativeBox.x + 190f * sx, narrativeBox.y + 18f * sy, 1150f * sx, 28f * sy), "📡 " + speakers[idx], spkStyle);
+        GUI.Label(new Rect(textX, narrativeBox.y + 22f * sy, textW, 28f * sy), "♦ " + speakers[idx], spkStyle);
+
+        GUI.color = new Color(themeCol.r, themeCol.g, themeCol.b, 0.32f);
+        GUI.DrawTexture(new Rect(textX, narrativeBox.y + 52f * sy, textW, 2f), Texture2D.whiteTexture);
+        GUI.color = Color.white;
 
         GUIStyle bodySt = new GUIStyle(GUI.skin.label)
         {
-            fontSize = Mathf.Max(13, Mathf.RoundToInt(20f * sy)),
+            fontSize = Mathf.Max(13, Mathf.RoundToInt(19f * sy)),
             fontStyle = FontStyle.Bold,
             wordWrap = true,
             alignment = TextAnchor.UpperLeft
         };
         bodySt.normal.textColor = Color.white;
-        GUI.Label(new Rect(narrativeBox.x + 190f * sx, narrativeBox.y + 52f * sy, 1150f * sx, 118f * sy), shownText, bodySt);
+        GUI.Label(new Rect(textX, narrativeBox.y + 62f * sy, textW, 114f * sy), shownText, bodySt);
+
+        GUIStyle hintSt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.Max(11, Mathf.RoundToInt(13f * sy)),
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleLeft
+        };
+        hintSt.normal.textColor = new Color(0.66f, 0.84f, 0.98f);
+        GUI.Label(new Rect(textX, narrativeBox.y + 180f * sy, textW, 22f * sy), "► [ESPACIO / ENTER] Siguiente   •   [ESC] Salto Táctico", hintSt);
 
         int btnFont = Mathf.Max(12, Mathf.RoundToInt(16f * sy));
 
         // Botón de Avance de Acto
         string nextLabel = (idx < slides.Length - 1)
-            ? $"SIGUIENTE ACTO ({idx + 1}/{slides.Length}) [ESPACIO] ▶"
-            : "⚔ INICIAR DESPLIEGUE DE COMBATE ▶";
+            ? $"SIGUIENTE ACTO ({idx + 1}/{slides.Length}) [ESPACIO] ►"
+            : "INICIAR DESPLIEGUE DE COMBATE ►";
         if (DrawTacticalButton(
-            new Rect(270f * sx, 902f * sy, 480f * sx, 56f * sy),
+            new Rect(250f * sx, 902f * sy, 500f * sx, 58f * sy),
             nextLabel,
             "StoryUI/Btn_Cyber_Cyan",
             new Color(0.22f, 0.95f, 1f),
@@ -677,8 +698,8 @@ public class EndingsManager : MonoBehaviour
 
         // Botón de Salto Táctico (Requisito: permitir omitir cada transición cinemática)
         if (DrawTacticalButton(
-            new Rect(1190f * sx, 902f * sy, 460f * sx, 56f * sy),
-            "⏭ SALTO TÁCTICO — OMITIR CINEMÁTICA [ESC]",
+            new Rect(1170f * sx, 902f * sy, 500f * sx, 58f * sy),
+            "SALTO TÁCTICO — OMITIR CINEMÁTICA [ESC] ►►",
             "StoryUI/Btn_Cyber_Crimson",
             new Color(1f, 0.35f, 0.45f),
             btnFont))
@@ -717,6 +738,11 @@ public class EndingsManager : MonoBehaviour
             GUI.color = Color.white;
         }
 
+        float padL = (btnTex != null) ? drawRect.width * 0.045f : 6f;
+        float padR = (btnTex != null) ? drawRect.width * 0.025f : 6f;
+        float padB = (btnTex != null) ? drawRect.height * 0.08f : 2f;
+        Rect textRect = new Rect(drawRect.x + padL, drawRect.y + 2f, drawRect.width - padL - padR, drawRect.height - padB - 2f);
+
         GUIStyle st = new GUIStyle(GUI.skin.label)
         {
             fontSize = fontSize,
@@ -724,9 +750,9 @@ public class EndingsManager : MonoBehaviour
             alignment = TextAnchor.MiddleCenter
         };
         st.normal.textColor = new Color(0f, 0f, 0f, 0.92f);
-        GUI.Label(new Rect(drawRect.x + 2f, drawRect.y + 2f, drawRect.width, drawRect.height), label, st);
+        GUI.Label(new Rect(textRect.x + 2f, textRect.y + 2f, textRect.width, textRect.height), label, st);
         st.normal.textColor = hovered ? new Color(1f, 0.98f, 0.78f) : Color.white;
-        GUI.Label(drawRect, label, st);
+        GUI.Label(textRect, label, st);
 
         GUI.color = Color.clear;
         bool clicked = GUI.Button(drawRect, "");

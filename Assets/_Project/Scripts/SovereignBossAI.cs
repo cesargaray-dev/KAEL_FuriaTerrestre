@@ -518,7 +518,7 @@ public class NexusThroneroomEnvironment : MonoBehaviour
             CombatVFXManager.Instance.SpawnHealingParticles(kaelTransform != null ? kaelTransform.position : liaCapsuleTransform.position);
             CombatVFXManager.Instance.SpawnFloatingText(
                 liaCapsuleTransform.position + Vector3.up * 1.9f,
-                "💙 LÍA: «¡Resiste, Kael! Siento tu luz en el Guantelete...» (+15% HP / +25% ULT)",
+                "♦ LÍA: «¡Resiste, Kael! Siento tu luz en el Guantelete...» (+15% HP / +25% ULT)",
                 cCyan,
                 18,
                 2.0f
@@ -547,8 +547,8 @@ public class NexusThroneroomEnvironment : MonoBehaviour
         bool near = IsKaelNearCapsule();
         bool ready = Time.time >= nextCapsuleSyncTime;
 
-        float boxW = (near ? 340f : 270f) * sx;
-        float boxH = (near && ready ? 52f : 32f) * sy;
+        float boxW = (near ? 470f : 310f) * sx;
+        float boxH = (near && ready ? 48f : 34f) * sy;
         Rect r = new Rect(screenPos.x - boxW * 0.5f, (Screen.height - screenPos.y) - boxH, boxW, boxH);
         if (r.xMax < 0 || r.x > Screen.width || r.yMax < 0 || r.y > Screen.height) return;
 
@@ -567,8 +567,8 @@ public class NexusThroneroomEnvironment : MonoBehaviour
         st.normal.textColor = isPhase3Siphoning ? new Color(1f, 0.55f, 0.72f) : new Color(0.65f, 0.95f, 1f);
 
         string label = near
-            ? (ready ? "💠 CÁPSULA DE LÍA — PULSA [E] O TOCA PARA SINCRONIZAR NEXO" : $"💠 CÁPSULA DE LÍA — RECARGA ({Mathf.CeilToInt(nextCapsuleSyncTime - Time.time)}s)")
-            : "💠 CÁPSULA DE BIO-CONVERSIÓN: LÍA VANE";
+            ? (ready ? "♦ CÁPSULA DE LÍA — PULSA [E] O TOCA PARA SINCRONIZAR NEXO" : $"♦ CÁPSULA DE LÍA — RECARGA ({Mathf.CeilToInt(nextCapsuleSyncTime - Time.time)}s)")
+            : "♦ CÁPSULA DE BIO-CONVERSIÓN: LÍA VANE";
         GUI.Label(r, label, st);
 
         if (near && ready && GUI.Button(r, GUIContent.none, GUIStyle.none))
@@ -860,7 +860,7 @@ public class SovereignBossAI : MonoBehaviour
             CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 1.0f, new Color(1f, 0.85f, 0.25f), 3.4f);
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.4f,
-                "💥 ¡CAMPO DE FUERZA DESTROZADO POR SOBRECARGA NEXO! ¡VULNERABLE! 💥",
+                "♦ ¡CAMPO DE FUERZA DESTROZADO POR SOBRECARGA NEXO! ¡VULNERABLE! ♦",
                 new Color(0.32f, 0.98f, 1f),
                 24,
                 2.0f
@@ -907,7 +907,7 @@ public class SovereignBossAI : MonoBehaviour
             CombatVFXManager.Instance.ShakeCamera(1.6f, 0.30f);
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.2f,
-                "★ ¡SOBERANO SUPREMO VORST DERROTADO! ★",
+                "♦ ¡SOBERANO SUPREMO VORST DERROTADO! ♦",
                 new Color(1f, 0.88f, 0.25f),
                 26,
                 2.2f
@@ -1091,7 +1091,7 @@ public class SovereignBossAI : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.1f,
-                "⚠ ¡SALTO EN PICADA PRETORIANO! [ESQUIVA O PARRY S]",
+                "[!] ¡SALTO EN PICADA PRETORIANO! [ESQUIVA O PARRY S]",
                 new Color(1f, 0.38f, 0.25f),
                 21,
                 1.3f
@@ -1353,7 +1353,7 @@ public class SovereignBossAI : MonoBehaviour
 
         if (CombatVFXManager.Instance != null)
         {
-            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.1f, "⚡ ¡RÁFAGA CORTANTE EN ARCO!", new Color(0.86f, 0.35f, 1f), 19, 0.85f);
+            CombatVFXManager.Instance.SpawnFloatingText(transform.position + Vector3.up * 2.1f, "[!] ¡RÁFAGA CORTANTE EN ARCO!", new Color(0.86f, 0.35f, 1f), 19, 0.85f);
         }
 
         yield return new WaitForSeconds(0.24f);
@@ -1391,7 +1391,7 @@ public class SovereignBossAI : MonoBehaviour
         if (CombatVFXManager.Instance != null)
         {
             CombatVFXManager.Instance.TriggerBossWarning(
-                "⚡ FASE II: JUICIO PSIÓNICO DEL SOBERANO ⚡",
+                "♦ FASE II: JUICIO PSIÓNICO DEL SOBERANO ♦",
                 "PILARES ORBITALES EN EL SUELO — ¡ESQUIVA [A/D] O HAZ PARRY PERFECTO [S]!",
                 2.8f
             );
@@ -1436,7 +1436,7 @@ public class SovereignBossAI : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.15f,
-                "⚡ ¡JUICIO PSIÓNICO: PILARES ORBITALES! [ESQUIVA O PARRY S]",
+                "[!] ¡JUICIO PSIÓNICO: PILARES ORBITALES! [ESQUIVA O PARRY S]",
                 new Color(0.88f, 0.28f, 1f),
                 20,
                 1.2f
@@ -1507,7 +1507,7 @@ public class SovereignBossAI : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.25f,
-                "⚡ ¡RAYO DEL NÚCLEO SOBERANO! [ESQUIVA O PARRY S]",
+                "[!] ¡RAYO DEL NÚCLEO SOBERANO! [ESQUIVA O PARRY S]",
                 new Color(0.92f, 0.28f, 1f),
                 22,
                 1.1f
@@ -1572,7 +1572,7 @@ public class SovereignBossAI : MonoBehaviour
         if (CombatVFXManager.Instance != null)
         {
             CombatVFXManager.Instance.TriggerBossWarning(
-                "☣ FASE III: FUSIÓN CON EL NÚCLEO DE LÍA ☣",
+                "♦ FASE III: FUSIÓN CON EL NÚCLEO DE LÍA ♦",
                 "¡CONECTA COMBO x30 (SOBREMARCHA) Y DISPARA LA ULTIMATE [K] PARA QUEBRAR SU ESCUDO!",
                 3.4f
             );
@@ -1612,7 +1612,7 @@ public class SovereignBossAI : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.3f,
-                "⚔ ¡GUARDIA PRETORIANA, PROTEGED EL NÚCLEO! ⚔",
+                "♦ ¡GUARDIA PRETORIANA, PROTEGED EL NÚCLEO! ♦",
                 new Color(0.92f, 0.35f, 1f),
                 21,
                 1.5f
@@ -1933,7 +1933,7 @@ public class SovereignBossAI : MonoBehaviour
             int combo = (PlayerStats.Instance != null) ? PlayerStats.Instance.comboCount : 0;
             bool ultReady = (PlayerStats.Instance != null && PlayerStats.Instance.IsUltReady);
 
-            Rect bar = new Rect(460f * sx, 92f * sy, 1000f * sx, 44f * sy);
+            Rect bar = new Rect(390f * sx, 92f * sy, 1140f * sx, 46f * sy);
             GUI.color = new Color(0.08f, 0.02f, 0.16f, 0.92f);
             GUI.DrawTexture(bar, Texture2D.whiteTexture);
             GUI.color = (combo >= 30 && ultReady) ? new Color(0.28f, 0.98f, 1f, 0.96f) : new Color(0.84f, 0.25f, 1f, 0.96f);
@@ -1943,14 +1943,14 @@ public class SovereignBossAI : MonoBehaviour
 
             GUIStyle st = new GUIStyle(GUI.skin.label)
             {
-                fontSize = Mathf.Max(12, Mathf.RoundToInt(17f * sy)),
+                fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * sy)),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
             st.normal.textColor = (combo >= 30 && ultReady) ? new Color(0.32f, 1f, 1f) : new Color(1f, 0.85f, 0.35f);
             string msg = (combo >= 30 && ultReady)
-                ? $"⚡ ¡COMBO SOBREMARCHA x{combo} LISTO! ¡PULSA [K] PARA QUEBRAR EL CAMPO DE FUERZA CON SOBRECARGA NEXO!"
-                : $"🛡 CAMPO DE FUERZA FUSIÓN ACTIVO — COMBO: x{combo}/30  |  ULT: {Mathf.RoundToInt(PlayerStats.Instance != null ? PlayerStats.Instance.ultCharge : 0)}%  (GOLPEA Y DISPARA ULTIMATE [K])";
+                ? $"♦ ¡COMBO SOBREMARCHA x{combo} LISTO! ¡PULSA [K] PARA QUEBRAR EL CAMPO DE FUERZA!"
+                : $"♦ CAMPO DE FUERZA FUSIÓN ACTIVO — COMBO: x{combo}/30  |  ULT: {Mathf.RoundToInt(PlayerStats.Instance != null ? PlayerStats.Instance.ultCharge : 0)}%  (GOLPEA Y DISPARA ULTIMATE [K])";
             GUI.Label(bar, msg, st);
         }
     }

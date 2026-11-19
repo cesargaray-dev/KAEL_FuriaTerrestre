@@ -229,6 +229,61 @@ def map_frames_to_8(frames, state_name):
     return [frames[idx] for idx in indices]
 
 
+def extract_pose_x_bounds(row_arr, expected_count):
+    """
+    Finds non-overlapping horizontal [x1, x2) column slices by locating empty
+    vertical alpha gaps between poses instead of blind uniform grid slicing.
+    This prevents adjacent characters' noses/limbs/tentacles from bleeding into
+    neighboring frames ('portal effect').
+    """
+    w = row_arr.shape[1]
+    alpha_mask = row_arr[:, :, 3] > 0
+    col_proj = alpha_mask.sum(axis=0)
+
+    segs = []
+    in_seg = False
+    x0 = 0
+    for x, v in enumerate(col_proj):
+        if v > 0 and not in_seg:
+            in_seg = True
+            x0 = x
+        elif v == 0 and in_seg:
+            in_seg = False
+            area = int(col_proj[x0:x].sum())
+            if area >= 6:
+                segs.append([x0, x, area])
+    if in_seg:
+        area = int(col_proj[x0:w].sum())
+        if area >= 6:
+            segs.append([x0, w, area])
+
+    if len(segs) < expected_count:
+        col_w = w / float(expected_count)
+        return [(int(round(c * col_w)), int(round((c + 1) * col_w))) for c in range(expected_count)]
+
+    # Merge smallest-gap or tiny satellite segments down to exact expected_count
+    while len(segs) > expected_count:
+        best_i = 0
+        best_score = 1e12
+        for i in range(len(segs) - 1):
+            gap = segs[i + 1][0] - segs[i][1]
+            min_area = min(segs[i][2], segs[i + 1][2])
+            # Prefer merging small satellite particle clouds into their immediate neighbor
+            score = gap * (1.0 if min_area < 2500 else 3.0)
+            if score < best_score:
+                best_score = score
+                best_i = i
+        merged = [segs[best_i][0], segs[best_i + 1][1], segs[best_i][2] + segs[best_i + 1][2]]
+        segs[best_i:best_i + 2] = [merged]
+
+    bounds = []
+    for i in range(len(segs)):
+        x_start = 0 if i == 0 else (segs[i - 1][1] + segs[i][0]) // 2
+        x_end = w if i == len(segs) - 1 else (segs[i][1] + segs[i + 1][0]) // 2
+        bounds.append((x_start, x_end))
+    return bounds
+
+
 def clean_cell_slivers(cell_rgba, max_top_sliver_h=20, min_dust_size=35, max_side_sliver_w=0):
     """Removes stray pixels touching top/bottom/side borders from adjacent rows/columns and dust."""
     h, w, _ = cell_rgba.shape
@@ -654,9 +709,10 @@ def process_lasher():
     row_names = ["Walk", "Attack", "Tornado", "Die"]
     for row_idx, state_name in enumerate(row_names):
         row_arr = arr[row_idx * 256 : (row_idx + 1) * 256, :, :].copy()
+        pose_bounds = extract_pose_x_bounds(row_arr, 6)
         raw_frames = []
-        for c in range(6):
-            cell = row_arr[:, c * 256 : (c + 1) * 256, :].copy()
+        for x1, x2 in pose_bounds:
+            cell = row_arr[:, x1:x2, :].copy()
             if "attack" in state_name.lower() or "tornado" in state_name.lower():
                 fg_mask = cell[:, :, 3] > 0
                 filled = binary_fill_holes(fg_mask)
@@ -667,7 +723,8 @@ def process_lasher():
                     if h_sizes[hid] < 350:
                         cell[lbl_h == hid] = [252, 225, 255, 255]
 
-            cell = clean_cell_slivers(cell, max_top_sliver_h=16, min_dust_size=30)
+            dust_thresh = 10 if "die" in state_name.lower() else 30
+            cell = clean_cell_slivers(cell, max_top_sliver_h=16, min_dust_size=dust_thresh)
             ys, xs = np.where(cell[:, :, 3] > 0)
             if len(ys) == 0:
                 raw_frames.append(Image.new("RGBA", (256, 256), (0, 0, 0, 0)))
@@ -690,7 +747,7 @@ def process_lasher():
         for i, frame in enumerate(final_8):
             out_path = os.path.join(OUTPUT_DIR, f"BioLasher_{state_name}_{i}.png")
             frame.save(out_path, format="PNG")
-        print(f"  -> Generated 8 frames for BioLasher_{state_name} (256x256)")
+        print(f"  -> Generated 8 frames for BioLasher_{state_name} (256x256, gap-aware)")
 
 
 # ==============================================================================
@@ -705,19 +762,18 @@ def process_stalker():
 
     row_defs = [
         ("Walk", 21, 195, 6),
-        ("Attack", 401, 589, 6),
-        ("Die", 830, 988, 8),
+        ("Attack", 400, 590, 6),
+        ("Die", 830, 989, 8),
     ]
 
     for state_name, y1, y2, num_cols in row_defs:
         row_arr = arr[y1:y2, :, :].copy()
-        col_w = row_arr.shape[1] / float(num_cols)
+        pose_bounds = extract_pose_x_bounds(row_arr, num_cols)
         raw_frames = []
-        for c in range(num_cols):
-            x1 = int(round(c * col_w))
-            x2 = int(round((c + 1) * col_w))
+        for x1, x2 in pose_bounds:
             cell = row_arr[:, x1:x2, :].copy()
-            cell = clean_cell_slivers(cell, max_top_sliver_h=16, min_dust_size=30)
+            dust_thresh = 10 if "die" in state_name.lower() else 30
+            cell = clean_cell_slivers(cell, max_top_sliver_h=16, min_dust_size=dust_thresh)
             ys, xs = np.where(cell[:, :, 3] > 0)
             if len(ys) == 0:
                 raw_frames.append(Image.new("RGBA", (256, 256), (0, 0, 0, 0)))
@@ -740,7 +796,7 @@ def process_stalker():
         for i, frame in enumerate(final_8):
             out_path = os.path.join(OUTPUT_DIR, f"BioStalker_{state_name}_{i}.png")
             frame.save(out_path, format="PNG")
-        print(f"  -> Generated 8 frames for BioStalker_{state_name} (256x256)")
+        print(f"  -> Generated 8 frames for BioStalker_{state_name} (256x256, gap-aware)")
 
 
 def main():

@@ -413,7 +413,7 @@ public class WaveSpawner : MonoBehaviour
         };
         titleSt.normal.textColor = new Color(1f, 0.48f, 0.85f);
         GUI.Label(new Rect(banner.x + 12f, banner.y + 10f * sy, banner.width - 24f, 34f * sy),
-            "🚧 COMPUERTA DEL SANTUARIO DEL SOBERANO DETECTADA 🚧", titleSt);
+            "[!] COMPUERTA DEL SANTUARIO DEL SOBERANO DETECTADA [!]", titleSt);
 
         GUIStyle subSt = new GUIStyle(GUI.skin.label)
         {
@@ -452,10 +452,10 @@ public class WaveSpawner : MonoBehaviour
         {
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
             string warnTitle = isLevel4Throneroom
-                ? "⚠ ¡CUSTODIO PRETORIANO VORST! ⚠"
+                ? "[!] ¡CUSTODIO PRETORIANO VORST! [!]"
                 : (isLevel3Hive
-                    ? "⚠ ¡ANOMALÍA PSIÓNICA EN LA COLMENA! ⚠"
-                    : (isLevel2BaseVorst ? "⚠ ¡COLOSO DE NÚCLEO ROJO! ⚠" : "⚠ ¡ALERTA DE TANQUE PESADO! ⚠"));
+                    ? "[!] ¡ANOMALÍA PSIÓNICA EN LA COLMENA! [!]"
+                    : (isLevel2BaseVorst ? "[!] ¡COLOSO DE NÚCLEO ROJO! [!]" : "[!] ¡ALERTA DE TANQUE PESADO! [!]"));
             string warnSub = isLevel4Throneroom
                 ? "MINI-JEFE DE OLEADA 5 — IMPACTO EN PICADA CON LANZA DE ENERGÍA [PARRY S]"
                 : (isLevel3Hive
@@ -473,10 +473,10 @@ public class WaveSpawner : MonoBehaviour
 
             if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
             string warnTitle = isLevel4Throneroom
-                ? "☣ ¡ARCONTE SUPREMO — SOBERANO VORST! ☣"
+                ? "♦ ¡ARCONTE SUPREMO — SOBERANO VORST! ♦"
                 : (isLevel3Hive
-                    ? "⚠ AMENAZA EXTREMA: MECHA BERSERKER VORTEX-OMEGA ⚠"
-                    : (isLevel2BaseVorst ? "⚠ ¡SOBERANO DE LA BASE VORST! ⚠" : "⚠ ¡ADVERTENCIA: LÍDER DE ZONA! ⚠"));
+                    ? "♦ AMENAZA EXTREMA: MECHA BERSERKER VORTEX-OMEGA ♦"
+                    : (isLevel2BaseVorst ? "♦ ¡SOBERANO DE LA BASE VORST! ♦" : "♦ ¡ADVERTENCIA: LÍDER DE ZONA! ♦"));
             string warnSub = isLevel4Throneroom
                 ? "JEFE FINAL EN 3 FASES — DUELO MARCIAL // JUICIO PSIÓNICO // FUSIÓN CON LÍA"
                 : (isLevel3Hive
