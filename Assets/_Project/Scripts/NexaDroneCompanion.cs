@@ -153,8 +153,15 @@ public class NexaDroneCompanion : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (Instance.gameObject != gameObject && Instance.gameObject.scene != gameObject.scene)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
         Instance = this;
 
@@ -162,6 +169,11 @@ public class NexaDroneCompanion : MonoBehaviour
         BuildDroneVisualHierarchy();
         BuildShieldBubbleHierarchy();
         SetVisualsActive(false);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()

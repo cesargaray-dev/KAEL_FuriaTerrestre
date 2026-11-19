@@ -31,12 +31,152 @@ public class NexusThroneroomEnvironment : MonoBehaviour
     private float sanctumAnchorX = 0f;
     private bool isLiaLiberated = false;
     private bool isPhase3Siphoning = false;
+    public bool IsBossArenaLocked { get; private set; } = false;
+    public float ArenaMinX => sanctumAnchorX - 7.8f;
+    public float ArenaMaxX => sanctumAnchorX + 7.8f;
 
-    private const float BackgroundTileWidth = 20.48f;
+    private LineRenderer leftArenaBarrier;
+    private LineRenderer rightArenaBarrier;
+    private SpriteRenderer leftBarrierCurtain;
+    private SpriteRenderer rightBarrierCurtain;
+    private static Texture2D cachedBarrierCurtainTex;
+
+    private const float CorridorModuleWidth = 10.24f;
 
     static float SnapToBackgroundTileX(float worldX)
     {
-        return Mathf.Round(worldX / BackgroundTileWidth) * BackgroundTileWidth;
+        return Mathf.Round(worldX / CorridorModuleWidth) * CorridorModuleWidth;
+    }
+
+    public float ClampXToBossArena(float x)
+    {
+        return IsBossArenaLocked ? Mathf.Clamp(x, ArenaMinX, ArenaMaxX) : x;
+    }
+
+    public void LockBossArenaAround(float referenceX)
+    {
+        sanctumAnchorX = SnapToBackgroundTileX(referenceX);
+        IsBossArenaLocked = true;
+
+        if (sanctumGroup != null)
+        {
+            sanctumGroup.gameObject.SetActive(true);
+            sanctumGroup.position = new Vector3(sanctumAnchorX, -2.95f, 0f);
+        }
+
+        UpdateArenaContainmentBarriers(true);
+
+        if (InfiniteBackground.Instance != null)
+        {
+            InfiniteBackground.Instance.ActivateLevel4SanctumAt(sanctumAnchorX);
+        }
+    }
+
+    public void ResetSanctumArena()
+    {
+        IsBossArenaLocked = false;
+        isPhase3Siphoning = false;
+        isLiaLiberated = false;
+        UpdateArenaContainmentBarriers(false);
+        if (sanctumGroup != null)
+        {
+            sanctumGroup.gameObject.SetActive(false);
+        }
+        if (InfiniteBackground.Instance != null)
+        {
+            InfiniteBackground.Instance.ResetLevel4Sanctum();
+        }
+    }
+
+    void UpdateArenaContainmentBarriers(bool active)
+    {
+        if (active && sanctumGroup != null && leftArenaBarrier == null && leftBarrierCurtain == null)
+        {
+            leftArenaBarrier = CreateContainmentBarrierLine("LeftArenaBarrier", -7.8f, out leftBarrierCurtain);
+            rightArenaBarrier = CreateContainmentBarrierLine("RightArenaBarrier", 7.8f, out rightBarrierCurtain);
+        }
+        if (leftArenaBarrier != null) leftArenaBarrier.enabled = active;
+        if (rightArenaBarrier != null) rightArenaBarrier.enabled = active;
+        if (leftBarrierCurtain != null) leftBarrierCurtain.enabled = active;
+        if (rightBarrierCurtain != null) rightBarrierCurtain.enabled = active;
+    }
+
+    static Texture2D GetBarrierCurtainTexture()
+    {
+        if (cachedBarrierCurtainTex != null) return cachedBarrierCurtainTex;
+        const int w = 32;
+        const int h = 128;
+        Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < h; y++)
+        {
+            float v = (y + 0.5f) / h;
+            float vertFade = Mathf.Sin(v * Mathf.PI);
+            float scanline = (y % 6 < 2) ? 1.0f : 0.48f;
+            for (int x = 0; x < w; x++)
+            {
+                float u = (x + 0.5f) / w;
+                float edge = Mathf.Pow(Mathf.Sin(u * Mathf.PI), 1.6f);
+                float a = edge * vertFade * scanline * 0.55f;
+                tex.SetPixel(x, y, new Color(0.68f, 0.25f, 1f, a));
+            }
+        }
+        tex.Apply();
+        cachedBarrierCurtainTex = tex;
+        return cachedBarrierCurtainTex;
+    }
+
+    LineRenderer CreateContainmentBarrierLine(string barrierName, float localX, out SpriteRenderer curtainSr)
+    {
+        GameObject obj = new GameObject(barrierName);
+        obj.transform.SetParent(sanctumGroup, false);
+        obj.transform.localPosition = new Vector3(localX, 0f, 0f);
+
+        Texture2D pylonTex = Resources.Load<Texture2D>("Level4/Pylon_Level4");
+        if (pylonTex != null)
+        {
+            pylonTex.filterMode = FilterMode.Point;
+            GameObject pylonObj = new GameObject("PylonSprite");
+            pylonObj.transform.SetParent(obj.transform, false);
+            SpriteRenderer psr = pylonObj.AddComponent<SpriteRenderer>();
+            psr.sprite = Sprite.Create(pylonTex, new Rect(0f, 0f, pylonTex.width, pylonTex.height), new Vector2(0.5f, 0f), 100f);
+            float targetHeight = 5.45f;
+            float scale = targetHeight / Mathf.Max(0.1f, psr.sprite.bounds.size.y);
+            pylonObj.transform.localScale = new Vector3(scale, scale, 1f);
+            pylonObj.transform.localPosition = new Vector3(0f, -0.15f, 0f);
+            psr.sortingOrder = 12;
+            curtainSr = psr;
+            return null;
+        }
+
+        // Fallback procedural si no existe el sprite Pylon_Level4
+        GameObject curtainObj = new GameObject("EnergyCurtain");
+        curtainObj.transform.SetParent(obj.transform, false);
+        curtainObj.transform.localPosition = new Vector3(0f, 2.55f, 0f);
+        curtainObj.transform.localScale = new Vector3(2.2f, 4.4f, 1f);
+        curtainSr = curtainObj.AddComponent<SpriteRenderer>();
+        curtainSr.sprite = Sprite.Create(
+            GetBarrierCurtainTexture(),
+            new Rect(0f, 0f, 32f, 128f),
+            new Vector2(0.5f, 0.5f),
+            100f
+        );
+        curtainSr.sortingOrder = 11;
+        curtainSr.enabled = false;
+
+        LineRenderer lr = obj.AddComponent<LineRenderer>();
+        lr.useWorldSpace = false;
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.positionCount = 2;
+        lr.startWidth = 0.06f;
+        lr.endWidth = 0.06f;
+        lr.startColor = new Color(0.28f, 0.94f, 1f, 0.65f);
+        lr.endColor = new Color(0.75f, 0.22f, 1f, 0.25f);
+        lr.sortingOrder = 12;
+        lr.SetPosition(0, new Vector3(0f, -0.1f, 0f));
+        lr.SetPosition(1, new Vector3(0f, 5.1f, 0f));
+        return lr;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -86,14 +226,9 @@ public class NexusThroneroomEnvironment : MonoBehaviour
     public void SetPhase3SiphonState(bool active, Vector3 arenaCenterHint)
     {
         isPhase3Siphoning = active;
-        if (active && sanctumGroup != null && camTransform != null)
+        if (active && !IsBossArenaLocked)
         {
-            // Alinear la cápsula oculta con el centro de baldosa de BG_Throneroom_Level4 más cercano al jefe
-            float snapped = SnapToBackgroundTileX(arenaCenterHint.x);
-            if (Mathf.Abs(snapped - sanctumAnchorX) > 0.5f)
-            {
-                RelocateSanctumCenter(snapped, withFlash: true);
-            }
+            LockBossArenaAround(arenaCenterHint.x);
         }
     }
 
@@ -227,6 +362,10 @@ public class NexusThroneroomEnvironment : MonoBehaviour
             lr.endColor = cCol;
             throneConduits.Add(lr);
         }
+
+        // Oculto durante el corredor de oleadas 1-9; se activa al llegar al Santuario del Trono en Oleada 10
+        sanctumGroup.gameObject.SetActive(IsBossArenaLocked);
+        UpdateArenaContainmentBarriers(IsBossArenaLocked);
     }
 
     void RelocateSanctumCenter(float newX, bool withFlash)
@@ -251,13 +390,33 @@ public class NexusThroneroomEnvironment : MonoBehaviour
 
         float t = Time.time;
 
-        // Mantener el ancla de la cápsula alineada con la copia más cercana del santuario en BG_Throneroom_Level4
-        if (kaelTransform != null && !isPhase3Siphoning)
+        // Solo reubicar si la arena aún no está fijada al Santuario único del Soberano
+        if (kaelTransform != null && !IsBossArenaLocked)
         {
             float snapped = SnapToBackgroundTileX(kaelTransform.position.x);
             if (Mathf.Abs(snapped - sanctumAnchorX) > 1.0f)
             {
                 RelocateSanctumCenter(snapped, withFlash: false);
+            }
+        }
+
+        if (IsBossArenaLocked && kaelTransform != null)
+        {
+            bool usingPylonArt = (leftArenaBarrier == null);
+            float basePulse = 0.40f + Mathf.Sin(t * 4.5f) * 0.12f;
+            if (leftBarrierCurtain != null)
+            {
+                float proxL = Mathf.Clamp01(1f - Mathf.Abs(kaelTransform.position.x - ArenaMinX) / 2.2f);
+                leftBarrierCurtain.color = usingPylonArt
+                    ? Color.Lerp(Color.white, new Color(0.85f, 0.96f, 1f, 1f), proxL * 0.55f)
+                    : new Color(0.55f + proxL * 0.35f, 0.28f + proxL * 0.55f, 1f, basePulse + proxL * 0.42f);
+            }
+            if (rightBarrierCurtain != null)
+            {
+                float proxR = Mathf.Clamp01(1f - Mathf.Abs(kaelTransform.position.x - ArenaMaxX) / 2.2f);
+                rightBarrierCurtain.color = usingPylonArt
+                    ? Color.Lerp(Color.white, new Color(0.85f, 0.96f, 1f, 1f), proxR * 0.55f)
+                    : new Color(0.55f + proxR * 0.35f, 0.28f + proxR * 0.55f, 1f, basePulse + proxR * 0.42f);
             }
         }
 
@@ -376,7 +535,7 @@ public class NexusThroneroomEnvironment : MonoBehaviour
 
     void OnGUI()
     {
-        if (isLiaLiberated || Camera.main == null || liaCapsuleTransform == null) return;
+        if (!IsBossArenaLocked || isLiaLiberated || Camera.main == null || liaCapsuleTransform == null) return;
         if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen) return;
         if (EndingCinematicController.Instance != null && EndingCinematicController.Instance.isEndingActive) return;
 
@@ -461,12 +620,19 @@ public class SovereignBossAI : MonoBehaviour
 
     private float nextSpecialCooldown = 2.0f;
     private float nextPrimaryCooldown = 0.8f;
+    private float nextSummonCooldown = 11.0f;
     private float forceFieldReapplyCooldown = 0f;
     private float forceFieldElapsed = 0f;
 
-    // Escudo de Fase 3, rayo de sifón y animaciones Pixel Art HD del jefe
+    // Escudo de Fase 3, rayo de sifón multicapa y animaciones Pixel Art HD del jefe
     private SpriteRenderer shieldDomeRenderer;
+    private LineRenderer siphonOuterBeam;
+    private LineRenderer siphonMidBeam;
     private LineRenderer capsuleSiphonBeam;
+    private SpriteRenderer siphonCapHalo;
+    private SpriteRenderer siphonBossHalo;
+    private float siphonOrbTimer = 0f;
+    private static Texture2D cachedBeamGlowTex;
     private int specialPatternCounter = 0;
 
     private Sprite[] animAttackFrames;
@@ -518,9 +684,16 @@ public class SovereignBossAI : MonoBehaviour
         }
         else
         {
+            NexusThroneroomEnvironment env = NexusThroneroomEnvironment.EnsureExists();
+            if (env != null && !env.IsBossArenaLocked)
+            {
+                float hintX = (kaelTarget != null) ? (kaelTarget.position.x + 4.5f) : transform.position.x;
+                env.LockBossArenaAround(hintX);
+            }
             if (shieldDomeRenderer == null) AttachForceFieldDome();
             if (capsuleSiphonBeam == null) AttachSiphonBeam();
             nextSpecialCooldown = Time.time + 2.6f;
+            nextSummonCooldown = Time.time + 10.5f;
         }
     }
 
@@ -672,7 +845,7 @@ public class SovereignBossAI : MonoBehaviour
         forceFieldReapplyCooldown = 12.5f;
 
         if (shieldDomeRenderer != null) shieldDomeRenderer.enabled = false;
-        if (capsuleSiphonBeam != null) capsuleSiphonBeam.enabled = false;
+        SetSiphonVisualsActive(false);
         if (NexusThroneroomEnvironment.Instance != null)
             NexusThroneroomEnvironment.Instance.SetPhase3SiphonState(false, transform.position);
 
@@ -704,7 +877,21 @@ public class SovereignBossAI : MonoBehaviour
         isForceFieldActive = false;
 
         if (shieldDomeRenderer != null) shieldDomeRenderer.enabled = false;
-        if (capsuleSiphonBeam != null) capsuleSiphonBeam.enabled = false;
+        SetSiphonVisualsActive(false);
+
+        // Retirar refuerzos pretorianos restantes al caer el Soberano
+        EnemyDummy[] allEnemies = FindObjectsByType<EnemyDummy>(FindObjectsInactive.Exclude);
+        foreach (EnemyDummy other in allEnemies)
+        {
+            if (other != null && other != enemy && !other.IsDead)
+            {
+                if (CombatVFXManager.Instance != null)
+                {
+                    CombatVFXManager.Instance.SpawnShockwaveRing(other.transform.position + Vector3.up * 0.6f, new Color(0.8f, 0.25f, 1f), 1.6f);
+                }
+                Destroy(other.gameObject);
+            }
+        }
 
         VorstCodexUI.RegisterEnemyKill(enemy);
         StartCoroutine(FinalBossDefeatAndEndingRoutine());
@@ -776,17 +963,7 @@ public class SovereignBossAI : MonoBehaviour
 
                 if (capsuleSiphonBeam != null && NexusThroneroomEnvironment.Instance != null)
                 {
-                    capsuleSiphonBeam.enabled = true;
-                    Vector3 capPos = NexusThroneroomEnvironment.Instance.GetCapsuleWorldPosition() + Vector3.up * 0.35f;
-                    Vector3 bossCore = transform.position + Vector3.up * 1.05f;
-                    int pts = capsuleSiphonBeam.positionCount;
-                    for (int i = 0; i < pts; i++)
-                    {
-                        float u = i / (float)(pts - 1);
-                        Vector3 p = Vector3.Lerp(capPos, bossCore, u);
-                        float wave = Mathf.Sin(Time.time * 10f + i * 1.4f) * 0.22f * Mathf.Sin(u * Mathf.PI);
-                        capsuleSiphonBeam.SetPosition(i, p + new Vector3(0f, wave, 0f));
-                    }
+                    UpdateSiphonBeamVisuals();
                 }
 
                 // Regeneración muy sutil mientras canaliza a Lía (incentiva romper el escudo pronto)
@@ -799,6 +976,16 @@ public class SovereignBossAI : MonoBehaviour
                 {
                     ActivatePhase3ForceField();
                 }
+            }
+        }
+
+        if (role == BossRole.SupremeSovereign && NexusThroneroomEnvironment.Instance != null && NexusThroneroomEnvironment.Instance.IsBossArenaLocked)
+        {
+            Vector3 p = transform.position;
+            float clampedX = NexusThroneroomEnvironment.Instance.ClampXToBossArena(p.x);
+            if (!Mathf.Approximately(p.x, clampedX))
+            {
+                transform.position = new Vector3(clampedX, p.y, p.z);
             }
         }
 
@@ -1003,6 +1190,12 @@ public class SovereignBossAI : MonoBehaviour
     // =========================================================================
     void UpdateSupremeSovereign(float distX, float dirToKael)
     {
+        if (currentPhase >= 2 && Time.time >= nextSummonCooldown && CountActiveMinions() < 2)
+        {
+            StartCoroutine(SovereignSummonTroopsRoutine());
+            return;
+        }
+
         if (currentPhase == 1)
         {
             // FASE 1 (Duelo Marcial): Teletransportación lateral + ráfagas cortantes en arco + estocadas rápidas
@@ -1143,6 +1336,10 @@ public class SovereignBossAI : MonoBehaviour
         {
             float side = (transform.position.x >= kaelTarget.position.x) ? -1f : 1f;
             float newX = kaelTarget.position.x + side * Random.Range(2.8f, 3.8f);
+            if (NexusThroneroomEnvironment.Instance != null)
+            {
+                newX = NexusThroneroomEnvironment.Instance.ClampXToBossArena(newX);
+            }
             transform.position = new Vector3(newX, groundY, 0f);
         }
 
@@ -1183,6 +1380,10 @@ public class SovereignBossAI : MonoBehaviour
 
         // Levitar hacia el centro/frente de la arena en el domo sin quitarle control manual a Kael
         float centerX = (kaelTarget != null) ? kaelTarget.position.x + 3.6f : transform.position.x;
+        if (NexusThroneroomEnvironment.Instance != null)
+        {
+            centerX = NexusThroneroomEnvironment.Instance.ClampXToBossArena(centerX);
+        }
         float startX = transform.position.x;
         float startY = transform.position.y;
         float endY = -2.95f + 1.35f;
@@ -1391,12 +1592,60 @@ public class SovereignBossAI : MonoBehaviour
         isActingExternally = false;
     }
 
+    int CountActiveMinions()
+    {
+        int count = 0;
+        EnemyDummy[] all = FindObjectsByType<EnemyDummy>(FindObjectsInactive.Exclude);
+        foreach (EnemyDummy e in all)
+        {
+            if (e != null && e != enemy && !e.IsDead) count++;
+        }
+        return count;
+    }
+
+    IEnumerator SovereignSummonTroopsRoutine()
+    {
+        isActingExternally = true;
+        if (LevelAudioManager.Instance != null) LevelAudioManager.Instance.PlayBossAlert();
+
+        if (CombatVFXManager.Instance != null)
+        {
+            CombatVFXManager.Instance.SpawnFloatingText(
+                transform.position + Vector3.up * 2.3f,
+                "⚔ ¡GUARDIA PRETORIANA, PROTEGED EL NÚCLEO! ⚔",
+                new Color(0.92f, 0.35f, 1f),
+                21,
+                1.5f
+            );
+            CombatVFXManager.Instance.SpawnShockwaveRing(transform.position + Vector3.up * 0.9f, new Color(0.84f, 0.24f, 1f), 3.4f);
+        }
+
+        float t = 0f;
+        while (t < 0.55f)
+        {
+            if (defeatTriggered || enemy.IsDead) { EndAction(); yield break; }
+            ApplyBossFrameProgress(animPhaseTransFrames, t / 0.55f);
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        WaveSpawner spawner = FindAnyObjectByType<WaveSpawner>();
+        if (spawner != null)
+        {
+            spawner.SpawnSovereignReinforcements(transform.position, 2);
+        }
+
+        nextSummonCooldown = Time.time + 15.0f;
+        nextSpecialCooldown = Mathf.Max(nextSpecialCooldown, Time.time + 1.4f);
+        isActingExternally = false;
+    }
+
     void ActivatePhase3ForceField()
     {
         isForceFieldActive = true;
         forceFieldElapsed = 0f;
         if (shieldDomeRenderer != null) shieldDomeRenderer.enabled = true;
-        if (capsuleSiphonBeam != null) capsuleSiphonBeam.enabled = true;
+        SetSiphonVisualsActive(true);
         if (NexusThroneroomEnvironment.Instance != null)
             NexusThroneroomEnvironment.Instance.SetPhase3SiphonState(true, transform.position);
     }
@@ -1483,19 +1732,192 @@ public class SovereignBossAI : MonoBehaviour
         shieldDomeRenderer.enabled = false;
     }
 
+    static Texture2D GetSiphonGlowTexture()
+    {
+        if (cachedBeamGlowTex != null) return cachedBeamGlowTex;
+        const int w = 64;
+        const int h = 32;
+        Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < h; y++)
+        {
+            float v = (y + 0.5f) / h;
+            float radial = Mathf.Pow(Mathf.Sin(v * Mathf.PI), 2.3f);
+            for (int x = 0; x < w; x++)
+            {
+                float u = (x + 0.5f) / w;
+                float edgeFade = Mathf.SmoothStep(0f, 1f, Mathf.Min(u / 0.06f, (1f - u) / 0.06f));
+                float a = radial * edgeFade;
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        cachedBeamGlowTex = tex;
+        return cachedBeamGlowTex;
+    }
+
+    LineRenderer CreateSiphonLayer(string layerName, int points, float startW, float endW, Color startCol, Color endCol, int sortOrder)
+    {
+        GameObject obj = new GameObject(layerName);
+        obj.transform.SetParent(transform, false);
+        LineRenderer lr = obj.AddComponent<LineRenderer>();
+        Material mat = new Material(Shader.Find("Sprites/Default"));
+        mat.mainTexture = GetSiphonGlowTexture();
+        lr.material = mat;
+        lr.textureMode = LineTextureMode.Stretch;
+        lr.positionCount = points;
+        lr.widthCurve = new AnimationCurve(
+            new Keyframe(0f, startW * 0.55f),
+            new Keyframe(0.12f, startW),
+            new Keyframe(0.88f, endW),
+            new Keyframe(1f, endW * 0.65f)
+        );
+        lr.startColor = startCol;
+        lr.endColor = endCol;
+        lr.numCapVertices = 4;
+        lr.numCornerVertices = 2;
+        lr.sortingOrder = sortOrder;
+        lr.enabled = false;
+        return lr;
+    }
+
     void AttachSiphonBeam()
     {
-        GameObject obj = new GameObject("CoreSiphonBeam");
-        obj.transform.SetParent(transform, false);
-        capsuleSiphonBeam = obj.AddComponent<LineRenderer>();
-        capsuleSiphonBeam.material = new Material(Shader.Find("Sprites/Default"));
-        capsuleSiphonBeam.positionCount = 10;
-        capsuleSiphonBeam.startWidth = 0.14f;
-        capsuleSiphonBeam.endWidth = 0.22f;
-        capsuleSiphonBeam.startColor = new Color(0.75f, 0.22f, 1f, 0.95f);
-        capsuleSiphonBeam.endColor = new Color(1f, 0.20f, 0.65f, 0.95f);
-        capsuleSiphonBeam.sortingOrder = 14;
-        capsuleSiphonBeam.enabled = false;
+        // Capa 1: Aura psiónica exterior difuminada
+        siphonOuterBeam = CreateSiphonLayer(
+            "SiphonBeam_OuterAura",
+            20,
+            0.52f,
+            0.68f,
+            new Color(0.28f, 0.86f, 1f, 0.34f),
+            new Color(0.88f, 0.18f, 0.92f, 0.42f),
+            13
+        );
+        // Capa 2: Hélice de plasma intermedia cian-magenta
+        siphonMidBeam = CreateSiphonLayer(
+            "SiphonBeam_PlasmaHelix",
+            22,
+            0.18f,
+            0.24f,
+            new Color(0.24f, 0.96f, 1f, 0.86f),
+            new Color(0.96f, 0.22f, 0.82f, 0.92f),
+            14
+        );
+        // Capa 3: Núcleo eléctrico de alto voltaje
+        capsuleSiphonBeam = CreateSiphonLayer(
+            "CoreSiphonBeam",
+            26,
+            0.055f,
+            0.075f,
+            new Color(0.88f, 0.99f, 1f, 0.98f),
+            new Color(1f, 0.80f, 0.98f, 0.98f),
+            15
+        );
+
+        Sprite ringSpr = Level3MonsterAssetGenerator.GetPsionicRingSprite();
+        GameObject capHaloObj = new GameObject("SiphonCapsuleHalo");
+        capHaloObj.transform.SetParent(transform, false);
+        siphonCapHalo = capHaloObj.AddComponent<SpriteRenderer>();
+        siphonCapHalo.sprite = ringSpr;
+        siphonCapHalo.color = new Color(0.26f, 0.96f, 1f, 0.85f);
+        siphonCapHalo.sortingOrder = 15;
+        siphonCapHalo.enabled = false;
+
+        GameObject bossHaloObj = new GameObject("SiphonBossHalo");
+        bossHaloObj.transform.SetParent(transform, false);
+        siphonBossHalo = bossHaloObj.AddComponent<SpriteRenderer>();
+        siphonBossHalo.sprite = ringSpr;
+        siphonBossHalo.color = new Color(0.96f, 0.25f, 0.85f, 0.85f);
+        siphonBossHalo.sortingOrder = 15;
+        siphonBossHalo.enabled = false;
+    }
+
+    void SetSiphonVisualsActive(bool active)
+    {
+        if (siphonOuterBeam != null) siphonOuterBeam.enabled = active;
+        if (siphonMidBeam != null) siphonMidBeam.enabled = active;
+        if (capsuleSiphonBeam != null) capsuleSiphonBeam.enabled = active;
+        if (siphonCapHalo != null) siphonCapHalo.enabled = active;
+        if (siphonBossHalo != null) siphonBossHalo.enabled = active;
+    }
+
+    void UpdateSiphonBeamVisuals()
+    {
+        SetSiphonVisualsActive(true);
+        Vector3 capPos = NexusThroneroomEnvironment.Instance.GetCapsuleWorldPosition();
+        Vector3 bossCore = transform.position + Vector3.up * 1.05f;
+        Vector3 dir = (bossCore - capPos);
+        float len = Mathf.Max(0.1f, dir.magnitude);
+        Vector3 perp = new Vector3(-dir.y / len, dir.x / len, 0f);
+        float t = Time.time;
+
+        if (siphonOuterBeam != null)
+        {
+            int n = siphonOuterBeam.positionCount;
+            for (int i = 0; i < n; i++)
+            {
+                float u = i / (float)(n - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float off = Mathf.Sin(t * 5.5f - u * 7f) * 0.16f * env;
+                siphonOuterBeam.SetPosition(i, Vector3.Lerp(capPos, bossCore, u) + perp * off);
+            }
+        }
+
+        if (siphonMidBeam != null)
+        {
+            int n = siphonMidBeam.positionCount;
+            for (int i = 0; i < n; i++)
+            {
+                float u = i / (float)(n - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float off = Mathf.Sin(t * 11f - u * 12f) * 0.19f * env;
+                siphonMidBeam.SetPosition(i, Vector3.Lerp(capPos, bossCore, u) + perp * off);
+            }
+        }
+
+        if (capsuleSiphonBeam != null)
+        {
+            int n = capsuleSiphonBeam.positionCount;
+            for (int i = 0; i < n; i++)
+            {
+                float u = i / (float)(n - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float arc = (Mathf.Sin(t * 24f + i * 2.1f) * 0.11f + Mathf.Cos(t * 37f - i * 3.3f) * 0.06f) * env;
+                capsuleSiphonBeam.SetPosition(i, Vector3.Lerp(capPos, bossCore, u) + perp * arc);
+            }
+        }
+
+        if (siphonCapHalo != null)
+        {
+            siphonCapHalo.transform.position = capPos;
+            float sc = 0.72f + Mathf.Sin(t * 8f) * 0.12f;
+            siphonCapHalo.transform.localScale = new Vector3(sc, sc, 1f);
+            siphonCapHalo.transform.Rotate(0f, 0f, 110f * Time.deltaTime);
+        }
+
+        if (siphonBossHalo != null)
+        {
+            siphonBossHalo.transform.position = bossCore;
+            float sb = 0.65f + Mathf.Cos(t * 9f) * 0.11f;
+            siphonBossHalo.transform.localScale = new Vector3(sb, sb, 1f);
+            siphonBossHalo.transform.Rotate(0f, 0f, -135f * Time.deltaTime);
+        }
+
+        siphonOrbTimer -= Time.deltaTime;
+        if (siphonOrbTimer <= 0f)
+        {
+            siphonOrbTimer = 0.12f;
+            GameObject orbObj = new GameObject("SiphonOrb");
+            orbObj.transform.position = capPos;
+            SpriteRenderer orbSr = orbObj.AddComponent<SpriteRenderer>();
+            orbSr.sprite = Level3MonsterAssetGenerator.GetPsionicRingSprite();
+            orbSr.sortingOrder = 16;
+            orbSr.color = new Color(0.35f, 0.98f, 1f, 0.95f);
+            orbObj.transform.localScale = Vector3.one * Random.Range(0.18f, 0.28f);
+            SiphonEnergyOrb orb = orbObj.AddComponent<SiphonEnergyOrb>();
+            orb.Init(capPos, bossCore, perp, Random.Range(-0.22f, 0.22f));
+        }
     }
 
     void OnGUI()
@@ -1571,5 +1993,43 @@ public class SovereignArcProjectile : MonoBehaviour
         }
 
         if (life <= 0f) Destroy(gameObject);
+    }
+}
+
+public class SiphonEnergyOrb : MonoBehaviour
+{
+    private Vector3 startPos;
+    private Vector3 endPos;
+    private Vector3 perpAxis;
+    private float arcAmp;
+    private float elapsed = 0f;
+    private const float Duration = 0.34f;
+    private SpriteRenderer sr;
+
+    public void Init(Vector3 from, Vector3 to, Vector3 perp, float amp)
+    {
+        startPos = from;
+        endPos = to;
+        perpAxis = perp;
+        arcAmp = amp;
+        sr = GetComponent<SpriteRenderer>();
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        float u = Mathf.Clamp01(elapsed / Duration);
+        Vector3 p = Vector3.Lerp(startPos, endPos, u) + perpAxis * (Mathf.Sin(u * Mathf.PI) * arcAmp);
+        transform.position = p;
+        transform.Rotate(0f, 0f, 360f * Time.deltaTime);
+
+        if (sr != null)
+        {
+            Color c = Color.Lerp(new Color(0.26f, 0.96f, 1f, 0.95f), new Color(1f, 0.24f, 0.82f, 0.95f), u);
+            c.a *= (1f - u * 0.45f);
+            sr.color = c;
+        }
+
+        if (elapsed >= Duration) Destroy(gameObject);
     }
 }

@@ -628,8 +628,19 @@ public class KaelAutoController : MonoBehaviour
             Vector3 delta = (moveDir < 0f ? Vector3.left : Vector3.right) * (effectiveSpeed * Time.deltaTime);
             Vector3 nextPos = transform.position + delta;
 
-            float minLeftX = Mathf.Max(startPosition.x - 4.5f, maxReachedX - 11.5f);
-            if (nextPos.x < minLeftX) nextPos.x = minLeftX;
+            if (NexusThroneroomEnvironment.Instance != null && NexusThroneroomEnvironment.Instance.IsBossArenaLocked)
+            {
+                nextPos.x = NexusThroneroomEnvironment.Instance.ClampXToBossArena(nextPos.x);
+            }
+            else
+            {
+                float minLeftX = Mathf.Max(startPosition.x - 4.5f, maxReachedX - 11.5f);
+                if (nextPos.x < minLeftX) nextPos.x = minLeftX;
+                if (WaveSpawner.IsWaitingForSanctumBreach && nextPos.x > WaveSpawner.SanctumGateBlockX)
+                {
+                    nextPos.x = WaveSpawner.SanctumGateBlockX;
+                }
+            }
 
             transform.position = nextPos;
             if (transform.position.x > maxReachedX) maxReachedX = transform.position.x;
