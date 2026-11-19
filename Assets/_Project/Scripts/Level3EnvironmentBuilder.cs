@@ -30,6 +30,12 @@ public class Level3EnvironmentBuilder : MonoBehaviour
         string sceneName = SceneManager.GetActiveScene().name;
         if (sceneName == "03_Nivel3_Colmena" && Instance == null)
         {
+            Level3EnvironmentBuilder existing = FindAnyObjectByType<Level3EnvironmentBuilder>();
+            if (existing != null)
+            {
+                Instance = existing;
+                return;
+            }
             GameObject go = new GameObject("Level3_BiomechanicAtmosphere");
             go.AddComponent<Level3EnvironmentBuilder>();
         }
@@ -39,10 +45,22 @@ public class Level3EnvironmentBuilder : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            if (GetComponent<PlayerStats>() != null || GetComponent<WaveSpawner>() != null)
+            {
+                Destroy(this);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
             return;
         }
         Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()

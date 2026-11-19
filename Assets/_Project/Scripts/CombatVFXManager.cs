@@ -8,9 +8,15 @@ public class CombatVFXManager : MonoBehaviour
     private Sprite coinSprite;
     private Sprite expOrbSprite;
     private Sprite sparkSprite;
+    private Sprite neutralOrbSprite;
     private Sprite whitePixelSprite;
     private Sprite ringSprite;
     private Transform kaelTarget;
+
+    // Gradientes dinámicos de partículas y Ultimate según el Guantelete Nexo equipado (Issue #21)
+    public GauntletVariant ActiveGauntletVariant { get; private set; } = GauntletVariant.PrototypeCyan;
+    public Gradient activeAttackGradient { get; private set; }
+    public Gradient activeUltimateGradient { get; private set; }
 
     // Variables de Alerta de Jefe
     private bool showWarning = false;
@@ -22,6 +28,7 @@ public class CombatVFXManager : MonoBehaviour
     private bool ultCinematicActive = false;
     private float ultFlashAlpha = 0f;
     private Color customFlashColor = new Color(0.55f, 0.95f, 1f, 1f);
+    private Sprite softBeamSprite;
 
     // Variables de Contador de Combo (Sincronizadas con PlayerStats)
     private int comboHits = 0;
@@ -31,23 +38,87 @@ public class CombatVFXManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (Instance.gameObject != gameObject && Instance.gameObject.scene != gameObject.scene)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else
+            {
+                Destroy(this);
+                return;
+            }
         }
         Instance = this;
 
         coinSprite = CreatePixelCircleSprite(10, new Color(1f, 0.84f, 0.15f), new Color(0.9f, 0.55f, 0f));
         expOrbSprite = CreatePixelCircleSprite(9, new Color(0.22f, 0.88f, 1f), new Color(0.1f, 0.45f, 0.9f));
-        sparkSprite = CreatePixelCircleSprite(6, Color.white, new Color(0.22f, 0.88f, 1f));
+        // Sprites base neutros para que Gradient.Evaluate() tiña los golpes y Ultimate con fidelidad cromática
+        sparkSprite = CreatePixelCircleSprite(7, Color.white, new Color(0.88f, 0.88f, 0.88f));
+        neutralOrbSprite = CreatePixelCircleSprite(10, Color.white, new Color(0.84f, 0.84f, 0.84f));
         whitePixelSprite = CreateSolidPixelSprite();
         ringSprite = CreateRingSprite(64);
+
+        SetGauntletVariant(GauntletVariant.PrototypeCyan);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()
     {
         KaelAutoController kael = FindAnyObjectByType<KaelAutoController>();
         if (kael != null) kaelTarget = kael.transform;
+
+        if (PlayerStats.Instance != null)
+        {
+            SetGauntletVariant(PlayerStats.Instance.equippedGauntlet);
+        }
     }
+
+    /// <summary>
+    /// Ajusta dinámicamente los gradientes de ataque, chispas y Ultimate al equipar una variante del Guantelete (Issue #21).
+    /// </summary>
+    public void SetGauntletVariant(GauntletVariant variant)
+    {
+        ActiveGauntletVariant = variant;
+        activeAttackGradient = BuildGradientForVariant(variant, isUltimate: false);
+        activeUltimateGradient = BuildGradientForVariant(variant, isUltimate: true);
+    }
+
+    public Gradient BuildGradientForVariant(GauntletVariant variant, bool isUltimate = false)
+    {
+        GauntletSpec spec = PlayerStats.GetGauntletSpec(variant);
+        Gradient g = new Gradient();
+
+        Color core = isUltimate ? Color.Lerp(spec.CoreColor, Color.white, 0.35f) : spec.CoreColor;
+        Color primary = spec.PrimaryColor;
+        Color secondary = spec.SecondaryColor;
+        Color fade = Color.Lerp(secondary, Color.black, 0.2f);
+
+        g.SetKeys(
+            new GradientColorKey[]
+            {
+                new GradientColorKey(core, 0.00f),
+                new GradientColorKey(primary, 0.32f),
+                new GradientColorKey(secondary, 0.78f),
+                new GradientColorKey(fade, 1.00f)
+            },
+            new GradientAlphaKey[]
+            {
+                new GradientAlphaKey(1.00f, 0.00f),
+                new GradientAlphaKey(1.00f, 0.45f),
+                new GradientAlphaKey(0.70f, 0.82f),
+                new GradientAlphaKey(0.00f, 1.00f)
+            }
+        );
+        return g;
+    }
+
+    public Color GetGauntletPrimaryColor() => PlayerStats.GetGauntletSpec(ActiveGauntletVariant).PrimaryColor;
+    public Color GetGauntletSecondaryColor() => PlayerStats.GetGauntletSpec(ActiveGauntletVariant).SecondaryColor;
+    public Color GetGauntletCoreColor() => PlayerStats.GetGauntletSpec(ActiveGauntletVariant).CoreColor;
 
     void Update()
     {
@@ -85,13 +156,22 @@ public class CombatVFXManager : MonoBehaviour
         ultCinematicActive = active;
         if (triggerFlash)
         {
-            bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-            bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
-            customFlashColor = isCorrupt
-                ? new Color(1f, 0.18f, 0.48f)
-                : (isPureza ? new Color(1f, 0.92f, 0.45f) : new Color(0.55f, 0.95f, 1f));
+            customFlashColor = GetActiveUltAccentFlashColor();
             ultFlashAlpha = 0.65f;
         }
+    }
+
+    Color GetActiveUltAccentFlashColor()
+    {
+        if (ActiveGauntletVariant != GauntletVariant.PrototypeCyan)
+        {
+            return GetGauntletPrimaryColor();
+        }
+        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        return isCorrupt
+            ? new Color(1f, 0.18f, 0.48f)
+            : (isPureza ? new Color(1f, 0.92f, 0.45f) : GetGauntletPrimaryColor());
     }
 
     // Fase 1 de la Ulti: Partículas de energía absorbidas hacia el Guantelete Nexo
@@ -102,8 +182,7 @@ public class CombatVFXManager : MonoBehaviour
 
     IEnumerator ChargeInwardRoutine(Vector3 centerPos, float duration)
     {
-        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+        Gradient ultGrad = activeUltimateGradient ?? BuildGradientForVariant(ActiveGauntletVariant, true);
 
         float elapsed = 0f;
         while (elapsed < duration)
@@ -116,11 +195,8 @@ public class CombatVFXManager : MonoBehaviour
                 GameObject orb = new GameObject("UltChargeOrb");
                 orb.transform.position = startPos;
                 SpriteRenderer sr = orb.AddComponent<SpriteRenderer>();
-                sr.sprite = (i % 2 == 0) ? expOrbSprite : coinSprite;
-                if (isCorrupt)
-                    sr.color = (i % 2 == 0) ? new Color(1f, 0.18f, 0.45f) : new Color(0.68f, 0.15f, 1f);
-                else if (isPureza)
-                    sr.color = (i % 2 == 0) ? new Color(0.35f, 0.98f, 1f) : new Color(1f, 0.90f, 0.35f);
+                sr.sprite = neutralOrbSprite;
+                sr.color = ultGrad.Evaluate((i % 2 == 0) ? 0.28f : 0.72f);
                 sr.sortingOrder = 25;
 
                 ChargeParticle cp = orb.AddComponent<ChargeParticle>();
@@ -131,60 +207,143 @@ public class CombatVFXManager : MonoBehaviour
         }
     }
 
-    // Fase 2 de la Ulti: Rayo Láser Gigante de Triple Capa que cambia según Compasión / Rigor (Bloque 4)
+    // Fase 2 de la Ulti: Rayo Láser Gigante de Triple Capa adaptado dinámicamente al Guantelete equipado (Issue #21)
     public void SpawnUltimateMegaBeam(Vector3 originPos, float length, float duration)
     {
-        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
-        customFlashColor = isCorrupt
-            ? new Color(1f, 0.15f, 0.42f)
-            : (isPureza ? new Color(0.45f, 0.98f, 1f) : new Color(0.55f, 0.95f, 1f));
+        customFlashColor = GetActiveUltAccentFlashColor();
         ultFlashAlpha = 0.78f;
-        StartCoroutine(MegaBeamRoutine(originPos, length, duration, isPureza, isCorrupt));
+        StartCoroutine(MegaBeamRoutine(originPos, length, duration));
     }
 
-    IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration, bool isPureza, bool isCorrupt)
+    IEnumerator MegaBeamRoutine(Vector3 originPos, float length, float duration)
     {
         GameObject beamRoot = new GameObject("NexoMegaBeam");
         beamRoot.transform.position = originPos;
 
-        Color outerCol = isCorrupt
-            ? new Color(0.55f, 0.06f, 0.88f, 0.65f)
-            : (isPureza ? new Color(1f, 0.84f, 0.22f, 0.62f) : new Color(0.1f, 0.65f, 1f, 0.55f));
+        Gradient g = activeUltimateGradient ?? BuildGradientForVariant(ActiveGauntletVariant, true);
+        Color outerCol = g.Evaluate(0.76f);
+        outerCol.a = 0.62f;
+        Color midCol = g.Evaluate(0.34f);
+        midCol.a = 0.92f;
+        Color coreCol = g.Evaluate(0.02f);
+        coreCol.a = 1.0f;
 
-        Color midCol = isCorrupt
-            ? new Color(1f, 0.14f, 0.38f, 0.92f)
-            : (isPureza ? new Color(0.25f, 0.98f, 1f, 0.92f) : new Color(0.22f, 0.95f, 1f, 0.90f));
-
-        Color coreCol = isCorrupt
-            ? new Color(1f, 0.78f, 0.92f, 1f)
-            : new Color(1f, 1f, 1f, 1f);
+        if (ActiveGauntletVariant == GauntletVariant.PrototypeCyan && PlayerStats.Instance != null)
+        {
+            bool isCorrupt = (PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
+            bool isPureza = (PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
+            if (isCorrupt)
+            {
+                outerCol = new Color(0.55f, 0.06f, 0.88f, 0.65f);
+                midCol = new Color(1f, 0.14f, 0.38f, 0.92f);
+                coreCol = new Color(1f, 0.78f, 0.92f, 1f);
+            }
+            else if (isPureza)
+            {
+                outerCol = new Color(1f, 0.84f, 0.22f, 0.62f);
+                midCol = new Color(0.25f, 0.98f, 1f, 0.92f);
+                coreCol = Color.white;
+            }
+        }
 
         SpriteRenderer outerBeam = CreateBeamLayer(beamRoot.transform, "OuterGlow", outerCol, 20);
         SpriteRenderer midBeam = CreateBeamLayer(beamRoot.transform, "MidBeam", midCol, 21);
         SpriteRenderer coreBeam = CreateBeamLayer(beamRoot.transform, "CoreBeam", coreCol, 22);
 
+        // Boca de energía en el guantelete (Muzzle Flare + Anillo)
+        GameObject muzzleObj = new GameObject("UltMuzzleFlare");
+        muzzleObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer muzzleSr = muzzleObj.AddComponent<SpriteRenderer>();
+        muzzleSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        muzzleSr.color = coreCol;
+        muzzleSr.sortingOrder = 24;
+
+        GameObject muzzleRingObj = new GameObject("UltMuzzleRing");
+        muzzleRingObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer muzzleRingSr = muzzleRingObj.AddComponent<SpriteRenderer>();
+        muzzleRingSr.sprite = ringSprite;
+        muzzleRingSr.color = midCol;
+        muzzleRingSr.sortingOrder = 23;
+
+        // Punta redondeada luminosa al final del rayo
+        GameObject tipObj = new GameObject("UltTipFlare");
+        tipObj.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer tipSr = tipObj.AddComponent<SpriteRenderer>();
+        tipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        tipSr.color = coreCol;
+        tipSr.sortingOrder = 24;
+
+        // Hélice de plasma y arco eléctrico de alta tensión recorriendo el cañón
+        LineRenderer helixLr = CreateUltArcLine(beamRoot.transform, "UltPlasmaHelix", 24, 0.14f, midCol, coreCol, 23);
+        LineRenderer crackleLr = CreateUltArcLine(beamRoot.transform, "UltLightningArc", 26, 0.065f, coreCol, outerCol, 24);
+
         float absLen = Mathf.Abs(length);
         float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
+        float ringSpawnTimer = 0f;
         while (elapsed < duration)
         {
-            float pulse = 1f + Mathf.Sin(Time.time * 55f) * 0.25f;
+            float shootProgress = Mathf.Clamp01(elapsed / 0.07f);
+            float currentLen = length * shootProgress;
+            float currentAbsLen = Mathf.Abs(currentLen);
+
+            float pulse = 1f + Mathf.Sin(Time.time * 58f) * 0.22f;
             float fadeOut = (elapsed > duration * 0.75f) ? Mathf.InverseLerp(duration, duration * 0.75f, elapsed) : 1f;
             float currentThickness = pulse * fadeOut;
 
-            outerBeam.transform.localScale = new Vector3(absLen, 1.95f * currentThickness, 1f);
-            outerBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            outerBeam.transform.localScale = new Vector3(currentAbsLen, 2.35f * currentThickness, 1f);
+            outerBeam.transform.localPosition = new Vector3(currentLen * 0.5f, 0f, 0f);
 
-            midBeam.transform.localScale = new Vector3(absLen, 1.10f * currentThickness, 1f);
-            midBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            midBeam.transform.localScale = new Vector3(currentAbsLen, 1.20f * currentThickness, 1f);
+            midBeam.transform.localPosition = new Vector3(currentLen * 0.5f, 0f, 0f);
 
-            coreBeam.transform.localScale = new Vector3(absLen, 0.48f * currentThickness, 1f);
-            coreBeam.transform.localPosition = new Vector3(length / 2f, 0f, 0f);
+            coreBeam.transform.localScale = new Vector3(currentAbsLen, 0.46f * currentThickness, 1f);
+            coreBeam.transform.localPosition = new Vector3(currentLen * 0.5f, 0f, 0f);
 
-            if (Random.value > 0.28f)
+            float mScale = (1.65f + Mathf.Sin(Time.time * 42f) * 0.30f) * fadeOut;
+            muzzleObj.transform.localScale = new Vector3(mScale, mScale * 1.25f, 1f);
+            muzzleRingObj.transform.localScale = new Vector3(mScale * 0.55f, mScale * 1.55f, 1f);
+            muzzleRingObj.transform.Rotate(0f, 0f, 360f * Time.deltaTime);
+            tipObj.transform.localPosition = new Vector3(currentLen, 0f, 0f);
+            tipObj.transform.localScale = new Vector3(mScale * 1.05f, mScale * 1.25f, 1f);
+
+            Vector3 startPt = originPos;
+            Vector3 endPt = originPos + new Vector3(currentLen, 0f, 0f);
+            for (int i = 0; i < helixLr.positionCount; i++)
             {
-                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, absLen * 0.85f), Random.Range(-0.55f, 0.55f), 0f);
+                float u = i / (float)(helixLr.positionCount - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float wave = Mathf.Sin(Time.time * 32f - u * 14f) * 0.52f * env * currentThickness;
+                helixLr.SetPosition(i, Vector3.Lerp(startPt, endPt, u) + new Vector3(0f, wave, 0f));
+            }
+            for (int i = 0; i < crackleLr.positionCount; i++)
+            {
+                float u = i / (float)(crackleLr.positionCount - 1);
+                float env = Mathf.Sin(u * Mathf.PI);
+                float jagged = (Mathf.Sin(Time.time * 65f + i * 2.4f) * 0.34f + Mathf.Cos(Time.time * 48f - i * 3.1f) * 0.22f) * env * currentThickness;
+                crackleLr.SetPosition(i, Vector3.Lerp(startPt, endPt, u) + new Vector3(0f, jagged, 0f));
+            }
+            helixLr.widthMultiplier = fadeOut;
+            crackleLr.widthMultiplier = fadeOut;
+
+            ringSpawnTimer -= Time.deltaTime;
+            if (ringSpawnTimer <= 0f && shootProgress >= 0.8f && fadeOut > 0.35f)
+            {
+                ringSpawnTimer = 0.095f;
+                GameObject trObj = new GameObject("UltTravelRing");
+                trObj.transform.position = originPos + new Vector3(dirSign * 0.4f, 0f, 0f);
+                SpriteRenderer trSr = trObj.AddComponent<SpriteRenderer>();
+                trSr.sprite = ringSprite;
+                trSr.color = midCol;
+                trSr.sortingOrder = 23;
+                trObj.transform.localScale = new Vector3(0.32f, 1.85f, 1f);
+                UltBeamTravelRing tr = trObj.AddComponent<UltBeamTravelRing>();
+                tr.Init(dirSign, absLen, 0.24f);
+            }
+
+            if (Random.value > 0.22f)
+            {
+                Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.5f, Mathf.Max(0.6f, currentAbsLen * 0.90f)), Random.Range(-0.65f, 0.65f), 0f);
                 SpawnHitSparks(sparkPos, true, 3);
             }
 
@@ -193,6 +352,21 @@ public class CombatVFXManager : MonoBehaviour
         }
 
         Destroy(beamRoot);
+    }
+
+    LineRenderer CreateUltArcLine(Transform parent, string objName, int pts, float width, Color cStart, Color cEnd, int sortOrder)
+    {
+        GameObject obj = new GameObject(objName);
+        obj.transform.SetParent(parent, false);
+        LineRenderer lr = obj.AddComponent<LineRenderer>();
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.positionCount = pts;
+        lr.startWidth = width;
+        lr.endWidth = width * 0.7f;
+        lr.startColor = cStart;
+        lr.endColor = cEnd;
+        lr.sortingOrder = sortOrder;
+        return lr;
     }
 
     /// <summary>
@@ -218,6 +392,20 @@ public class CombatVFXManager : MonoBehaviour
         SpriteRenderer midBeam   = CreateBeamLayer(beamRoot.transform, "BossMidBeam",   midCol,   22);
         SpriteRenderer coreBeam  = CreateBeamLayer(beamRoot.transform, "BossCoreBeam",  coreCol,  23);
 
+        GameObject bossMuzzle = new GameObject("BossMuzzleFlare");
+        bossMuzzle.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer bMuzzleSr = bossMuzzle.AddComponent<SpriteRenderer>();
+        bMuzzleSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bMuzzleSr.color = coreCol;
+        bMuzzleSr.sortingOrder = 24;
+
+        GameObject bossTip = new GameObject("BossTipFlare");
+        bossTip.transform.SetParent(beamRoot.transform, false);
+        SpriteRenderer bTipSr = bossTip.AddComponent<SpriteRenderer>();
+        bTipSr.sprite = sparkSprite != null ? sparkSprite : ringSprite;
+        bTipSr.color = midCol;
+        bTipSr.sortingOrder = 24;
+
         float absLen = Mathf.Abs(length);
         float dirSign = (length < 0f) ? -1f : 1f;
         float elapsed = 0f;
@@ -237,6 +425,11 @@ public class CombatVFXManager : MonoBehaviour
             coreBeam.transform.localScale     = new Vector3(absLen, 0.35f * currentThickness, 1f);
             coreBeam.transform.localPosition  = new Vector3(length / 2f, 0f, 0f);
 
+            float tipScale = 1.25f * currentThickness;
+            bossMuzzle.transform.localScale = new Vector3(tipScale, tipScale, 1f);
+            bossTip.transform.localPosition = new Vector3(length, 0f, 0f);
+            bossTip.transform.localScale = new Vector3(tipScale * 0.95f, tipScale * 1.15f, 1f);
+
             if (Random.value > 0.25f)
             {
                 Vector3 sparkPos = originPos + new Vector3(dirSign * Random.Range(0.6f, absLen * 0.90f), Random.Range(-0.45f, 0.45f), 0f);
@@ -250,12 +443,42 @@ public class CombatVFXManager : MonoBehaviour
         Destroy(beamRoot);
     }
 
+    Sprite GetSoftBeamSprite()
+    {
+        if (softBeamSprite != null) return softBeamSprite;
+        const int size = 128;
+        const float cap = 0.14f;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < size; y++)
+        {
+            float v = (y + 0.5f) / size;
+            float dy = (v - 0.5f) * 2f; // [-1, 1]
+            for (int x = 0; x < size; x++)
+            {
+                float u = (x + 0.5f) / size;
+                float dx = 0f;
+                if (u < cap) dx = (cap - u) / cap;
+                else if (u > 1f - cap) dx = (u - (1f - cap)) / cap;
+
+                // Cápsula elíptica con extremos completamente redondeados (sin esquinas cuadradas)
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                float alpha = (r >= 1f) ? 0f : Mathf.Pow(1f - r * r, 1.45f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        tex.Apply();
+        softBeamSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+        return softBeamSprite;
+    }
+
     SpriteRenderer CreateBeamLayer(Transform parent, string name, Color col, int sortOrder)
     {
         GameObject go = new GameObject(name);
         go.transform.SetParent(parent, false);
         SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = whitePixelSprite;
+        sr.sprite = GetSoftBeamSprite();
         sr.color = col;
         sr.sortingOrder = sortOrder;
         return sr;
@@ -403,17 +626,9 @@ public class CombatVFXManager : MonoBehaviour
         SpawnShockwaveRing(pos, isBoss ? new Color(1f, 0.25f, 0.55f) : new Color(0.22f, 0.92f, 1f), isBoss ? 3.2f : 1.7f);
     }
 
-    public void SpawnHitSparks(Vector3 pos, bool isHeavy, int count = 6)
+    public void SpawnHitSparks(Vector3 pos, bool isHeavy, int count = 6, Gradient overrideGradient = null)
     {
-        bool isCorrupt = (PlayerStats.Instance != null && PlayerStats.Instance.rigorPoints > PlayerStats.Instance.compassionPoints);
-        bool isPureza = (PlayerStats.Instance != null && PlayerStats.Instance.compassionPoints > PlayerStats.Instance.rigorPoints);
-
-        Color c1 = isCorrupt
-            ? new Color(1f, 0.18f, 0.45f)
-            : (isPureza ? new Color(0.28f, 0.98f, 1f) : new Color(0.22f, 0.92f, 1f));
-        Color c2 = isCorrupt
-            ? new Color(0.68f, 0.15f, 1f)
-            : (isPureza ? new Color(1f, 0.90f, 0.32f) : new Color(1f, 0.85f, 0.2f));
+        Gradient grad = overrideGradient ?? activeAttackGradient ?? BuildGradientForVariant(ActiveGauntletVariant, false);
 
         for (int i = 0; i < count; i++)
         {
@@ -421,11 +636,40 @@ public class CombatVFXManager : MonoBehaviour
             sp.transform.position = pos;
             SpriteRenderer sr = sp.AddComponent<SpriteRenderer>();
             sr.sprite = sparkSprite;
-            sr.color = (i % 2 == 0) ? c1 : c2;
+            sr.color = grad.Evaluate(i % 2 == 0 ? 0.25f : 0.65f);
             sr.sortingOrder = 23;
 
             SparkParticle p = sp.AddComponent<SparkParticle>();
-            p.Init(isHeavy);
+            p.Init(isHeavy, grad);
+        }
+    }
+
+    /// <summary>
+    /// Efecto visual de combustión continua sobre enemigos quemados por el Guantelete Piro-Reactor.
+    /// </summary>
+    public void SpawnFireBurnTickVFX(Vector3 pos)
+    {
+        Gradient fireGrad = BuildGradientForVariant(GauntletVariant.PyroReactor, false);
+        SpawnHitSparks(pos, false, 4, fireGrad);
+    }
+
+    /// <summary>
+    /// Efecto de orbe abisal de robo de vida volando del enemigo hacia Kael (Guantelete de Vacío Vorst).
+    /// </summary>
+    public void SpawnVoidLifestealVFX(Vector3 enemyPos, Vector3 kaelPos)
+    {
+        Gradient voidGrad = BuildGradientForVariant(GauntletVariant.VorstVoid, false);
+        for (int i = 0; i < 2; i++)
+        {
+            GameObject orb = new GameObject("VoidSiphonOrb");
+            orb.transform.position = enemyPos + new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(0.2f, 0.8f), 0f);
+            SpriteRenderer sr = orb.AddComponent<SpriteRenderer>();
+            sr.sprite = neutralOrbSprite;
+            sr.color = voidGrad.Evaluate(i == 0 ? 0.30f : 0.72f);
+            sr.sortingOrder = 24;
+
+            ChargeParticle cp = orb.AddComponent<ChargeParticle>();
+            cp.Init(kaelPos + Vector3.up * 0.75f, 0.28f);
         }
     }
 
@@ -782,21 +1026,36 @@ public class SparkParticle : MonoBehaviour
     private Vector2 velocity;
     private float lifetime = 0.28f;
     private float elapsed = 0f;
+    private Vector3 initialScale = Vector3.one;
+    private Gradient colorGradient;
+    private SpriteRenderer cachedSr;
 
-    public void Init(bool isHeavy)
+    public void Init(bool isHeavy, Gradient grad = null)
     {
         float speed = isHeavy ? Random.Range(3.5f, 7.5f) : Random.Range(2.0f, 4.5f);
         velocity = Random.insideUnitCircle.normalized * speed;
         if (velocity.y < 0f) velocity.y = -velocity.y * 0.8f;
-        transform.localScale = Vector3.one * (isHeavy ? 1.35f : 0.9f);
+        initialScale = Vector3.one * (isHeavy ? 1.35f : 0.9f);
+        transform.localScale = initialScale;
+        colorGradient = grad;
+        cachedSr = GetComponent<SpriteRenderer>();
+        if (cachedSr != null && colorGradient != null)
+        {
+            cachedSr.color = colorGradient.Evaluate(0f);
+        }
     }
 
     void Update()
     {
         elapsed += Time.unscaledDeltaTime;
+        float t = Mathf.Clamp01(elapsed / lifetime);
         velocity.y -= 12f * Time.unscaledDeltaTime;
         transform.position += (Vector3)(velocity * Time.unscaledDeltaTime);
-        transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, elapsed / lifetime);
+        transform.localScale = Vector3.Lerp(initialScale, Vector3.zero, t);
+        if (cachedSr != null && colorGradient != null)
+        {
+            cachedSr.color = colorGradient.Evaluate(t);
+        }
         if (elapsed >= lifetime) Destroy(gameObject);
     }
 }
@@ -901,5 +1160,36 @@ public class FloatingPopup : MonoBehaviour
 
         style.normal.textColor = new Color(color.r, color.g, color.b, alpha);
         GUI.Label(rect, text, style);
+    }
+}
+
+public class UltBeamTravelRing : MonoBehaviour
+{
+    private float dir;
+    private float speed;
+    private float duration;
+    private float elapsed = 0f;
+    private SpriteRenderer sr;
+    private Color baseCol;
+
+    public void Init(float moveDir, float totalLen, float lifeTime)
+    {
+        dir = moveDir;
+        duration = Mathf.Max(0.08f, lifeTime);
+        speed = totalLen / duration;
+        sr = GetComponent<SpriteRenderer>();
+        if (sr != null) baseCol = sr.color;
+    }
+
+    void Update()
+    {
+        elapsed += Time.deltaTime;
+        transform.position += new Vector3(dir * speed * Time.deltaTime, 0f, 0f);
+        float p = Mathf.Clamp01(elapsed / duration);
+        if (sr != null)
+        {
+            sr.color = new Color(baseCol.r, baseCol.g, baseCol.b, baseCol.a * (1f - p));
+        }
+        if (elapsed >= duration) Destroy(gameObject);
     }
 }

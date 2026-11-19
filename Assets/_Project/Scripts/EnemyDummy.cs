@@ -38,10 +38,18 @@ public class EnemyDummy : MonoBehaviour
     public bool isStunned => stunTimer > 0f;
     private float stunTimer = 0f;
 
-    // --- BLOQUE 4 (Issue #22): Quemadura de Plasma (DoT por Disonancia Vorst) ---
-    private float burnTimer = 0f;
-    private float burnTickTimer = 0f;
-    private float burnDamagePerTick = 4f;
+    // --- BLOQUE 4 (Issue #22) & ARSENAL PIRO-REACTOR (Issue #21): Canales de Quemadura (DoT) ---
+    private struct BurnChannel
+    {
+        public float timer;
+        public float tickTimer;
+        public float damagePerTick;
+        public float tickInterval;
+    }
+
+    private BurnChannel plasmaBurn;
+    private BurnChannel fireBurn;
+    public bool HasActiveFireBurn => fireBurn.timer > 0f;
 
     // --- BLOQUE 5 (Issue #23): Mecánicas exclusivas de Monstruos y Jefes del Nivel 3 ---
     public bool isLevel3Monster = false;
@@ -57,6 +65,7 @@ public class EnemyDummy : MonoBehaviour
 
     // Sprites 256x256 alineados para Nivel 2 y Nivel 3
     private string visualType = "";
+    public string VisualTypePublic => visualType;
     private Sprite[] customWalkFrames;
     private Sprite[] customAttackFrames;
     private Sprite[] customDieFrames;
@@ -325,6 +334,25 @@ public class EnemyDummy : MonoBehaviour
                 customJumpLandFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "MeteorImpact", ppu);
             customChestOpenFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("VortexOmega", "ChestOpen", ppu);
         }
+        else if (resourcePrefix == "PraetorianMarksman")
+        {
+            customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianMarksman", "Laser", ppu);
+        }
+        else if (resourcePrefix == "PraetorianCustodian")
+        {
+            customJumpTakeoffFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianCustodian", "JumpTakeoff", ppu);
+            customJumpDiveFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianCustodian", "JumpDive", ppu);
+            customJumpLandFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("PraetorianCustodian", "JumpLand", ppu);
+        }
+        else if (resourcePrefix == "SupremeSovereign")
+        {
+            customLaserFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "Laser", ppu);
+            customPhaseTransFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "PhaseTrans", ppu);
+            customEnrageAttackFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "EnrageAttack", ppu);
+            customIdleFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "Idle", ppu);
+            customVortexFlameFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "VortexFlame", ppu);
+            customChestOpenFrames = Level3MonsterAssetGenerator.GetMonsterAnimationFrames("SupremeSovereign", "ChestOpen", ppu);
+        }
 
         if (customWalkFrames != null && customWalkFrames.Length > 0 && customWalkFrames[0] != null)
         {
@@ -507,8 +535,52 @@ public class EnemyDummy : MonoBehaviour
     public void ApplyPlasmaBurn(float dps, float duration)
     {
         if (isDead) return;
-        burnDamagePerTick = Mathf.Max(2f, dps * 0.45f);
-        burnTimer = Mathf.Max(burnTimer, duration);
+        bool wasInactive = plasmaBurn.timer <= 0f;
+        plasmaBurn.damagePerTick = Mathf.Max(2f, dps * 0.45f);
+        plasmaBurn.timer = Mathf.Max(plasmaBurn.timer, duration);
+        plasmaBurn.tickInterval = 0.45f;
+        if (wasInactive) plasmaBurn.tickTimer = plasmaBurn.tickInterval;
+    }
+
+    /// <summary>
+    /// ARSENAL DE VANGUARDIA (Issue #21): Aplica combustión continua por tick de fuego (Guantelete Piro-Reactor).
+    /// </summary>
+    public void ApplyFireBurn(float damagePerTick, float duration, float tickInterval = PlayerStats.PYRO_BURN_TICK_INTERVAL)
+    {
+        if (isDead) return;
+        bool wasInactive = fireBurn.timer <= 0f;
+        fireBurn.damagePerTick = Mathf.Max(fireBurn.damagePerTick, Mathf.Max(2f, damagePerTick));
+        fireBurn.timer = Mathf.Max(fireBurn.timer, duration);
+        fireBurn.tickInterval = Mathf.Max(0.15f, tickInterval);
+        if (wasInactive) fireBurn.tickTimer = fireBurn.tickInterval;
+    }
+
+    void ProcessBurnChannel(ref BurnChannel ch, bool isPyroFire)
+    {
+        if (ch.timer <= 0f || isDead) return;
+
+        ch.timer = Mathf.Max(0f, ch.timer - Time.deltaTime);
+        ch.tickTimer -= Time.deltaTime;
+        if (ch.tickTimer > 0f) return;
+
+        ch.tickTimer = ch.tickInterval > 0f ? ch.tickInterval : 0.45f;
+        TakeDamage(ch.damagePerTick, false, 0f);
+        if (CombatVFXManager.Instance != null && !isDead)
+        {
+            Vector3 fxPos = transform.position + Vector3.up * 0.7f;
+            if (isPyroFire)
+            {
+                CombatVFXManager.Instance.SpawnFireBurnTickVFX(fxPos);
+                CombatVFXManager.Instance.SpawnFloatingText(
+                    fxPos + new Vector3(UnityEngine.Random.Range(-0.22f, 0.22f), 0.35f, 0f),
+                    $"🔥 -{Mathf.RoundToInt(ch.damagePerTick)}",
+                    new Color(1f, 0.42f, 0.14f), 14, 0.48f);
+            }
+            else
+            {
+                CombatVFXManager.Instance.SpawnElectricArc(fxPos, new Color(0.85f, 0.15f, 1f));
+            }
+        }
     }
 
     void Update()
@@ -520,30 +592,12 @@ public class EnemyDummy : MonoBehaviour
             if (kaelTarget == null) return;
         }
 
-        if (PlayerStats.Instance != null &&
-            (PlayerStats.Instance.isPaused ||
-             PlayerStats.Instance.isGameOver ||
-             PlayerStats.Instance.isLevelCompleted ||
-             PlayerStats.Instance.isChoosingDilemma ||
-             PlayerStats.Instance.isChoosingSkill ||
-             PlayerStats.Instance.isUpgradeTreeOpen))
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
-        // Procesar Quemadura de Plasma (DoT - Bloque 4)
-        if (burnTimer > 0f)
-        {
-            burnTimer -= Time.deltaTime;
-            burnTickTimer -= Time.deltaTime;
-            if (burnTickTimer <= 0f)
-            {
-                burnTickTimer = 0.45f;
-                TakeDamage(burnDamagePerTick, false, 0f);
-                if (CombatVFXManager.Instance != null && !isDead)
-                {
-                    CombatVFXManager.Instance.SpawnElectricArc(transform.position + Vector3.up * 0.7f, new Color(0.85f, 0.15f, 1f));
-                }
-            }
-        }
+        // Procesar Quemadura de Plasma (Bloque 4) y Combustión Piro-Reactor (Issue #21)
+        ProcessBurnChannel(ref plasmaBurn, false);
+        ProcessBurnChannel(ref fireBurn, true);
 
         // Rotar anillos psiónicos del Mini-Jefe HiveInquisitor
         for (int i = 0; i < psionicRings.Count; i++)
@@ -575,6 +629,12 @@ public class EnemyDummy : MonoBehaviour
         float distToKael = Mathf.Abs(diffX);
         float dirToKael = (Mathf.Abs(diffX) > 0.02f) ? Mathf.Sign(diffX) : -1f;
 
+        SovereignBossAI sovereignAI = GetComponent<SovereignBossAI>();
+        if (sovereignAI != null && sovereignAI.OverridesMovementAndAttacks)
+        {
+            return;
+        }
+
         if (visualType == "VortexOmega")
         {
             UpdateVortexOmegaBoss(distToKael, dirToKael);
@@ -588,12 +648,17 @@ public class EnemyDummy : MonoBehaviour
 
         if (distToKael > attackRange && !isChargingHeavy && !isPlayingAttackAnim)
         {
-            // Cañón Láser de Pecho a Media Distancia para BioHulk:
-            // Si marcha hacia Kael y está entre 3.2m y 7.5m, se detiene y desata su rayo verde neón pesado.
+            // Cañón Láser de Pecho a Media Distancia para BioHulk / Rayo de Francotirador Pretoriano:
             if (visualType == "BioHulk" && distToKael >= 3.2f && distToKael <= 7.5f && Time.time >= nextHulkLaserTime)
             {
                 nextHulkLaserTime = Time.time + UnityEngine.Random.Range(5.5f, 8.0f);
                 StartCoroutine(BioHulkChestLaserRoutine());
+                return;
+            }
+            if (visualType == "PraetorianMarksman" && distToKael >= 1.5f && distToKael <= 3.35f && Time.time >= nextHulkLaserTime)
+            {
+                nextHulkLaserTime = Time.time + UnityEngine.Random.Range(4.2f, 6.2f);
+                StartCoroutine(PraetorianMarksmanLaserRoutine());
                 return;
             }
 
@@ -1029,6 +1094,39 @@ public class EnemyDummy : MonoBehaviour
     /// </summary>
     private IEnumerator BioHulkChestLaserRoutine()
     {
+        return ExecuteCustomLaserRoutine(
+            "⚠ ¡CAÑÓN LÁSER DE CRISÁLIDA!",
+            new Color(0.20f, 0.95f, 0.40f),
+            1.15f,
+            0.50f,
+            7.5f,
+            1.50f,
+            spawnOverlayBeam: true
+        );
+    }
+
+    private IEnumerator PraetorianMarksmanLaserRoutine()
+    {
+        return ExecuteCustomLaserRoutine(
+            "⚠ ¡DISPARO DE FRANCOTIRADOR!",
+            new Color(0.85f, 0.30f, 1.0f),
+            0.96f,
+            0.62f,
+            3.35f,
+            1.25f,
+            spawnOverlayBeam: false
+        );
+    }
+
+    private IEnumerator ExecuteCustomLaserRoutine(
+        string warningText,
+        Color fxColor,
+        float emitterY,
+        float emitterForwardX,
+        float beamLength,
+        float damageMultiplier,
+        bool spawnOverlayBeam)
+    {
         isPlayingAttackAnim = true;
         transform.localRotation = Quaternion.identity;
         float baseX = transform.position.x;
@@ -1039,17 +1137,17 @@ public class EnemyDummy : MonoBehaviour
         {
             CombatVFXManager.Instance.SpawnFloatingText(
                 transform.position + Vector3.up * 2.0f,
-                "⚠ ¡CAÑÓN LÁSER DE CRISÁLIDA!",
-                new Color(0.20f, 0.95f, 0.40f),
+                warningText,
+                fxColor,
                 21,
                 1.0f
             );
         }
 
-        Vector3 chestPos = transform.position + Vector3.up * 1.15f + Vector3.right * (dirToKael * 0.5f);
+        Vector3 chestPos = transform.position + Vector3.up * emitterY + Vector3.right * (dirToKael * emitterForwardX);
         int totalFrames = (customLaserFrames != null && customLaserFrames.Length >= 8) ? 8 : (customLaserFrames != null ? customLaserFrames.Length : 0);
 
-        // Cuadros 0, 1, 2: Sobrecarga de tanques dorsales y apertura de compuerta de pecho
+        // Cuadros 0, 1, 2: Carga energética antes del disparo
         for (int f = 0; f < 3; f++)
         {
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
@@ -1058,46 +1156,54 @@ public class EnemyDummy : MonoBehaviour
 
             if (CombatVFXManager.Instance != null)
             {
-                CombatVFXManager.Instance.SpawnElectricArc(chestPos, new Color(0.20f, 0.95f, 0.35f));
+                CombatVFXManager.Instance.SpawnElectricArc(chestPos, fxColor);
                 CombatVFXManager.Instance.SpawnHitSparks(chestPos, false, 3);
             }
             yield return new WaitForSeconds(0.16f);
         }
 
-        // Cuadro 3: DISPARO MASIVO DEL RAYO LÁSER VERDE
-        if (customLaserFrames != null && customLaserFrames.Length > 3 && customLaserFrames[3] != null)
-            sr.sprite = customLaserFrames[3];
-
-        if (LevelAudioManager.Instance != null)
-            LevelAudioManager.Instance.PlayUltimateLaser();
-
-        float beamLength = 7.5f;
-        if (CombatVFXManager.Instance != null)
+        // Cuadros 3..4: DISPARO DE RAYO LÁSER (manteniendo la punta pixel-art continua)
+        int beamEndFrame = (spawnOverlayBeam || totalFrames < 5) ? 4 : 5;
+        for (int f = 3; f < beamEndFrame; f++)
         {
-            CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, 0.45f);
-            CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, new Color(0.20f, 0.95f, 0.40f), 3.0f);
-            CombatVFXManager.Instance.ShakeCamera(0.36f, 0.22f);
-            CombatVFXManager.Instance.TriggerScreenFlash(new Color(0.15f, 0.95f, 0.35f), 0.35f);
-        }
+            if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
+            if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
+                sr.sprite = customLaserFrames[f];
 
-        // Impacto a Kael si se encuentra en la trayectoria del haz
-        if (kaelTarget != null)
-        {
-            float diffX = kaelTarget.position.x - transform.position.x;
-            bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
-            float dist = Mathf.Abs(diffX);
-            if (isInFront && dist <= beamLength && PlayerStats.Instance != null)
+            if (f == 3)
             {
-                PlayerStats.Instance.TakeDamage(damage * 1.50f, this);
+                if (LevelAudioManager.Instance != null)
+                    LevelAudioManager.Instance.PlayUltimateLaser();
+
                 if (CombatVFXManager.Instance != null)
-                    CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+                {
+                    if (spawnOverlayBeam)
+                        CombatVFXManager.Instance.SpawnBossLaserBeam(chestPos, dirToKael * beamLength, 0.45f);
+                    CombatVFXManager.Instance.SpawnShockwaveRing(chestPos, fxColor, spawnOverlayBeam ? 3.0f : 1.9f);
+                    CombatVFXManager.Instance.ShakeCamera(spawnOverlayBeam ? 0.36f : 0.18f, spawnOverlayBeam ? 0.22f : 0.12f);
+                    if (spawnOverlayBeam)
+                        CombatVFXManager.Instance.TriggerScreenFlash(fxColor, 0.35f);
+                }
+
+                // Impacto a Kael si se encuentra en la trayectoria del haz
+                if (kaelTarget != null)
+                {
+                    float diffX = kaelTarget.position.x - transform.position.x;
+                    bool isInFront = (dirToKael > 0f && diffX > 0f) || (dirToKael < 0f && diffX < 0f);
+                    float dist = Mathf.Abs(diffX);
+                    if (isInFront && dist <= beamLength && PlayerStats.Instance != null)
+                    {
+                        PlayerStats.Instance.TakeDamage(damage * damageMultiplier, this);
+                        if (CombatVFXManager.Instance != null)
+                            CombatVFXManager.Instance.SpawnHitSparks(kaelTarget.position + Vector3.up * 0.6f, true, 10);
+                    }
+                }
             }
+            yield return new WaitForSeconds(spawnOverlayBeam ? 0.30f : 0.16f);
         }
 
-        yield return new WaitForSeconds(0.30f);
-
-        // Cuadros 4..7: Enfriamiento de ventilación de vapor
-        for (int f = 4; f < totalFrames; f++)
+        // Cuadros restantes: Enfriamiento / recuperación
+        for (int f = beamEndFrame; f < totalFrames; f++)
         {
             if (isDead || isStunned) { isPlayingAttackAnim = false; yield break; }
             if (customLaserFrames != null && f < customLaserFrames.Length && customLaserFrames[f] != null)
@@ -1836,6 +1942,28 @@ public class EnemyDummy : MonoBehaviour
 
         if (isPlayingAttackAnim || isChargingHeavy) return;
 
+        SovereignBossAI sovereignAI = GetComponent<SovereignBossAI>();
+        if (sovereignAI != null)
+        {
+            transform.localRotation = Quaternion.identity;
+            if (!sovereignAI.IsActingExternally && customWalkFrames != null && customWalkFrames.Length > 0)
+            {
+                float dKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
+                if (dKael > attackRange)
+                {
+                    walkAnimTimer += Time.deltaTime * 6.5f;
+                    int frame = Mathf.FloorToInt(walkAnimTimer) % customWalkFrames.Length;
+                    if (customWalkFrames[frame] != null) sr.sprite = customWalkFrames[frame];
+                }
+                else if (customWalkFrames[0] != null)
+                {
+                    walkAnimTimer = 0f;
+                    sr.sprite = customWalkFrames[0];
+                }
+            }
+            return;
+        }
+
         transform.localRotation = Quaternion.identity;
         float distToKael = (kaelTarget != null) ? Mathf.Abs(transform.position.x - kaelTarget.position.x) : 99f;
         // En sincronía con la decisión de Update(): si está en rango de ataque se detiene y adopta postura firme
@@ -1992,6 +2120,17 @@ public class EnemyDummy : MonoBehaviour
     {
         if (isDead || isInvulnerable) return;
 
+        SovereignBossAI sovereignAI = GetComponent<SovereignBossAI>();
+        if (sovereignAI != null)
+        {
+            sovereignAI.ProcessIncomingDamage(ref dmg, ref isCrit);
+            if (dmg <= 0f)
+            {
+                if (sr != null && !isChargingHeavy) StartCoroutine(HitFlash());
+                return;
+            }
+        }
+
         // BLOQUE 5 (Issue #23 & Milestone M3): Transición de Fase 2 de VORTEX-OMEGA al 50% de HP
         if (visualType == "VortexOmega" && !hasEnteredRagePhase && (currentHP - dmg) <= (maxHP * 0.50f))
         {
@@ -2022,7 +2161,14 @@ public class EnemyDummy : MonoBehaviour
 
         if (currentHP <= 0f)
         {
-            if (isBoss)
+            if (sovereignAI != null && sovereignAI.role == SovereignBossAI.BossRole.SupremeSovereign)
+            {
+                isDead = true;
+                Collider2D c = GetComponent<Collider2D>();
+                if (c != null) c.enabled = false;
+                sovereignAI.TriggerFinalDefeatSequence();
+            }
+            else if (isBoss)
                 StartCoroutine(BossDramaticDeathRoutine());
             else
                 DieNormal();
@@ -2054,6 +2200,7 @@ public class EnemyDummy : MonoBehaviour
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 
+        VorstCodexUI.RegisterEnemyKill(this);
         OnEnemyDied?.Invoke();
 
         if (anim != null && !useCustomSprites)
@@ -2075,6 +2222,8 @@ public class EnemyDummy : MonoBehaviour
         transform.localRotation = Quaternion.identity;
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
+
+        VorstCodexUI.RegisterEnemyKill(this);
 
         if (anim != null && !useCustomSprites) anim.SetBool("IsAttacking", false);
 
@@ -2248,37 +2397,40 @@ public class EnemyDummy : MonoBehaviour
     void OnGUI()
     {
         if (isDead || Camera.main == null) return;
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen) return;
+
         GUI.matrix = Matrix4x4.identity;
 
-        // Indicador flotante de Estado Aturdido (Stunned por Parry Perfecto - Bloque 1)
-        if (stunTimer > 0f)
+        // Indicador flotante de Estado Aturdido (Stunned por Parry Perfecto - Bloque 1) y Quemadura Piro-Reactor (Issue #21)
+        if (stunTimer > 0f || fireBurn.timer > 0f)
         {
-            Vector3 stunWorld = transform.position + Vector3.up * (isBoss ? 2.4f : 1.55f);
-            Vector3 stunScreen = Camera.main.WorldToScreenPoint(stunWorld);
-            if (stunScreen.z > 0)
+            Vector3 statusWorld = transform.position + Vector3.up * (isBoss ? 2.4f : 1.55f);
+            Vector3 statusScreen = Camera.main.WorldToScreenPoint(statusWorld);
+            if (statusScreen.z > 0)
             {
-                GUIStyle stunStyle = new GUIStyle(GUI.skin.label)
+                float sy = Screen.height - statusScreen.y;
+                GUIStyle statusStyle = new GUIStyle(GUI.skin.label)
                 {
-                    fontSize = PlayerStats.ScaleFont(15),
+                    fontSize = PlayerStats.ScaleFont(14),
                     fontStyle = FontStyle.Bold,
                     alignment = TextAnchor.MiddleCenter
                 };
-                stunStyle.normal.textColor = new Color(0.25f, 0.98f, 1f);
-                float sy = Screen.height - stunScreen.y;
-                GUI.Label(new Rect(stunScreen.x - 110f, sy - 16f, 220f, 32f), $"⚡ ATURDIDO ({stunTimer:F1}s) ⚡", stunStyle);
+                if (stunTimer > 0f)
+                {
+                    statusStyle.normal.textColor = new Color(0.25f, 0.98f, 1f);
+                    GUI.Label(new Rect(statusScreen.x - 110f, sy - 16f, 220f, 28f), $"⚡ ATURDIDO ({stunTimer:F1}s) ⚡", statusStyle);
+                }
+                if (fireBurn.timer > 0f)
+                {
+                    float yOff = stunTimer > 0f ? -38f : -16f;
+                    statusStyle.normal.textColor = new Color(1f, 0.48f, 0.14f);
+                    GUI.Label(new Rect(statusScreen.x - 110f, sy + yOff, 220f, 28f), $"🔥 COMBUSTIÓN ({fireBurn.timer:F1}s)", statusStyle);
+                }
             }
         }
 
         if (isBoss || isMiniBoss)
         {
-            if (PlayerStats.Instance != null &&
-                (PlayerStats.Instance.isPaused ||
-                 PlayerStats.Instance.isGameOver ||
-                 PlayerStats.Instance.isLevelCompleted ||
-                 PlayerStats.Instance.isChoosingDilemma ||
-                 PlayerStats.Instance.isChoosingSkill ||
-                 PlayerStats.Instance.isUpgradeTreeOpen))
-                return;
 
             Rect bgBox = PlayerStats.ScaleRect(720f, 10f, 480f, 74f);
             Rect titleRect = PlayerStats.ScaleRect(732f, 14f, 456f, 26f);

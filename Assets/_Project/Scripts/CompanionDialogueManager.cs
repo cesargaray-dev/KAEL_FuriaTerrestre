@@ -38,12 +38,48 @@ public class CompanionDialogueManager : MonoBehaviour
 
     private HashSet<int> triggeredWaves = new HashSet<int>();
 
+    // --- AUDIO SINTÉTICO Y EFECTOS CINEMÁTICOS PARA SUBTÍTULOS Y VIÑETAS ---
+    private AudioSource voiceSource;
+    private AudioClip clipVoiceKael;
+    private AudioClip clipVoiceNexa;
+    private AudioClip clipVoiceAlert;
+    private AudioClip clipCinematicBoom;
+    private int lastSpokenCharIndex = -1;
+
+    public static CompanionDialogueManager EnsureExists()
+    {
+        if (Instance != null) return Instance;
+        CompanionDialogueManager existing = FindAnyObjectByType<CompanionDialogueManager>();
+        if (existing != null)
+        {
+            Instance = existing;
+            return existing;
+        }
+        GameObject go = new GameObject("CompanionDialogueManager");
+        Instance = go.AddComponent<CompanionDialogueManager>();
+        return Instance;
+    }
+
     void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (Instance.gameObject != gameObject &&
+                Instance.GetComponent<PlayerStats>() == null &&
+                Instance.GetComponent<WaveSpawner>() == null)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else if (GetComponent<PlayerStats>() == null && GetComponent<WaveSpawner>() == null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            else
+            {
+                Destroy(this);
+                return;
+            }
         }
         Instance = this;
 
@@ -54,6 +90,108 @@ public class CompanionDialogueManager : MonoBehaviour
         panelCyanTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Cyan");
         panelCrimsonTex = LoadTexAsTexture("StoryUI/Panel_Cyber_Crimson");
         panelGoldTex    = LoadTexAsTexture("StoryUI/Panel_Cyber_Gold");
+
+        InitSyntheticVoiceAudio();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    private void InitSyntheticVoiceAudio()
+    {
+        voiceSource = gameObject.GetComponent<AudioSource>();
+        if (voiceSource == null)
+        {
+            voiceSource = gameObject.AddComponent<AudioSource>();
+        }
+        voiceSource.playOnAwake = false;
+        voiceSource.loop = false;
+        voiceSource.spatialBlend = 0f;
+
+        clipVoiceKael = CreateSyntheticVoiceClip("Voice_Kael", 165f, 210f, 0.036f, false);
+        clipVoiceNexa = CreateSyntheticVoiceClip("Voice_Nexa", 640f, 880f, 0.032f, true);
+        clipVoiceAlert = CreateSyntheticVoiceClip("Voice_Alert", 420f, 290f, 0.042f, true);
+        clipCinematicBoom = CreateCinematicPulseClip();
+    }
+
+    private AudioClip CreateSyntheticVoiceClip(string name, float f0, float f1, float duration, bool harmonicRich)
+    {
+        int sampleRate = 22050;
+        int samples = Mathf.Max(64, Mathf.FloorToInt(sampleRate * duration));
+        float[] data = new float[samples];
+        for (int i = 0; i < samples; i++)
+        {
+            float t = (float)i / sampleRate;
+            float p = (float)i / samples;
+            float env = Mathf.Sin(p * Mathf.PI) * Mathf.Exp(-p * 2.2f);
+            float freq = Mathf.Lerp(f0, f1, p);
+            float s = Mathf.Sin(2f * Mathf.PI * freq * t);
+            if (harmonicRich)
+            {
+                s = s * 0.65f + Mathf.Sin(2f * Mathf.PI * (freq * 1.5f) * t) * 0.35f;
+            }
+            data[i] = Mathf.Clamp(s * env * 0.32f, -0.8f, 0.8f);
+        }
+        AudioClip clip = AudioClip.Create(name, samples, 1, sampleRate, false);
+        clip.SetData(data, 0);
+        return clip;
+    }
+
+    private AudioClip CreateCinematicPulseClip()
+    {
+        int sampleRate = 22050;
+        float duration = 0.42f;
+        int samples = Mathf.FloorToInt(sampleRate * duration);
+        float[] data = new float[samples];
+        for (int i = 0; i < samples; i++)
+        {
+            float t = (float)i / sampleRate;
+            float p = (float)i / samples;
+            float env = Mathf.Clamp01(p / 0.08f) * Mathf.Exp(-p * 4.2f);
+            float sub = Mathf.Sin(2f * Mathf.PI * Mathf.Lerp(135f, 48f, p) * t) * 0.65f;
+            float shimmer = Mathf.Sin(2f * Mathf.PI * Mathf.Lerp(520f, 780f, p) * t) * 0.25f;
+            data[i] = Mathf.Clamp((sub + shimmer) * env * 0.6f, -0.9f, 0.9f);
+        }
+        AudioClip clip = AudioClip.Create("SFX_Cinematic_Pulse", samples, 1, sampleRate, false);
+        clip.SetData(data, 0);
+        return clip;
+    }
+
+    public void PlaySyntheticVoiceTick(string portraitKey, int charIndex)
+    {
+        if (charIndex <= 0 || charIndex == lastSpokenCharIndex || (charIndex % 3 != 0)) return;
+        lastSpokenCharIndex = charIndex;
+
+        if (AudioManager.Instance != null && AudioManager.Instance.isMuted) return;
+        if (voiceSource == null) InitSyntheticVoiceAudio();
+        if (voiceSource == null) return;
+
+        float vol = (AudioManager.Instance != null) ? AudioManager.Instance.masterVolume * 0.42f : 0.35f;
+        AudioClip clip = clipVoiceNexa;
+        if (!string.IsNullOrEmpty(portraitKey))
+        {
+            if (portraitKey.StartsWith("kael")) clip = clipVoiceKael;
+            else if (portraitKey.Contains("alert") || portraitKey.Contains("dark")) clip = clipVoiceAlert;
+        }
+        if (clip != null)
+        {
+            voiceSource.pitch = UnityEngine.Random.Range(0.94f, 1.07f);
+            voiceSource.PlayOneShot(clip, vol);
+        }
+    }
+
+    public void PlayCinematicTransitionEffect()
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.isMuted) return;
+        if (voiceSource == null) InitSyntheticVoiceAudio();
+        if (voiceSource != null && clipCinematicBoom != null)
+        {
+            float vol = (AudioManager.Instance != null) ? AudioManager.Instance.masterVolume * 0.68f : 0.55f;
+            voiceSource.pitch = 1f;
+            voiceSource.PlayOneShot(clipCinematicBoom, vol);
+        }
     }
 
     Texture2D LoadTexAsTexture(string path)
@@ -83,6 +221,7 @@ public class CompanionDialogueManager : MonoBehaviour
         {
             charTimer += Time.unscaledDeltaTime * 48f;
             visibleChars = Mathf.Clamp(Mathf.FloorToInt(charTimer), 0, currentLine.text.Length);
+            PlaySyntheticVoiceTick(currentLine.portraitKey, visibleChars);
         }
         else
         {
@@ -107,10 +246,44 @@ public class CompanionDialogueManager : MonoBehaviour
         triggeredWaves.Add(wave);
 
         string sceneName = SceneManager.GetActiveScene().name;
-        bool isLevel3 = (sceneName == "03_Nivel3_Colmena") ||
-                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3);
-        bool isLevel2 = !isLevel3 && ((sceneName == "Lab_Zahir") ||
+        bool isLevel4 = (sceneName == "04_Final_NexusThroneroom") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 4);
+        bool isLevel3 = !isLevel4 && ((sceneName == "03_Nivel3_Colmena") ||
+                        (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 3));
+        bool isLevel2 = !isLevel4 && !isLevel3 && ((sceneName == "Lab_Zahir") ||
                         (PlayerStats.Instance != null && PlayerStats.Instance.levelNumber == 2));
+
+        // --- NIVEL 4 DEFINITIVO: EL TRONO DE LA DISONANCIA (CÚPULA NAVE NÚCLEO) ---
+        if (isLevel4)
+        {
+            if (wave == 1)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Hemos alcanzado la cúpula superior de la Nave Núcleo: el Trono de la Disonancia. Frente al ventanal orbital de la Tierra yace la cápsula de bio-conversión de Lía.", "nexa_normal");
+                EnqueueLine("KAEL", "¡Lía! Está suspendida entre esos rayos violetas... ¡Guardia Pretoriana Vorst al frente! Ningún escudo ni trinchera evitará que la libere.", "kael_shout");
+            }
+            else if (wave == 3)
+            {
+                EnqueueLine("N.E.X.A. [IA TÁCTICA]", "Cuando estés junto a la cápsula de Lía puedes pulsar [E] para sincronizar un pulso fraternal de Nexo (+15% HP y +25% Carga Ultimate).", "nexa_normal");
+            }
+            else if (wave == 5)
+            {
+                EnqueueLine("N.E.X.A. [ALERTA]", "¡Amenaza Pretoriana! El Custodio Pretoriano Vorst salta hacia nuestra posición con su lanza de energía. ¡Sal del círculo rojo de advertencia o bloquea con Parry [S]!", "nexa_alert");
+                EnqueueLine("KAEL", "¡Leeré su caída y destrozaré su lanza en el aire!", "kael_shout");
+            }
+            else if (wave == 8)
+            {
+                EnqueueLine("N.E.X.A. [CONFESIÓN CRÍTICA]", "Kael... antes de enfrentar al Trono debes saber la verdad que oculté en mi matriz: el Guantelete Nexo fue forjado usando el corazón del primer Soberano Vorst.", "nexa_alert");
+                EnqueueLine("N.E.X.A. [CONFESIÓN CRÍTICA]", "Si desatas toda tu furia sin control contra el núcleo, corres el riesgo de absorber su corona y sustituir al tirano en lugar de destruirlo.", "nexa_alert");
+                EnqueueLine("KAEL", "No seré su marioneta, N.E.X.A. Lucho por Lía y por la Tierra, no para heredar un trono manchado.", "kael_shout");
+            }
+            else if (wave == 10)
+            {
+                EnqueueLine("N.E.X.A. [EMERGENCIA FINAL]", "¡EL ARCONTE SUPREMO — SOBERANO VORST desciende al combate! Prepárate: Duelo Marcial en Fase 1, pilares orbitales en Fase 2 y Fusión con el Núcleo en Fase 3.", "nexa_alert");
+                EnqueueLine("N.E.X.A. [TÁCTICA NEXO]", "Cuando active su Campo de Fuerza en Fase 3, encadena combos hasta Sobremarcha (x30) y dispara la Ultimate 'Sobrecarga Nexo' [K] para quebrarlo.", "nexa_normal");
+                EnqueueLine("KAEL", "¡Todo termina aquí, Soberano! ¡Por la humanidad y por mi hermana Lía!", "kael_shout");
+            }
+            return;
+        }
 
         // --- BLOQUE 5 (Issue #23): DIÁLOGOS EXCLUSIVOS DEL NIVEL 3 (COLMENA DE BIO-CABLES) ---
         if (isLevel3)
@@ -216,6 +389,7 @@ public class CompanionDialogueManager : MonoBehaviour
             charTimer = 0f;
             visibleChars = 0;
             autoAdvanceTimer = 0f;
+            lastSpokenCharIndex = -1;
         }
         else
         {
@@ -269,7 +443,10 @@ public class CompanionDialogueManager : MonoBehaviour
         if (EndingCinematicController.Instance != null &&
             EndingCinematicController.Instance.isEndingActive)
             return;
-        if (PlayerStats.Instance != null && (PlayerStats.Instance.isPaused || PlayerStats.Instance.isGameOver || PlayerStats.Instance.isLevelCompleted || PlayerStats.Instance.isChoosingDilemma || PlayerStats.Instance.isChoosingSkill || PlayerStats.Instance.isUpgradeTreeOpen))
+        if (EndingsManager.Instance != null &&
+            EndingsManager.Instance.isCinematicActive)
+            return;
+        if (PlayerStats.Instance != null && PlayerStats.Instance.IsAnyBlockingModalOpen)
             return;
 
         GUI.matrix = Matrix4x4.identity;
